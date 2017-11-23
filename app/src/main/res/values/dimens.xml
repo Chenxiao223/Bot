@@ -1,0 +1,17 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    
+    <!--HomeActivity-->
+    <dimen name="activity_home_bottom">60dp</dimen>
+    <dimen name="activity_home_dibudaohang_size">30dp</dimen>
+
+    <!--TitleActivity-->
+    <dimen name="activity_title">48dp</dimen>
+    <dimen name="activity_title_padding">5dp</dimen>
+    <dimen name="activity_title_tvtitle">22dp</dimen>
+    <dimen name="activity_title_btn">18dp</dimen>
+
+    <dimen name="textsizi">20dp</dimen>
+</resources>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="7dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/grayline" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/spn_shop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            />
+
+        <Spinner
+            android:id="@+id/spn_tanzhen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:layout_width="7dp"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/grayline" />
+
+        <LinearLayout
+            android:id="@+id/line_date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.2"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="日期"
+                    android:textColor="@color/blue"
+                    android:textSize="18sp" />
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="5dp"
+                    android:src="@drawable/date" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="7dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/grayline" />
+
+    <com.zhiziyun.dmptest.bot.widget.BarChart
+        android:id="@+id/chart"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@color/white" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/blue">
+
+        <TextView
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="小时"
+            android:textSize="19sp"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="到店人次"
+            android:textSize="19sp"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="到店人数"
+            android:textSize="19sp"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+    <com.zhiziyun.dmptest.bot.xListView.XListView
+        android:id="@+id/xlistview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>
