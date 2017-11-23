@@ -7,12 +7,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.adapter.simpleArrayAdapter;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 
 import java.util.ArrayList;
@@ -28,8 +28,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private Spinner spn_shop, spn_tanzhen;
     private List<String> list_shop = new ArrayList<>();
     private List<String> list_tanzhen = new ArrayList<>();
-    private simpleArrayAdapter<String> adp_shop;
-    private simpleArrayAdapter<String> adp_tanzhen;
+    private ArrayAdapter<String> adp_shop;
+    private ArrayAdapter<String> adp_tanzhen;
     private LinearLayout line_date;
 
     @Nullable
@@ -54,9 +54,9 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             list_shop.add("数据" + i);
             list_tanzhen.add("数据" + i);
         }
-        adp_shop = new simpleArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_shop);
+        adp_shop = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_shop);
         adp_shop.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adp_tanzhen = new simpleArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_tanzhen);
+        adp_tanzhen = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_tanzhen);
         adp_tanzhen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spn_shop.setAdapter(adp_shop);
         spn_tanzhen.setAdapter(adp_tanzhen);

@@ -181,13 +181,12 @@ public class PieChart_mpp extends View {
             float v = startAngle % 360;
             if (startAngle % 360.0 >= 90.0 && startAngle % 360.0 <= 270.0) {//2 3 象限
                 canvas.drawLine(pxt, pyt, pxt - 30, pyt, mLinePaint);
-                canvas.drawText(resToRound + "%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-//                check(canvas,true,i,resToRound,pxt,pyt);
+//                canvas.drawText(resToRound + "%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                check(canvas,true,i,resToRound,pxt,pyt);
             } else {//1 4象限
                 canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
-                canvas.drawText(resToRound+"%",pxt+30,pyt,mTextPaint);
-//                check(canvas,false,i,resToRound,pxt,pyt);
-                Log.i("info"+i, resToRound + ",");
+//                canvas.drawText(resToRound+"%",pxt+30,pyt,mTextPaint);
+                check(canvas,false,i,resToRound,pxt,pyt);
             }
         }
 
@@ -197,30 +196,30 @@ public class PieChart_mpp extends View {
         switch (i){
             case 0:
                 if (flag==true) {
-                    canvas.drawText("50%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                    canvas.drawText("1000-1999", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
                 }else{
-                    canvas.drawText("50%", pxt + 30, pyt, mTextPaint);
+                    canvas.drawText("1000-1999", pxt + 30, pyt, mTextPaint);
                 }
                 break;
             case 1:
                 if (flag==true) {
-                    canvas.drawText("50%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                    canvas.drawText("4000及以上", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
                 }else{
-                    canvas.drawText("50%", pxt + 30, pyt, mTextPaint);
+                    canvas.drawText("4000及以上", pxt + 30, pyt, mTextPaint);
                 }
                 break;
             case 2:
                 if (flag==true) {
-                    canvas.drawText("33", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                    canvas.drawText("500-999", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
                 }else{
-                    canvas.drawText("33", pxt + 30, pyt, mTextPaint);
+                    canvas.drawText("500-999", pxt + 30, pyt, mTextPaint);
                 }
                 break;
-            case 4:
+            case 3:
                 if (flag==true) {
-                    canvas.drawText("55", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                    canvas.drawText("2000-3999", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
                 }else{
-                    canvas.drawText("55", pxt + 30, pyt, mTextPaint);
+                    canvas.drawText("2000-3999", pxt + 30, pyt, mTextPaint);
                 }
                 break;
         }

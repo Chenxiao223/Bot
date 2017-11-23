@@ -3,6 +3,7 @@ package com.zhiziyun.dmptest.bot.ui.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +32,12 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
     public void initView() {
 
+    }
+
+    @Override
+    public void onPause() {
+        Log.i("账户","onPause");
+        super.onPause();
     }
 
     @Override

@@ -60,6 +60,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private RelativeLayout rl_today_people;
     private boolean b_flag1 = false;
     private boolean b_flag2 = false;
+    private String token;
 
     @Nullable
     @Override
@@ -97,6 +98,9 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         srl.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                //清空状态标志位
+                b_flag1=false;
+                b_flag2=false;
                 getData();
                 if (b_flag1 == true && b_flag2 == true) {//如果所有接口都拿到数据才停止刷新
                     // 加载完数据设置为不刷新状态，将下拉进度收起来
@@ -153,8 +157,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                 break;
         }
     }
-
-    String token;
 
     public void getData() {
         //token加密

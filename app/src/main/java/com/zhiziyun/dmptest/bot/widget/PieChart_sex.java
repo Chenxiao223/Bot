@@ -181,12 +181,12 @@ public class PieChart_sex extends View {
             float v = startAngle % 360;
             if (startAngle % 360.0 >= 90.0 && startAngle % 360.0 <= 270.0) {//2 3 象限
                 canvas.drawLine(pxt, pyt, pxt - 30, pyt, mLinePaint);
-                canvas.drawText(resToRound + "%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-//                check(canvas,true,i,resToRound,pxt,pyt);
+//                canvas.drawText(resToRound + "%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                check(canvas,true,i,resToRound,pxt,pyt);
             } else {//1 4象限
                 canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
-                canvas.drawText(resToRound+"%",pxt+30,pyt,mTextPaint);
-//                check(canvas,false,i,resToRound,pxt,pyt);
+//                canvas.drawText(resToRound+"%",pxt+30,pyt,mTextPaint);
+                check(canvas,false,i,resToRound,pxt,pyt);
                 Log.i("info"+i, resToRound + ",");
             }
         }
@@ -197,30 +197,16 @@ public class PieChart_sex extends View {
         switch (i){
             case 0:
                 if (flag==true) {
-                    canvas.drawText("50%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                    canvas.drawText("女", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
                 }else{
-                    canvas.drawText("50%", pxt + 30, pyt, mTextPaint);
+                    canvas.drawText("女", pxt + 30, pyt, mTextPaint);
                 }
                 break;
             case 1:
                 if (flag==true) {
-                    canvas.drawText("50%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                    canvas.drawText("男", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
                 }else{
-                    canvas.drawText("50%", pxt + 30, pyt, mTextPaint);
-                }
-                break;
-            case 2:
-                if (flag==true) {
-                    canvas.drawText("33", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                }else{
-                    canvas.drawText("33", pxt + 30, pyt, mTextPaint);
-                }
-                break;
-            case 4:
-                if (flag==true) {
-                    canvas.drawText("55", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                }else{
-                    canvas.drawText("55", pxt + 30, pyt, mTextPaint);
+                    canvas.drawText("男", pxt + 30, pyt, mTextPaint);
                 }
                 break;
         }
