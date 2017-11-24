@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
@@ -51,6 +53,7 @@ import okhttp3.Response;
  * 画像
  */
 public class VisitorsViewFragment extends Fragment implements View.OnClickListener {
+    public static VisitorsViewFragment visitorsViewFragment;
     private Spinner spn_shop, spn_tanzhen;
     private List<String> list_shop = new ArrayList<>();
     private List<String> list_tanzhen = new ArrayList<>();
@@ -71,6 +74,8 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     private HashMap<String, String> hm_brand = new HashMap<>();//手机型号分布
     private HashMap<String, String> hm_price = new HashMap<>();//手机价格分布
     private HashMap<String, String> hm_activity = new HashMap<>();//活跃度分布分布
+    public ArrayList<String> list_model = new ArrayList<>();
+    public ArrayList<String> list_brand = new ArrayList<>();
 
     @Nullable
     @Override
@@ -82,6 +87,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //
+        visitorsViewFragment = this;
         initView();
     }
 
@@ -90,6 +96,11 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {
+            //初始化接口没有的数据
+            list_shop.add("全部门店");
+            list_tanzhen.add("全部探针");
+            hm_store.put("全部门店", "0");
+            hm_probe.put("全部探针", "0");
             getSiteOption();
         } else {//清空数据
             list_shop.clear();
@@ -106,16 +117,12 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
             hm_brand.clear();
             hm_price.clear();
             hm_activity.clear();
+            list_model.clear();
+            list_brand.clear();
         }
     }
 
     public void initView() {
-        //初始化接口没有的数据
-        list_shop.add("全部门店");
-        list_tanzhen.add("全部探针");
-        hm_store.put("全部门店", "0");
-        hm_probe.put("全部探针", "0");
-
         spn_shop = getView().findViewById(R.id.spn_shop);
         spn_tanzhen = getView().findViewById(R.id.spn_tanzhen);
         line_date = getView().findViewById(R.id.line_date);
@@ -208,7 +215,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
-//                            getTable();
+                            getTable();
                         }
 
                         @Override
@@ -225,7 +232,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             microprobeId = Integer.parseInt(hm_probe.get(list_tanzhen.get(position)));
-//                            getTable();
+                            getTable();
                         }
 
                         @Override
@@ -276,46 +283,36 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     //饼状图-手机品牌
                     PieChart_mpb pieChart_mpb = getView().findViewById(R.id.chart_mpb);
                     List<PieDataEntity> dataEntitiesmpb = new ArrayList<>();
-                    PieDataEntity entitympb1 = new PieDataEntity("name" + 0, Integer.parseInt(hm_gender.get("女")), mColors[0]);
+                    PieDataEntity entitympb1 = new PieDataEntity("name" + 0, Integer.parseInt(hm_brand.get(list_brand.get(0))), mColors[0]);
                     dataEntitiesmpb.add(entitympb1);
-                    PieDataEntity entitympb2 = new PieDataEntity("name" + 1, Integer.parseInt(hm_gender.get("女")), mColors[1]);
+                    PieDataEntity entitympb2 = new PieDataEntity("name" + 1, Integer.parseInt(hm_brand.get(list_brand.get(1))), mColors[1]);
                     dataEntitiesmpb.add(entitympb2);
-                    PieDataEntity entitympb3 = new PieDataEntity("name" + 3, Integer.parseInt(hm_gender.get("女")), mColors[2]);
+                    PieDataEntity entitympb3 = new PieDataEntity("name" + 3, Integer.parseInt(hm_brand.get(list_brand.get(2))), mColors[2]);
                     dataEntitiesmpb.add(entitympb3);
-                    PieDataEntity entitympb4 = new PieDataEntity("name" + 4, Integer.parseInt(hm_gender.get("女")), mColors[3]);
+                    PieDataEntity entitympb4 = new PieDataEntity("name" + 4, Integer.parseInt(hm_brand.get(list_brand.get(3))), mColors[3]);
                     dataEntitiesmpb.add(entitympb4);
-                    PieDataEntity entitympb5 = new PieDataEntity("name" + 5, Integer.parseInt(hm_gender.get("女")), mColors[4]);
+                    PieDataEntity entitympb5 = new PieDataEntity("name" + 5, Integer.parseInt(hm_brand.get(list_brand.get(4))), mColors[4]);
                     dataEntitiesmpb.add(entitympb5);
-                    PieDataEntity entitympb6 = new PieDataEntity("name" + 6, Integer.parseInt(hm_gender.get("女")), mColors[5]);
+                    PieDataEntity entitympb6 = new PieDataEntity("name" + 6, Integer.parseInt(hm_brand.get(list_brand.get(5))), mColors[5]);
                     dataEntitiesmpb.add(entitympb6);
-                    PieDataEntity entitympb7 = new PieDataEntity("name" + 7, Integer.parseInt(hm_gender.get("女")), mColors[6]);
-                    dataEntitiesmpb.add(entitympb7);
                     pieChart_mpb.setDataList(dataEntitiesmpb);
                     break;
                 case 6:
                     //饼状图-手机型号
                     PieChart_mpm pieChart_mpm = getView().findViewById(R.id.chart_mpm);
                     List<PieDataEntity> dataEntitiesmpm = new ArrayList<>();
-                    PieDataEntity entitympm1 = new PieDataEntity("name" + 0, Integer.parseInt(hm_gender.get("女")), mColors[0]);
+                    PieDataEntity entitympm1 = new PieDataEntity("name" + 0, Integer.parseInt(hm_model.get(list_model.get(0))), mColors[0]);
                     dataEntitiesmpm.add(entitympm1);
-                    PieDataEntity entitympm2 = new PieDataEntity("name" + 1, Integer.parseInt(hm_gender.get("女")), mColors[1]);
+                    PieDataEntity entitympm2 = new PieDataEntity("name" + 1, Integer.parseInt(hm_model.get(list_model.get(1))), mColors[1]);
                     dataEntitiesmpm.add(entitympm2);
-                    PieDataEntity entitympm3 = new PieDataEntity("name" + 3, Integer.parseInt(hm_gender.get("女")), mColors[2]);
+                    PieDataEntity entitympm3 = new PieDataEntity("name" + 3, Integer.parseInt(hm_model.get(list_model.get(2))), mColors[2]);
                     dataEntitiesmpm.add(entitympm3);
-                    PieDataEntity entitympm4 = new PieDataEntity("name" + 4, Integer.parseInt(hm_gender.get("女")), mColors[3]);
+                    PieDataEntity entitympm4 = new PieDataEntity("name" + 4, Integer.parseInt(hm_model.get(list_model.get(3))), mColors[3]);
                     dataEntitiesmpm.add(entitympm4);
-                    PieDataEntity entitympm5 = new PieDataEntity("name" + 5, Integer.parseInt(hm_gender.get("女")), mColors[4]);
+                    PieDataEntity entitympm5 = new PieDataEntity("name" + 5, Integer.parseInt(hm_model.get(list_model.get(4))), mColors[4]);
                     dataEntitiesmpm.add(entitympm5);
-                    PieDataEntity entitympm6 = new PieDataEntity("name" + 6, Integer.parseInt(hm_gender.get("女")), mColors[5]);
+                    PieDataEntity entitympm6 = new PieDataEntity("name" + 6, Integer.parseInt(hm_model.get(list_model.get(5))), mColors[5]);
                     dataEntitiesmpm.add(entitympm6);
-                    PieDataEntity entitympm7 = new PieDataEntity("name" + 7, Integer.parseInt(hm_gender.get("女")), mColors[6]);
-                    dataEntitiesmpm.add(entitympm7);
-                    PieDataEntity entitympm8 = new PieDataEntity("name" + 8, Integer.parseInt(hm_gender.get("女")), mColors[7]);
-                    dataEntitiesmpm.add(entitympm8);
-                    PieDataEntity entitympm9 = new PieDataEntity("name" + 9, Integer.parseInt(hm_gender.get("女")), mColors[8]);
-                    dataEntitiesmpm.add(entitympm9);
-                    PieDataEntity entitympm10 = new PieDataEntity("name" + 10, Integer.parseInt(hm_gender.get("女")), mColors[9]);
-                    dataEntitiesmpm.add(entitympm10);
                     pieChart_mpm.setDataList(dataEntitiesmpm);
                     break;
                 case 7:
@@ -341,6 +338,9 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     dataEntitiesactive.add(entityactive1);
                     pieChart_active.setDataList(dataEntitiesactive);
                     break;
+                case 9:
+                    Toast.makeText(getActivity(), "查询无效", Toast.LENGTH_SHORT).show();
+                    break;
             }
             super.handleMessage(msg);
         }
@@ -364,6 +364,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     json.put("endTime", endTime);
                     json.put("microprobeId", microprobeId);
                     json.put("storeId", storeId);
+                    json.put("limit", 7);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -387,63 +388,75 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
+//                            Log.i("json",response.body().string());
                             try {
-                                //年龄分布
+//                                //年龄分布
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 JSONObject json_obj = new JSONObject(jsonObject.get("obj").toString());
                                 JSONObject json_store = new JSONObject(json_obj.get("age").toString());
-                                Iterator<String> age = json_store.keys();
-                                while (age.hasNext()) {
-                                    // 获得key
-                                    String key = age.next();
-                                    hm_age.put(key, json_store.getString(key));
+                                //如果没有数据就不执行
+                                if (json_store.names() == null || json_store.names().isNull(0)) {
+                                    handler.sendEmptyMessage(9);
+                                } else {
+                                    Iterator<String> age = json_store.keys();
+                                    while (age.hasNext()) {
+                                        // 获得key
+                                        String key = age.next();
+                                        hm_age.put(key, json_store.getString(key));
+                                    }
+                                    handler.sendEmptyMessage(3);
+                                    //性别分布
+                                    JSONObject json_gender = new JSONObject(json_obj.get("gender").toString());
+                                    Iterator<String> gender = json_gender.keys();
+                                    while (gender.hasNext()) {
+                                        // 获得key
+                                        String key = gender.next();
+                                        hm_gender.put(key, json_gender.getString(key));
+                                    }
+                                    handler.sendEmptyMessage(4);
+                                    //手机品牌分布
+                                    JSONObject json_model = new JSONObject(json_obj.get("model").toString());
+                                    Iterator<String> model = json_model.keys();
+                                    while (model.hasNext()) {
+                                        // 获得key
+                                        String key = model.next();
+                                        if (!key.equals("UNKNOWN")) {
+                                            hm_model.put(key, json_model.getString(key));
+                                            list_model.add(key);
+                                        }
+                                    }
+                                    handler.sendEmptyMessage(5);
+                                    //手机型号分布
+                                    JSONObject json_brand = new JSONObject(json_obj.get("brand").toString());
+                                    Iterator<String> brand = json_brand.keys();
+                                    while (brand.hasNext()) {
+                                        // 获得key
+                                        String key = brand.next();
+                                        if (!key.equals("UNKNOWN")) {
+                                            hm_brand.put(key, json_brand.getString(key));
+                                            list_brand.add(key);
+                                        }
+                                    }
+                                    handler.sendEmptyMessage(6);
+                                    //手机价格分布
+                                    JSONObject json_price = new JSONObject(json_obj.get("price").toString());
+                                    Iterator<String> price = json_price.keys();
+                                    while (price.hasNext()) {
+                                        // 获得key
+                                        String key = price.next();
+                                        hm_price.put(key, json_price.getString(key));
+                                    }
+                                    handler.sendEmptyMessage(7);
+                                    //活跃度分布
+                                    JSONObject json_activity = new JSONObject(json_obj.get("activity").toString());
+                                    Iterator<String> activity = json_activity.keys();
+                                    while (activity.hasNext()) {
+                                        // 获得key
+                                        String key = activity.next();
+                                        hm_activity.put(key, json_activity.getString(key));
+                                    }
+                                    handler.sendEmptyMessage(8);
                                 }
-                                handler.sendEmptyMessage(3);
-                                //性别分布
-                                JSONObject json_gender = new JSONObject(json_obj.get("gender").toString());
-                                Iterator<String> gender = json_gender.keys();
-                                while (gender.hasNext()) {
-                                    // 获得key
-                                    String key = gender.next();
-                                    hm_gender.put(key, json_gender.getString(key));
-                                }
-                                handler.sendEmptyMessage(4);
-                                //手机品牌分布
-                                JSONObject json_model = new JSONObject(json_obj.get("model").toString());
-                                Iterator<String> model = json_model.keys();
-                                while (model.hasNext()) {
-                                    // 获得key
-                                    String key = model.next();
-                                    hm_model.put(key, json_model.getString(key));
-                                }
-                                handler.sendEmptyMessage(5);
-                                //手机型号分布
-                                JSONObject json_brand = new JSONObject(json_obj.get("brand").toString());
-                                Iterator<String> brand = json_brand.keys();
-                                while (brand.hasNext()) {
-                                    // 获得key
-                                    String key = brand.next();
-                                    hm_brand.put(key, json_brand.getString(key));
-                                }
-                                handler.sendEmptyMessage(6);
-                                //手机价格分布
-                                JSONObject json_price = new JSONObject(json_obj.get("price").toString());
-                                Iterator<String> price = json_price.keys();
-                                while (price.hasNext()) {
-                                    // 获得key
-                                    String key = price.next();
-                                    hm_price.put(key, json_price.getString(key));
-                                }
-                                handler.sendEmptyMessage(7);
-                                //活跃度分布
-                                JSONObject json_activity = new JSONObject(json_obj.get("activity").toString());
-                                Iterator<String> activity = json_activity.keys();
-                                while (activity.hasNext()) {
-                                    // 获得key
-                                    String key = activity.next();
-                                    hm_activity.put(key, json_activity.getString(key));
-                                }
-                                handler.sendEmptyMessage(8);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }

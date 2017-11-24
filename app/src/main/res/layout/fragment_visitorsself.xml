@@ -74,40 +74,45 @@
         android:scaleType="fitXY"
         android:src="@drawable/grayline" />
 
-    <RelativeLayout
+    <!--<RelativeLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="240dp">-->
+
+        <!--<pl.droidsonroids.gif.GifImageView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:scaleType="fitXY"-->
+            <!--android:src="@drawable/radar" />-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/textView2"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="探针数："-->
+            <!--android:textColor="@color/white"-->
+            <!--android:textSize="20sp"-->
+            <!--android:layout_marginBottom="12dp"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:layout_alignParentLeft="true"-->
+            <!--android:layout_alignParentStart="true"-->
+            <!--android:layout_marginLeft="11dp"-->
+            <!--android:layout_marginStart="11dp" />-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/tv_tanzhen"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="0"-->
+            <!--android:textColor="@color/white"-->
+            <!--android:textSize="20sp"-->
+            <!--android:layout_alignBaseline="@+id/textView2"-->
+            <!--android:layout_alignBottom="@+id/textView2"-->
+            <!--android:layout_toRightOf="@+id/textView2"-->
+            <!--android:layout_toEndOf="@+id/textView2" />-->
+    <!--</RelativeLayout>-->
+
+    <com.zhiziyun.dmptest.bot.xListView.XListView
+        android:id="@+id/xlistview"
         android:layout_width="match_parent"
-        android:layout_height="240dp">
-
-        <pl.droidsonroids.gif.GifImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitXY"
-            android:src="@drawable/radar" />
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="探针数："
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:layout_marginBottom="12dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginLeft="11dp"
-            android:layout_marginStart="11dp" />
-
-        <TextView
-            android:id="@+id/tv_tanzhen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:layout_alignBaseline="@+id/textView2"
-            android:layout_alignBottom="@+id/textView2"
-            android:layout_toRightOf="@+id/textView2"
-            android:layout_toEndOf="@+id/textView2" />
-    </RelativeLayout>
+        android:layout_height="match_parent"/>
 </LinearLayout>
