@@ -105,11 +105,10 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         token = null;
         hm_store.clear();
         hm_probe.clear();
-        beginTime = null;
-        endTime = null;
         microprobeId = 0;
         storeId = 0;
         pageNum = 1;
+        list_visitors.clear();
     }
 
     public void initView() {
@@ -212,10 +211,13 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     adp_shop = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_shop);
                     adp_shop.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spn_shop.setAdapter(adp_shop);
+                    spn_shop.setSelection(0, false);//防止不点击spinner也执行点击监听
                     spn_shop.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
+                            list_visitors.clear();
+                            getData(1);
                         }
 
                         @Override
@@ -228,10 +230,13 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     adp_tanzhen = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_tanzhen);
                     adp_tanzhen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spn_tanzhen.setAdapter(adp_tanzhen);
+                    spn_tanzhen.setSelection(0, false);//防止不点击spinner也执行点击监听
                     spn_tanzhen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             microprobeId = Integer.parseInt(hm_probe.get(list_tanzhen.get(position)));
+                            list_visitors.clear();
+                            getData(1);
                         }
 
                         @Override
@@ -242,6 +247,10 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     break;
                 case 3:
                     adapter.notifyDataSetChanged();
+                    onLoad();//数据加载完后就停止刷新
+                    break;
+                case 4:
+                    Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
                     break;
             }
             super.handleMessage(msg);
@@ -294,18 +303,21 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
                             visitorsself = gson.fromJson(response.body().string(), Visitorsself.class);
-                            for (int i = 0; i < visitorsself.getRows().size(); i++) {
-                                hm_visitors = new HashMap<String, String>();
-                                hm_visitors.put("content1", visitorsself.getRows().get(i).getVisittime());
-                                hm_visitors.put("content2", visitorsself.getRows().get(i).getBrand());
-                                hm_visitors.put("content3", visitorsself.getRows().get(i).getModel());
-                                hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
-                                hm_visitors.put("content5", visitorsself.getRows().get(i).getGender());
-                                list_visitors.add(hm_visitors);
+                            if (visitorsself.getRows().size()==0){
+                                handler.sendEmptyMessage(4);
+                            }else {
+                                for (int i = 0; i < visitorsself.getRows().size(); i++) {
+                                    hm_visitors = new HashMap<String, String>();
+                                    hm_visitors.put("content1", visitorsself.getRows().get(i).getVisittime());
+                                    hm_visitors.put("content2", visitorsself.getRows().get(i).getBrand());
+                                    hm_visitors.put("content3", visitorsself.getRows().get(i).getModel());
+                                    hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
+                                    hm_visitors.put("content5", visitorsself.getRows().get(i).getGender());
+                                    list_visitors.add(hm_visitors);
+                                }
+                                handler.sendEmptyMessage(3);//通知刷新适配器
+                                pageNum++;
                             }
-                            handler.sendEmptyMessage(3);//通知刷新适配器
-                            pageNum++;
-
                         }
                     });
                 } catch (JSONException e) {
@@ -349,6 +361,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         if (view.isShown()) { // 这里判断,防止点击事件执行两次
                             beginTime = (String) DateFormat.format("yyy-MM-dd", c);
                             endTime = beginTime;
+
+                            list_visitors.clear();
                             getData(1);
                         }
                     }
@@ -357,14 +371,15 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         }
     }
 
-
+    //下拉刷新
     @Override
     public void onRefresh() {
+        hm_visitors.clear();
         clearAllData();
         getData(pageNum);
-        onLoad();
     }
 
+    //上拉加载
     @Override
     public void onLoadMore() {
         if (pageNum < ((visitorsself.getTotal() / 10) + 3)) {
@@ -372,7 +387,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         } else {
             Toast.makeText(getActivity(), "最后一页了", Toast.LENGTH_SHORT).show();
         }
-        onLoad();
     }
 
     /**
