@@ -50,7 +50,7 @@ public class LineChart extends View {
     /**
      * 画笔 背景，轴 ，线 ，text ,点
      */
-    private Paint bgPaint,axisPaint, linePaint, textPaint, pointPaint;
+    private Paint bgPaint, axisPaint, linePaint, textPaint, pointPaint, pointPaint2;
     /**
      * 原点的半径
      */
@@ -60,6 +60,7 @@ public class LineChart extends View {
      */
     private Rect leftWhiteRect, rightWhiteRect, topWhiteRect, bottomWhiteRect;
     private List<ChartEntity> mData;//数据集合
+    private List<ChartEntity> mData2;//数据集合
     /**
      * 右边的最大和最小值
      */
@@ -98,6 +99,7 @@ public class LineChart extends View {
      * 当前移动的距离
      */
     private float movingThisTime = 0.0f;
+
     public LineChart(Context context) {
         super(context);
         init(context);
@@ -139,6 +141,10 @@ public class LineChart extends View {
         pointPaint.setAntiAlias(true);
         pointPaint.setStyle(Paint.Style.FILL);
 
+        pointPaint2 = new Paint();
+        pointPaint2.setAntiAlias(true);
+        pointPaint2.setStyle(Paint.Style.FILL);
+
         linePath = new Path();
     }
 
@@ -178,7 +184,7 @@ public class LineChart extends View {
         if (mData == null) return;
         //得到每个bar的宽度
         getItemsWidth();
-       //重置线
+        //重置线
         linePath.reset();
         linePath.incReserve(mData.size());
         checkTheLeftMoving();
@@ -188,6 +194,7 @@ public class LineChart extends View {
         drawWhiteLine(canvas);
         //画线形图
         drawLines(canvas);
+        drawLines2(canvas);
         //画线型图
 
         //画左边和右边的遮罩层
@@ -196,6 +203,7 @@ public class LineChart extends View {
         canvas.drawRect(rightWhiteRect, bgPaint);
         //画线上的点
         drawCircles(canvas);
+        drawCircles2(canvas);
         //画左边的Y轴
         canvas.drawLine(xStartIndex, yStartIndex, xStartIndex, topMargin / 2, axisPaint);
         //左边Y轴的单位
@@ -205,34 +213,34 @@ public class LineChart extends View {
         //画左边的Y轴text
         drawLeftYAxis(canvas);
         //画X轴 下面的和上面
-        canvas.drawLine(xStartIndex, yStartIndex, mTotalWidth - leftMargin*2, yStartIndex, axisPaint);
-        canvas.drawLine(xStartIndex, topMargin / 2, mTotalWidth - leftMargin*2, topMargin / 2, axisPaint);
+        canvas.drawLine(xStartIndex, yStartIndex, mTotalWidth - leftMargin * 2, yStartIndex, axisPaint);
+        canvas.drawLine(xStartIndex, topMargin / 2, mTotalWidth - leftMargin * 2, topMargin / 2, axisPaint);
         //画X轴的text
         drawXAxisText(canvas);
     }
 
     private void drawXAxisText(Canvas canvas) {
         float distance = 0;
-        for(int i = 0;i<mData.size();i++){
-            distance = space*i- leftMoving;
+        for (int i = 0; i < mData.size(); i++) {
+            distance = space * i - leftMoving;
             String text = mData.get(i).getxLabel();
             //当在可见的范围内才绘制
-            if((xStartIndex+distance)>=xStartIndex&&(xStartIndex+distance)<(mTotalWidth-leftMargin*2)){
-                canvas.drawText(text, xStartIndex+distance-textPaint.measureText(text)/2, paintBottom + DensityUtil.dip2px(getContext(), 10)+7, textPaint);
-                Log.i("size", "1:" + String.valueOf(xStartIndex+distance-textPaint.measureText(text)/2)+",2:"+String.valueOf(paintBottom + DensityUtil.dip2px(getContext(), 10)));
+            if ((xStartIndex + distance) >= xStartIndex && (xStartIndex + distance) < (mTotalWidth - leftMargin * 2)) {
+                canvas.drawText(text, xStartIndex + distance - textPaint.measureText(text) / 2, paintBottom + DensityUtil.dip2px(getContext(), 10) + 7, textPaint);
+                Log.i("size", "1:" + String.valueOf(xStartIndex + distance - textPaint.measureText(text) / 2) + ",2:" + String.valueOf(paintBottom + DensityUtil.dip2px(getContext(), 10)));
             }
         }
     }
 
     private void drawWhiteLine(Canvas canvas) {
         axisPaint.setColor(Color.WHITE);
-        float eachHeight = (maxHeight/ 5f);
+        float eachHeight = (maxHeight / 5f);
         for (int i = 1; i <= 5; i++) {
             float startY = paintBottom - eachHeight * i;
             if (startY < topMargin / 2) {
                 break;
             }
-            canvas.drawLine(xStartIndex, startY, mTotalWidth - leftMargin*2, startY, axisPaint);
+            canvas.drawLine(xStartIndex, startY, mTotalWidth - leftMargin * 2, startY, axisPaint);
         }
         axisPaint.setColor(Color.BLACK);
     }
@@ -242,9 +250,9 @@ public class LineChart extends View {
      */
     private void drawLines(Canvas canvas) {
         float distance = 0;
-        for(int i = 0;i<mData.size();i++){
-            distance = space*i- leftMoving;
-            linePoints.add((int) (xStartIndex+distance));
+        for (int i = 0; i < mData.size(); i++) {
+            distance = space * i - leftMoving;
+            linePoints.add((int) (xStartIndex + distance));
             float lineHeight = mData.get(i).getyValue() * maxHeight / maxDivisionValue;
             if (i == 0) {
                 linePath.moveTo(xStartIndex + distance, paintBottom - lineHeight);
@@ -254,22 +262,50 @@ public class LineChart extends View {
         }
         canvas.drawPath(linePath, linePaint);
     }
+
+    private void drawLines2(Canvas canvas) {
+        float distance = 0;
+        for (int i = 0; i < mData2.size(); i++) {
+            distance = space * i - leftMoving;
+            linePoints.add((int) (xStartIndex + distance));
+            float lineHeight = mData2.get(i).getyValue() * maxHeight / maxDivisionValue;
+            if (i == 0) {
+                linePath.moveTo(xStartIndex + distance, paintBottom - lineHeight);
+            } else {
+                linePath.lineTo(xStartIndex + distance, paintBottom - lineHeight);
+            }
+        }
+        canvas.drawPath(linePath, linePaint);
+    }
+
     /**
      * 画线上的点
      */
     private void drawCircles(Canvas canvas) {
         for (int i = 0; i < mData.size(); i++) {
-                pointPaint.setColor(Color.parseColor("#0066FF"));
+            pointPaint.setColor(Color.parseColor("#0066FF"));
             //只有在可见的范围内才绘制
-            if(linePoints.get(i)>=xStartIndex&&linePoints.get(i)<(mTotalWidth-leftMargin*2)){
+            if (linePoints.get(i) >= xStartIndex && linePoints.get(i) < (mTotalWidth - leftMargin * 2)) {
                 canvas.drawCircle(linePoints.get(i), paintBottom - mData.get(i).getyValue() * maxHeight / maxDivisionValue, RADIUS, pointPaint);
             }
         }
     }
+
+    private void drawCircles2(Canvas canvas) {
+        for (int i = 0; i < mData2.size(); i++) {
+            pointPaint2.setColor(Color.parseColor("#228B22"));
+            //只有在可见的范围内才绘制
+            if (linePoints.get(i) >= xStartIndex && linePoints.get(i) < (mTotalWidth - leftMargin * 2)) {
+                canvas.drawCircle(linePoints.get(i), paintBottom - mData2.get(i).getyValue() * maxHeight / maxDivisionValue, RADIUS, pointPaint2);
+            }
+        }
+    }
+
     /**
      * 画Y轴上的text (1)当最大值大于1 的时候 将其分成5份 计算每个部分的高度  分成几份可以自己定
      * （2）当最大值大于0小于1的时候  也是将最大值分成5份
      * （3）当为0的时候使用默认的值
+     *
      * @param canvas
      */
     private void drawLeftYAxis(Canvas canvas) {
@@ -330,6 +366,7 @@ public class LineChart extends View {
         }
         return true;
     }
+
     /**
      * 检查向左滑动的距离 确保没有画出屏幕
      */
@@ -342,23 +379,37 @@ public class LineChart extends View {
             leftMoving = maxRight - minRight;
         }
     }
+
     /**
      * 设定两个点之间的间距 和向右边滑动的时候右边的最大距离
      */
     private void getItemsWidth() {
         space = DensityUtil.dip2px(getContext(), 58);//这里设置列之间的宽度
         maxRight = (int) (xStartIndex + space * mData.size());
-        minRight = mTotalWidth - leftMargin*2;
+        minRight = mTotalWidth - leftMargin * 2;
     }
 
-    public void setData(List<ChartEntity> list) {
+    public void setData(List<ChartEntity> list, List<ChartEntity> list2) {
         this.mData = list;
+        this.mData2 = list2;
         //计算最大值
         maxValueInItems = list.get(0).getyValue();
+        float f1 = list.get(0).getyValue();
+        float f2 = list2.get(0).getyValue();
         for (ChartEntity entity : list) {
             if (entity.getyValue() > maxValueInItems) {
-                maxValueInItems = entity.getyValue();
+                f1 = entity.getyValue();
             }
+        }
+        for (ChartEntity entity : list2) {
+            if (entity.getyValue() > maxValueInItems) {
+                f2 = entity.getyValue();
+            }
+        }
+        if (f1 > f2) {
+            maxValueInItems = f1;
+        } else {
+            maxValueInItems = f2;
         }
         getRange(maxValueInItems);
         invalidate();
@@ -374,7 +425,7 @@ public class LineChart extends View {
         float unScaleValue = (float) (maxValueInItems / Math.pow(10, scale));//最大值除以位数之后剩下的值  比如1200/1000 后剩下1.2
 
         maxDivisionValue = (float) (CalculateUtil.getRangeTop(unScaleValue) * Math.pow(10, scale));//获取Y轴的最大的分度值
-        xStartIndex = CalculateUtil.getDivisionTextMaxWidth(maxDivisionValue,mContext) + 20;
+        xStartIndex = CalculateUtil.getDivisionTextMaxWidth(maxDivisionValue, mContext) + 20;
     }
 
     /**

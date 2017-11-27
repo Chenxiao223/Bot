@@ -178,7 +178,6 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
-//                                Log.i("key",response.body().string());
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 JSONObject json_obj = new JSONObject(jsonObject.get("obj").toString());
                                 JSONObject json_store = new JSONObject(json_obj.get("store").toString());

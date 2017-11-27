@@ -90,7 +90,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
         getData();
 
-        //下拉刷新
         srl = getView().findViewById(R.id.srl);
         srl.setRefreshing(false);//禁止一开始就刷新
         srl.setProgressBackgroundColorSchemeResource(android.R.color.white);
@@ -115,7 +114,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         for (int i = 1; i <= 7; i++) {
             data.add(new ChartEntity(getWeek(i), (float) (20000)));
         }
-        lineChart.setData(data);
+//        lineChart.setData(data,null);
     }
 
     private String getWeek(int i) {
@@ -228,7 +227,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", "0zoTLi29XRgq");
-                    Log.i("json",json.toString());
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {

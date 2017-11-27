@@ -1,13 +1,13 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +23,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
 import com.zhiziyun.dmptest.bot.entity.Visitorsself;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
+import com.zhiziyun.dmptest.bot.ui.activity.VisitorsselfActivity;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
@@ -117,6 +118,14 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         adapter = new VisitorsselfAdapter(getContext(), list_visitors);
         xlistview.setAdapter(adapter);
         xlistview.setXListViewListener(this);
+        xlistview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent=new Intent(getActivity(), VisitorsselfActivity.class);
+                intent.putExtra("mac",list_visitors.get(position).get("mac"));
+                startActivity(intent);
+            }
+        });
 
         spn_shop = getView().findViewById(R.id.spn_shop);
         spn_tanzhen = getView().findViewById(R.id.spn_tanzhen);
@@ -303,7 +312,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
                             visitorsself = gson.fromJson(response.body().string(), Visitorsself.class);
-                            if (visitorsself.getRows().size()==0){
+                            if (visitorsself.getRows().size()==0){//如果没数据就提示
                                 handler.sendEmptyMessage(4);
                             }else {
                                 for (int i = 0; i < visitorsself.getRows().size(); i++) {
@@ -313,6 +322,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                     hm_visitors.put("content3", visitorsself.getRows().get(i).getModel());
                                     hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
                                     hm_visitors.put("content5", visitorsself.getRows().get(i).getGender());
+                                    hm_visitors.put("mac", visitorsself.getRows().get(i).getMac());//这个值与适配器无关
                                     list_visitors.add(hm_visitors);
                                 }
                                 handler.sendEmptyMessage(3);//通知刷新适配器

@@ -169,7 +169,7 @@ public class BarChart extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mTotalWidth = w - getPaddingLeft() - getPaddingRight();
-        mTotalHeight = h - getPaddingTop() - getPaddingBottom();
+        mTotalHeight = 300;//设置视图的高度
         setNeedHeight();
         leftWhiteRect = new Rect(0, 0, 0, mTotalHeight);
         rightWhiteRect = new Rect(mTotalWidth - leftMargin * 2, 0, mTotalWidth, mTotalHeight);
@@ -346,7 +346,8 @@ public class BarChart extends View {
      * @param canvas
      */
     private void drawLeftYAxis(Canvas canvas) {
-        float eachHeight = (maxHeight / 5f);
+//        float eachHeight = (maxHeight / 5f);
+        float eachHeight = 50f;//这里可以设置Y轴单位的间隔
         if (maxValueInItems > 1) {
             for (int i = 1; i <= 5; i++) {
                 float startY = paintBottom - eachHeight * i;
