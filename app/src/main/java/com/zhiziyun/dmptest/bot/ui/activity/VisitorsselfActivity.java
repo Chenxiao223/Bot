@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.entity.Trend;
 import com.zhiziyun.dmptest.bot.entity.Visitorsselfparticulars;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 
@@ -23,7 +22,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.HashMap;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -82,6 +80,7 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("mac", mac);
+                    Log.i("jjj","mac:"+mac+" ,token:"+token);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -105,7 +104,7 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Log.i("jjj",response.body().string());
+
 //                            Gson gson = new Gson();
 //                            vp = gson.fromJson(response.body().string(), Visitorsselfparticulars.class);
 //                            handler.sendEmptyMessage(1);

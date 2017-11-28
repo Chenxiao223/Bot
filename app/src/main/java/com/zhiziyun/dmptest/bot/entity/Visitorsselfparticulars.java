@@ -10,21 +10,21 @@ import java.util.List;
 public class Visitorsselfparticulars {
 
     /**
-     * did : B9F4C270162055550550619591A220F3
-     * probemac : 18fe34cb9448
+     * did : 2A4DC49AC3F1C61F416FDB8EFB3A6F24
+     * probemac : 6001946955ff
      * dtype : imei
-     * mac : 000822470f32
-     * visittime : 2017-11-27 00:04:25
-     * creattime : 2017-11-27 00:04:25
-     * updatetime : 2017-11-27 00:10:20
-     * basic : []
-     * population : []
-     * app : [{"name":"工作","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"商旅出行","weight":5.26,"recency":1508989111353,"platform":"td"},{"name":"车主服务","weight":6.3,"recency":1508989111353,"platform":"td"},{"name":"影音","weight":4.59,"recency":1508989111353,"platform":"td"},{"name":"优惠券","weight":2.93,"recency":1508989111353,"platform":"td"},{"name":"团购","weight":0.8,"recency":1508989111353,"platform":"td"},{"name":"房产","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"网上商城","weight":6.3,"recency":1508989111353,"platform":"td"},{"name":"借贷","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"金融理财","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"房屋咨询","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"社交","weight":4.59,"recency":1508989111353,"platform":"td"},{"name":"生活","weight":6.3,"recency":1508989111353,"platform":"td"},{"name":"便民服务","weight":0.8,"recency":1508989111353,"platform":"td"},{"name":"电台","weight":0.5,"recency":1508989111353,"platform":"td"},{"name":"网购","weight":6.3,"recency":1508989111353,"platform":"td"},{"name":"外卖订餐","weight":2.93,"recency":1508989111353,"platform":"td"},{"name":"卖房","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"视频","weight":3.8,"recency":1508989111353,"platform":"td"},{"name":"交友\\社区","weight":3.8,"recency":1508989111353,"platform":"td"},{"name":"支付","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"招聘求职","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"积分活动","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"快递","weight":1.33,"recency":1508989111353,"platform":"td"},{"name":"打车","weight":5.26,"recency":1508989111353,"platform":"td"}]
-     * game : [{"name":"连连看","weight":0.5,"recency":1510272016002,"platform":"td"},{"name":"麻将","weight":0.68,"recency":1510272016002,"platform":"td"},{"name":"纸牌","weight":0.68,"recency":1510272016002,"platform":"td"},{"name":"宝石消除","weight":2.06,"recency":1510272016002,"platform":"td"},{"name":"方块","weight":0.68,"recency":1510272016002,"platform":"td"},{"name":"斗地主","weight":0.68,"recency":1510272016002,"platform":"td"},{"name":"扑克棋牌","weight":0.68,"recency":1510272016002,"platform":"td"},{"name":"益智","weight":0.5,"recency":1510272016002,"platform":"td"},{"name":"桌游","weight":0.68,"recency":1510272016002,"platform":"td"},{"name":"休闲时间","weight":0.5,"recency":1510272016002,"platform":"td"},{"name":"棋类","weight":0.68,"recency":1510272016002,"platform":"td"},{"name":"卡通","weight":0.5,"recency":1510272016002,"platform":"td"}]
+     * mac : 205d47ed7433
+     * visittime : 2017-11-27 00:18:06
+     * creattime : 2017-11-10 08:31:15
+     * updatetime : 2017-11-27 00:25:20
+     * basic : [{"name":"hardwareType-8核,指纹识别,双卡双待","weight":100,"recency":1510274429570,"platform":"td"},{"name":"functionType-音乐,快充,美颜,摄影,高性价比","weight":100,"recency":1510274429570,"platform":"td"},{"name":"deviceType-手机","weight":100,"recency":1510274429570,"platform":"td"},{"name":"screen-5.5-5.0英寸","weight":100,"recency":1510274429570,"platform":"td"},{"name":"standardBrand-vivo","weight":100,"recency":1510274429570,"platform":"td"},{"name":"timeTomarket-2016年06月","weight":100,"recency":1510274429570,"platform":"td"},{"name":"originModel-:vivo X7","weight":100,"recency":1510274429570,"platform":"td"},{"name":"cnBrand-vivo","weight":100,"recency":1510274429570,"platform":"td"},{"name":"price-2000-3999","weight":100,"recency":1510274429570,"platform":"td"},{"name":"standardModel-X7","weight":100,"recency":1510274429570,"platform":"td"}]
+     * population : [{"name":"婚姻-已婚","weight":0.7,"recency":1510274428805,"platform":"td"}]
+     * app : [{"name":"工作","weight":1.78,"recency":1510274429040,"platform":"td"},{"name":"阅读平台","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"社交","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"直销银行","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"金融理财","weight":3.02,"recency":1510274429040,"platform":"td"},{"name":"网上商城","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"手机工具","weight":2.38,"recency":1510274429040,"platform":"td"},{"name":"视频","weight":3.02,"recency":1510274429040,"platform":"td"},{"name":"借贷","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"图片分享","weight":0.69,"recency":1510274429040,"platform":"td"},{"name":"资讯","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"手机银行","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"母婴","weight":0.62,"recency":1510274429040,"platform":"td"},{"name":"网购","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"支付","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"车主服务","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"备忘","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"音乐","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"即时通讯","weight":2.38,"recency":1510274429040,"platform":"td"},{"name":"团购","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"天气","weight":1.78,"recency":1510274429040,"platform":"td"},{"name":"商旅出行","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"影音","weight":3.02,"recency":1510274429040,"platform":"td"},{"name":"生活","weight":3.02,"recency":1510274429040,"platform":"td"},{"name":"交友\\社区","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"系统工具","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"通讯录","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"新闻资讯","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"阅读","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"怀孕备孕","weight":0.62,"recency":1510274429040,"platform":"td"},{"name":"生活综合","weight":2.38,"recency":1510274429040,"platform":"td"},{"name":"通讯","weight":2.38,"recency":1510274429040,"platform":"td"},{"name":"拍照摄影","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"体育资讯","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"桌面美化","weight":0.54,"recency":1510274429040,"platform":"td"},{"name":"地图","weight":1.24,"recency":1510274429040,"platform":"td"},{"name":"应用商店","weight":0.54,"recency":1510274429040,"platform":"td"}]
+     * game : [{"name":"扑克棋牌","weight":0.54,"recency":1510274429297,"platform":"td"},{"name":"宝石消除","weight":0.54,"recency":1510274429297,"platform":"td"},{"name":"麻将","weight":0.54,"recency":1510274429297,"platform":"td"},{"name":"连连看","weight":0.54,"recency":1510274429297,"platform":"td"},{"name":"休闲时间","weight":0.54,"recency":1510274429297,"platform":"td"},{"name":"斗地主","weight":0.54,"recency":1510274429297,"platform":"td"},{"name":"纸牌","weight":0.54,"recency":1510274429297,"platform":"td"},{"name":"益智","weight":0.54,"recency":1510274429297,"platform":"td"}]
      * shopping : []
      * topic : []
-     * mostused_apps : ["1049","1048","1004","1043","1042","1031","1041","1074","1073"]
-     * probe_log : [{"visit_count":1,"probe_mac":"18fe34cb9448","visit":[{"visit_date":"20171127","visit_length":9}],"last_date":"20171127"}]
+     * mostused_apps : ["1035","1034","1044","1087","1043","1095","1070"]
+     * probe_log : [{"visit_count":11,"probe_mac":"6001946955ff","visit":[{"visit_date":"20171110","visit_length":9},{"visit_date":"20171113","visit_length":9},{"visit_date":"20171115","visit_length":9},{"visit_date":"20171116","visit_length":9},{"visit_date":"20171118","visit_length":9},{"visit_date":"20171120","visit_length":18},{"visit_date":"20171121","visit_length":18},{"visit_date":"20171122","visit_length":9},{"visit_date":"20171124","visit_length":18},{"visit_date":"20171125","visit_length":11},{"visit_date":"20171127","visit_length":9}],"last_date":"20171127"}]
      */
 
     private String did;
@@ -34,8 +34,8 @@ public class Visitorsselfparticulars {
     private String visittime;
     private String creattime;
     private String updatetime;
-    private List<?> basic;
-    private List<?> population;
+    private List<BasicBean> basic;
+    private List<PopulationBean> population;
     private List<AppBean> app;
     private List<GameBean> game;
     private List<?> shopping;
@@ -99,19 +99,19 @@ public class Visitorsselfparticulars {
         this.updatetime = updatetime;
     }
 
-    public List<?> getBasic() {
+    public List<BasicBean> getBasic() {
         return basic;
     }
 
-    public void setBasic(List<?> basic) {
+    public void setBasic(List<BasicBean> basic) {
         this.basic = basic;
     }
 
-    public List<?> getPopulation() {
+    public List<PopulationBean> getPopulation() {
         return population;
     }
 
-    public void setPopulation(List<?> population) {
+    public void setPopulation(List<PopulationBean> population) {
         this.population = population;
     }
 
@@ -163,11 +163,103 @@ public class Visitorsselfparticulars {
         this.probe_log = probe_log;
     }
 
+    public static class BasicBean {
+        /**
+         * name : hardwareType-8核,指纹识别,双卡双待
+         * weight : 100
+         * recency : 1510274429570
+         * platform : td
+         */
+
+        private String name;
+        private int weight;
+        private long recency;
+        private String platform;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getWeight() {
+            return weight;
+        }
+
+        public void setWeight(int weight) {
+            this.weight = weight;
+        }
+
+        public long getRecency() {
+            return recency;
+        }
+
+        public void setRecency(long recency) {
+            this.recency = recency;
+        }
+
+        public String getPlatform() {
+            return platform;
+        }
+
+        public void setPlatform(String platform) {
+            this.platform = platform;
+        }
+    }
+
+    public static class PopulationBean {
+        /**
+         * name : 婚姻-已婚
+         * weight : 0.7
+         * recency : 1510274428805
+         * platform : td
+         */
+
+        private String name;
+        private double weight;
+        private long recency;
+        private String platform;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public double getWeight() {
+            return weight;
+        }
+
+        public void setWeight(double weight) {
+            this.weight = weight;
+        }
+
+        public long getRecency() {
+            return recency;
+        }
+
+        public void setRecency(long recency) {
+            this.recency = recency;
+        }
+
+        public String getPlatform() {
+            return platform;
+        }
+
+        public void setPlatform(String platform) {
+            this.platform = platform;
+        }
+    }
+
     public static class AppBean {
         /**
          * name : 工作
-         * weight : 1.33
-         * recency : 1508989111353
+         * weight : 1.78
+         * recency : 1510274429040
          * platform : td
          */
 
@@ -211,9 +303,9 @@ public class Visitorsselfparticulars {
 
     public static class GameBean {
         /**
-         * name : 连连看
-         * weight : 0.5
-         * recency : 1510272016002
+         * name : 扑克棋牌
+         * weight : 0.54
+         * recency : 1510274429297
          * platform : td
          */
 
@@ -257,9 +349,9 @@ public class Visitorsselfparticulars {
 
     public static class ProbeLogBean {
         /**
-         * visit_count : 1
-         * probe_mac : 18fe34cb9448
-         * visit : [{"visit_date":"20171127","visit_length":9}]
+         * visit_count : 11
+         * probe_mac : 6001946955ff
+         * visit : [{"visit_date":"20171110","visit_length":9},{"visit_date":"20171113","visit_length":9},{"visit_date":"20171115","visit_length":9},{"visit_date":"20171116","visit_length":9},{"visit_date":"20171118","visit_length":9},{"visit_date":"20171120","visit_length":18},{"visit_date":"20171121","visit_length":18},{"visit_date":"20171122","visit_length":9},{"visit_date":"20171124","visit_length":18},{"visit_date":"20171125","visit_length":11},{"visit_date":"20171127","visit_length":9}]
          * last_date : 20171127
          */
 
@@ -302,7 +394,7 @@ public class Visitorsselfparticulars {
 
         public static class VisitBean {
             /**
-             * visit_date : 20171127
+             * visit_date : 20171110
              * visit_length : 9
              */
 

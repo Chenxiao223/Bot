@@ -19,11 +19,10 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
-import com.zhiziyun.dmptest.bot.entity.ChartEntity;
 import com.zhiziyun.dmptest.bot.entity.TimeSlot;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
-import com.zhiziyun.dmptest.bot.widget.BarChart;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
@@ -40,6 +39,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import lecho.lib.hellocharts.model.Axis;
+import lecho.lib.hellocharts.model.AxisValue;
+import lecho.lib.hellocharts.model.Column;
+import lecho.lib.hellocharts.model.ColumnChartData;
+import lecho.lib.hellocharts.model.SubcolumnValue;
+import lecho.lib.hellocharts.util.ChartUtils;
+import lecho.lib.hellocharts.view.ColumnChartView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -68,10 +74,11 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     private int storeId = 0;
     private String beginTime, endTime;
     private TimeSlot timeSlot;
-    private HashMap<String,String> hm_timeslot;
-    private ArrayList<HashMap<String,String>> list_timeslot=new ArrayList<>();
+    private HashMap<String, String> hm_timeslot;
+    private ArrayList<HashMap<String, String>> list_timeslot = new ArrayList<>();
     private TimeSlotAdapter adapter;
-
+    ColumnChartView columnChartView = null;
+    private MyDialog dialog;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -86,25 +93,13 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            //初始化接口没有的数据
-            list_shop.add("全部门店");
-            list_tanzhen.add("全部探针");
-            hm_store.put("全部门店", "0");
-            hm_probe.put("全部探针", "0");
-            getSiteOption();
-        } else {
-            clearAllData();
-        }
+    public void onDestroy() {
+        super.onDestroy();
+        clearAllData();
     }
 
     //清空数据
     public void clearAllData() {
-        beginTime=gettodayDate();
-        endTime=gettodayDate();
-
         list_shop.clear();
         list_tanzhen.clear();
         hm_store.clear();
@@ -114,19 +109,63 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     }
 
     public void initView() {
+        //初始化接口没有的数据
+        list_shop.add("全部门店");
+        list_tanzhen.add("全部探针");
+        hm_store.put("全部门店", "0");
+        hm_probe.put("全部探针", "0");
+        getSiteOption();
+        beginTime = gettodayDate();
+        endTime = gettodayDate();
+
+        //柱状图
+        columnChartView = getView().findViewById(R.id.chart);
+
         spn_shop = getView().findViewById(R.id.spn_shop);
         spn_tanzhen = getView().findViewById(R.id.spn_tanzhen);
         line_date = getView().findViewById(R.id.line_date);
         line_date.setOnClickListener(this);
 
-        xlistview = (XListView) getView().findViewById(R.id.xlistview);
+        xlistview = getView().findViewById(R.id.xlistview);
         xlistview.setPullLoadEnable(false);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
-        adapter=new TimeSlotAdapter(getContext(),list_timeslot);
+        adapter = new TimeSlotAdapter(getContext(), list_timeslot);
         xlistview.setAdapter(adapter);
         xlistview.setXListViewListener(this);
 
         list_timeslot.clear();
         getvisitHour();
+    }
+
+    //柱状图
+    private void generateDefaultData(TimeSlot timeSlot) {
+        //定义有多少个柱子
+        ColumnChartData columnChartData;
+        List<Column> columns = new ArrayList<>();
+        List<SubcolumnValue> values;
+        List<AxisValue> axisValuess = new ArrayList<>();
+        //循环初始化每根柱子，
+        for (int i = 0; i < timeSlot.getObj().size(); i++) {
+            values = new ArrayList<>();
+            values.add(new SubcolumnValue(Float.parseFloat(timeSlot.getObj().get(i).getUv()), ChartUtils.COLOR_BLUE));
+            Column column = new Column(values);
+            //给每一个柱子表上值
+            column.setHasLabels(true);
+            columns.add(column);
+            axisValuess.add(new AxisValue(i).setLabel(timeSlot.getObj().get(i).getHour() + ":00"));
+        }
+        //给表格添加写好数据的柱子
+        columnChartData = new ColumnChartData(columns);
+        Axis axisBootom = new Axis();
+        Axis axisLeft = new Axis();
+        axisBootom.setValues(axisValuess);
+        axisBootom.setName("时段");
+        axisLeft.setName("人数");
+        //加入横线
+        axisBootom.setHasLines(true);
+        axisLeft.setHasLines(true);
+        columnChartData.setAxisXBottom(axisBootom);
+        columnChartData.setAxisYLeft(axisLeft);
+        columnChartView.setColumnChartData(columnChartData);
     }
 
     public void getSiteOption() {
@@ -202,7 +241,10 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     }
 
     //获取时段信息
-    public void getvisitHour(){
+    public void getvisitHour() {
+        //加载动画
+        dialog = MyDialog.showDialog(getActivity());
+        dialog.show();
         //token加密
         try {
             token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
@@ -216,10 +258,10 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", "0zoTLi29XRgq");
-                    json.put("beginTime",beginTime);
-                    json.put("endTime",endTime);
-                    json.put("microprobeId",microprobeId);
-                    json.put("storeId",storeId);
+                    json.put("beginTime", beginTime);
+                    json.put("endTime", endTime);
+                    json.put("microprobeId", microprobeId);
+                    json.put("storeId", storeId);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -243,11 +285,11 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson=new Gson();
-                            timeSlot=gson.fromJson(response.body().string(),TimeSlot.class);
-                            if (timeSlot.getObj().size()==0){//如果没数据就提示
+                            Gson gson = new Gson();
+                            timeSlot = gson.fromJson(response.body().string(), TimeSlot.class);
+                            if (timeSlot.getObj().size() == 0) {//如果没数据就提示
                                 handler.sendEmptyMessage(4);
-                            }else {
+                            } else {
                                 for (int i = 0; i < timeSlot.getObj().size(); i++) {
                                     hm_timeslot = new HashMap<String, String>();
                                     hm_timeslot.put("content1", timeSlot.getObj().get(i).getHour());
@@ -312,23 +354,13 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                 case 3:
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
-
+                    dialog.dismiss();//关闭加载动画
                     //柱状图
-                    BarChart barChart = (BarChart) getView().findViewById(R.id.chart);
-                    List<ChartEntity> data = new ArrayList<>();
-                    for (int i = 0; i < timeSlot.getObj().size(); i++) {
-                        data.add(new ChartEntity(timeSlot.getObj().get(i).getHour()+":00", Float.parseFloat(timeSlot.getObj().get(i).getUv())));
-                    }
-                    barChart.setData(data);
-                    barChart.setOnItemBarClickListener(new BarChart.OnItemBarClickListener() {
-                        @Override
-                        public void onClick(int position) {
-                            Toast.makeText(getActivity(), "人数：" + timeSlot.getObj().get(position).getUv(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    generateDefaultData(timeSlot);
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);
@@ -382,7 +414,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
         xlistview.setRefreshTime("刚刚");
     }
 
-    public String gettodayDate(){
+    public String gettodayDate() {
         Date d = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(d);

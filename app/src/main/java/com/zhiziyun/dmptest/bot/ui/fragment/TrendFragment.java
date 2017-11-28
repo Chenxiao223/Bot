@@ -19,11 +19,10 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
-import com.zhiziyun.dmptest.bot.entity.ChartEntity;
 import com.zhiziyun.dmptest.bot.entity.Trend;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
-import com.zhiziyun.dmptest.bot.widget.LineChart_pot;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
@@ -32,12 +31,22 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import lecho.lib.hellocharts.gesture.ZoomType;
+import lecho.lib.hellocharts.model.Axis;
+import lecho.lib.hellocharts.model.AxisValue;
+import lecho.lib.hellocharts.model.Line;
+import lecho.lib.hellocharts.model.LineChartData;
+import lecho.lib.hellocharts.model.PointValue;
+import lecho.lib.hellocharts.util.ChartUtils;
+import lecho.lib.hellocharts.view.LineChartView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -70,6 +79,10 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     private ArrayList<HashMap<String, String>> list_trend = new ArrayList<>();
     private TimeSlotAdapter adapter;
     private int pageNum = 1;
+    //折线图
+    private LineChartView chartView;
+    private LineChartData lineData;
+    private MyDialog dialog;
 
     @Nullable
     @Override
@@ -84,21 +97,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         initView();
     }
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            //初始化接口没有的数据
-            list_shop.add("全部门店");
-            list_tanzhen.add("全部探针");
-            hm_store.put("全部门店", "0");
-            hm_probe.put("全部探针", "0");
-            getSiteOption();
-        } else {
-            clearAllData();
-        }
-    }
-
     //清空数据
     public void clearAllData() {
         list_shop.clear();
@@ -109,7 +107,25 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         pageNum = 1;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        clearAllData();
+    }
+
     public void initView() {
+        //初始化接口没有的数据
+        list_shop.add("全部门店");
+        list_tanzhen.add("全部探针");
+        hm_store.put("全部门店", "0");
+        hm_probe.put("全部探针", "0");
+        getSiteOption();
+        beginTime = getPastDate(6);
+        endTime = gettodayDate();
+
+        //折线图
+        chartView = getView().findViewById(R.id.linechart_pot);
+
         spn_shop = getView().findViewById(R.id.spn_shop);
         spn_tanzhen = getView().findViewById(R.id.spn_tanzhen);
         line_date = getView().findViewById(R.id.line_date);
@@ -120,6 +136,8 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         adapter = new TimeSlotAdapter(getContext(), list_trend);
         xlistview.setAdapter(adapter);
         xlistview.setXListViewListener(this);
+        //初始化时查询第一页
+        getTrend(1);
     }
 
     public void getSiteOption() {
@@ -241,17 +259,13 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
                     //线性图
-                    LineChart_pot lineChart = getView().findViewById(R.id.linechart_pot);
-                    List<ChartEntity> data = new ArrayList<>();
-                    List<ChartEntity> data2 = new ArrayList<>();
-                    for (int i=0;i<trend.getRows().size();i++){
-                        data.add(new ChartEntity(trend.getRows().get(i).getStatDate(), Float.parseFloat(trend.getRows().get(i).getPv())));
-                        data2.add(new ChartEntity(trend.getRows().get(i).getStatDate(), Float.parseFloat(trend.getRows().get(i).getUv())));
-                    }
-                    lineChart.setData(data,data2);
+                    generateInitialLineData(trend);
+                    dialog.dismiss();//关闭加载动画
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
+                    onLoad();//无数据时也需要关闭刷新
+                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);
@@ -259,6 +273,9 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     };
 
     public void getTrend(final int page) {
+        //加载动画
+        dialog = MyDialog.showDialog(getActivity());
+        dialog.show();
         //token加密
         try {
             token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
@@ -377,5 +394,50 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         xlistview.stopRefresh();
         xlistview.stopLoadMore();
         xlistview.setRefreshTime("刚刚");
+    }
+
+    //获取当天的日期
+    public String gettodayDate() {
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(d);
+    }
+
+    //获取过去某天的日期
+    public static String getPastDate(int past) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) - past);
+        Date today = calendar.getTime();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String result = format.format(today);
+        return result;
+    }
+
+    /**
+     * 初始化数据到chart中
+     */
+    private void generateInitialLineData(Trend trend) {
+        int numValues = trend.getRows().size();
+        List<AxisValue> axisValues = new ArrayList<AxisValue>();
+        List<PointValue> values = new ArrayList<PointValue>();
+        List<PointValue> values2 = new ArrayList<PointValue>();
+        for (int i = 0; i < numValues; ++i) {
+            values.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getPv().toString())));//到店人次
+            values2.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getUv())));//到店人数
+            axisValues.add(new AxisValue(i).setLabel(trend.getRows().get(i).getStatDate()));
+        }
+        Line line = new Line(values);
+        line.setColor(ChartUtils.COLOR_GREEN).setCubic(true);
+        Line line2 = new Line(values2);
+        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(true);
+        List<Line> lines = new ArrayList<Line>();
+        lines.add(line);
+        lines.add(line2);
+        lineData = new LineChartData(lines);
+        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
+        lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(5));
+        chartView.setLineChartData(lineData);
+        chartView.setViewportCalculationEnabled(false);
+        chartView.setZoomType(ZoomType.HORIZONTAL);
     }
 }

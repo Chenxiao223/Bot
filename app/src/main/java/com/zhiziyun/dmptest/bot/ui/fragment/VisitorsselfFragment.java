@@ -8,6 +8,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
 import com.zhiziyun.dmptest.bot.entity.Visitorsself;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.ui.activity.VisitorsselfActivity;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
@@ -32,8 +34,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -70,6 +74,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private ArrayList<HashMap<String, String>> list_visitors = new ArrayList<>();
     private int pageNum = 1;
     private Visitorsself visitorsself;
+    private MyDialog dialog;
 
     @Nullable
     @Override
@@ -84,23 +89,26 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         initView();
     }
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            //初始化接口没有的数据
-            list_shop.add("全部门店");
-            list_tanzhen.add("全部探针");
-            hm_store.put("全部门店", "0");
-            hm_probe.put("全部探针", "0");
-            getSiteOption();
-        } else {
-            clearAllData();
-        }
-    }
+//    @Override
+//    public void setUserVisibleHint(boolean isVisibleToUser) {
+//        super.setUserVisibleHint(isVisibleToUser);
+//        if (isVisibleToUser) {
+//            //初始化接口没有的数据
+//            list_shop.add("全部门店");
+//            list_tanzhen.add("全部探针");
+//            hm_store.put("全部门店", "0");
+//            hm_probe.put("全部探针", "0");
+//            getSiteOption();
+//        } else {
+//            clearAllData();
+//        }
+//    }
 
     //清空所有数据
     public void clearAllData() {
+        beginTime=gettodayDate();
+        endTime=beginTime;
+
         list_shop.clear();
         list_tanzhen.clear();
         token = null;
@@ -113,6 +121,15 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     }
 
     public void initView() {
+        //初始化接口没有的数据
+        list_shop.add("全部门店");
+        list_tanzhen.add("全部探针");
+        hm_store.put("全部门店", "0");
+        hm_probe.put("全部探针", "0");
+        getSiteOption();
+        beginTime=gettodayDate();
+        endTime=beginTime;
+
         xlistview = getView().findViewById(R.id.xlistview);
         xlistview.setPullLoadEnable(true);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
         adapter = new VisitorsselfAdapter(getContext(), list_visitors);
@@ -138,6 +155,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         adp_tanzhen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spn_shop.setAdapter(adp_shop);
         spn_tanzhen.setAdapter(adp_tanzhen);
+
+        getData(1);
     }
 
     public void getSiteOption() {
@@ -257,9 +276,11 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 case 3:
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
+                    dialog.dismiss();//关闭加载动画
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);
@@ -267,6 +288,9 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     };
 
     public void getData(final int page) {
+        //加载动画
+        dialog = MyDialog.showDialog(getActivity());
+        dialog.show();
         //token加密
         try {
             token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
@@ -406,5 +430,12 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         xlistview.stopRefresh();
         xlistview.stopLoadMore();
         xlistview.setRefreshTime("刚刚");
+    }
+
+    //获取当天的日期
+    public String gettodayDate() {
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(d);
     }
 }

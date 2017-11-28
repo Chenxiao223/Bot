@@ -22,6 +22,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.widget.PieChart_active;
 import com.zhiziyun.dmptest.bot.widget.PieChart_age;
 import com.zhiziyun.dmptest.bot.widget.PieChart_mpb;
@@ -35,8 +36,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +82,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     public ArrayList<String> list_model = new ArrayList<>();
     public ArrayList<String> list_brand = new ArrayList<>();
     private TextView tv_age, tv_sex, tv_mpb, tv_mpm, tv_mpp, tv_active;
-
+    private MyDialog dialog;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -94,38 +97,16 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
         initView();
     }
 
-    //当滑到当前碎片时调用该方法
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            //初始化接口没有的数据
-            list_shop.add("全部门店");
-            list_tanzhen.add("全部探针");
-            hm_store.put("全部门店", "0");
-            hm_probe.put("全部探针", "0");
-            getSiteOption();
-        } else {//清空数据
-            list_shop.clear();
-            list_tanzhen.clear();
-            token = null;
-            hm_store.clear();
-            hm_probe.clear();
-            endTime = null;
-            microprobeId = 0;
-            storeId = 0;
-            hm_age.clear();
-            hm_gender.clear();
-            hm_model.clear();
-            hm_brand.clear();
-            hm_price.clear();
-            hm_activity.clear();
-            list_model.clear();
-            list_brand.clear();
-        }
-    }
-
     public void initView() {
+        //初始化接口没有的数据
+        list_shop.add("全部门店");
+        list_tanzhen.add("全部探针");
+        hm_store.put("全部门店", "0");
+        hm_probe.put("全部探针", "0");
+        getSiteOption();
+        beginTime = gettodayDate();
+        endTime = beginTime;
+
         tv_age = getView().findViewById(R.id.tv_age);
         tv_sex = getView().findViewById(R.id.tv_sex);
         tv_mpb = getView().findViewById(R.id.tv_mpb);
@@ -138,6 +119,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
         line_date = getView().findViewById(R.id.line_date);
         line_date.setOnClickListener(this);
 
+        getTable();
     }
 
     public void getSiteOption() {
@@ -220,6 +202,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     adp_shop = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_shop);
                     adp_shop.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spn_shop.setAdapter(adp_shop);
+                    spn_shop.setSelection(0, false);//避免不点击也执行
                     spn_shop.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -237,6 +220,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     adp_tanzhen = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list_tanzhen);
                     adp_tanzhen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spn_tanzhen.setAdapter(adp_tanzhen);
+                    spn_tanzhen.setSelection(0, false);//避免不点击也执行
                     spn_tanzhen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -254,27 +238,27 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     //饼状图-年龄
                     PieChart_age pieChart = getView().findViewById(R.id.chart_age);
                     List<PieDataEntity> dataEntities = new ArrayList<>();
-                    String age1=hm_age.get("36-45岁");
+                    String age1 = hm_age.get("36-45岁");
                     if (!TextUtils.isEmpty(age1)) {
                         PieDataEntity entity1 = new PieDataEntity("name" + 0, Integer.parseInt(age1), mColors[0]);
                         dataEntities.add(entity1);
                     }
-                    String age2=hm_age.get("26-35岁");
+                    String age2 = hm_age.get("26-35岁");
                     if (!TextUtils.isEmpty(age2)) {
                         PieDataEntity entity2 = new PieDataEntity("name" + 1, Integer.parseInt(age2), mColors[1]);
                         dataEntities.add(entity2);
                     }
-                    String age3=hm_age.get("46-55岁");
+                    String age3 = hm_age.get("46-55岁");
                     if (!TextUtils.isEmpty(age3)) {
                         PieDataEntity entity3 = new PieDataEntity("name" + 2, Integer.parseInt(age3), mColors[2]);
                         dataEntities.add(entity3);
                     }
-                    String age4=hm_age.get("55岁以上");
+                    String age4 = hm_age.get("55岁以上");
                     if (!TextUtils.isEmpty(age4)) {
                         PieDataEntity entity4 = new PieDataEntity("name" + 3, Integer.parseInt(age4), mColors[3]);
                         dataEntities.add(entity4);
                     }
-                    String age5=hm_age.get("19-25岁");
+                    String age5 = hm_age.get("19-25岁");
                     if (!TextUtils.isEmpty(age5)) {
                         PieDataEntity entity5 = new PieDataEntity("name" + 4, Integer.parseInt(age5), mColors[4]);
                         dataEntities.add(entity5);
@@ -296,12 +280,12 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     //饼状图-性别
                     PieChart_sex pieChart_sex = getView().findViewById(R.id.chart_sex);
                     List<PieDataEntity> dataEntitiessex = new ArrayList<>();
-                    String sex1=hm_gender.get("女");
+                    String sex1 = hm_gender.get("女");
                     if (!TextUtils.isEmpty(sex1)) {
                         PieDataEntity entitysex1 = new PieDataEntity("name" + 0, Integer.parseInt(sex1), mColors[0]);
                         dataEntitiessex.add(entitysex1);
                     }
-                    String sex2=hm_gender.get("男");
+                    String sex2 = hm_gender.get("男");
                     if (!TextUtils.isEmpty(sex2)) {
                         PieDataEntity entitysex2 = new PieDataEntity("name" + 1, Integer.parseInt(sex2), mColors[1]);
                         dataEntitiessex.add(entitysex2);
@@ -313,8 +297,8 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     //饼状图-手机品牌
                     PieChart_mpb pieChart_mpb = getView().findViewById(R.id.chart_mpb);
                     List<PieDataEntity> dataEntitiesmpb = new ArrayList<>();
-                    for (int i=0;i<list_brand.size();i++){
-                        PieDataEntity entity = new PieDataEntity("name"+i,Integer.parseInt(hm_brand.get(list_brand.get(i))),mColors[i]);
+                    for (int i = 0; i < list_brand.size(); i++) {
+                        PieDataEntity entity = new PieDataEntity("name" + i, Integer.parseInt(hm_brand.get(list_brand.get(i))), mColors[i]);
                         dataEntitiesmpb.add(entity);
                     }
                     pieChart_mpb.setDataList(dataEntitiesmpb);
@@ -323,9 +307,8 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     //饼状图-手机型号
                     PieChart_mpm pieChart_mpm = getView().findViewById(R.id.chart_mpm);
                     List<PieDataEntity> dataEntitiesmpm = new ArrayList<>();
-                    for (int i=0;i<list_model.size();i++){
-                        Log.i("info","型号："+list_model.get(i));
-                        PieDataEntity entity = new PieDataEntity("name"+i,Integer.parseInt(hm_model.get(list_model.get(i))),mColors[i]);
+                    for (int i = 0; i < list_model.size(); i++) {
+                        PieDataEntity entity = new PieDataEntity("name" + i, Integer.parseInt(hm_model.get(list_model.get(i))), mColors[i]);
                         dataEntitiesmpm.add(entity);
                     }
                     pieChart_mpm.setDataList(dataEntitiesmpm);
@@ -334,22 +317,22 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     //饼状图-手机价格
                     PieChart_mpp pieChart_mpp = getView().findViewById(R.id.chart_mpp);
                     List<PieDataEntity> dataEntitiesmpp = new ArrayList<>();
-                    String mpp1=hm_price.get("1000-1999");
+                    String mpp1 = hm_price.get("1000-1999");
                     if (!TextUtils.isEmpty(mpp1)) {
                         PieDataEntity entitympp1 = new PieDataEntity("name" + 0, Integer.parseInt(mpp1), mColors[0]);
                         dataEntitiesmpp.add(entitympp1);
                     }
-                    String mpp2=hm_price.get("4000及以上");
+                    String mpp2 = hm_price.get("4000及以上");
                     if (!TextUtils.isEmpty(mpp2)) {
                         PieDataEntity entitympp2 = new PieDataEntity("name" + 1, Integer.parseInt(mpp2), mColors[1]);
                         dataEntitiesmpp.add(entitympp2);
                     }
-                    String mpp3=hm_price.get("500-999");
+                    String mpp3 = hm_price.get("500-999");
                     if (!TextUtils.isEmpty(mpp3)) {
                         PieDataEntity entitympp3 = new PieDataEntity("name" + 2, Integer.parseInt(mpp3), mColors[2]);
                         dataEntitiesmpp.add(entitympp3);
                     }
-                    String mpp4=hm_price.get("2000-3999");
+                    String mpp4 = hm_price.get("2000-3999");
                     if (!TextUtils.isEmpty(mpp4)) {
                         PieDataEntity entitympp4 = new PieDataEntity("name" + 3, Integer.parseInt(mpp4), mColors[3]);
                         dataEntitiesmpp.add(entitympp4);
@@ -358,7 +341,6 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     break;
                 case 8:
                     //饼状图-活跃度
-//                    Log.i("data", hm_activity.get("高活跃度客户"));
                     PieChart_active pieChart_active = getView().findViewById(R.id.chart_active);
                     List<PieDataEntity> dataEntitiesactive = new ArrayList<>();
                     PieDataEntity entityactive1 = new PieDataEntity("name" + 0, 1, mColors[0]);
@@ -372,9 +354,11 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     tv_mpm.setVisibility(View.VISIBLE);
                     tv_mpp.setVisibility(View.VISIBLE);
                     tv_active.setVisibility(View.VISIBLE);
+                    dialog.dismiss();//关闭加载动画
                     break;
                 case 9:
                     Toast.makeText(getActivity(), "查询无效", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);
@@ -382,6 +366,9 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     };
 
     public void getTable() {
+        //加载动画
+        dialog = MyDialog.showDialog(getActivity());
+        dialog.show();
         //网络请求前先清空数据
         hm_age.clear();
         hm_gender.clear();
@@ -432,7 +419,6 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-//                            Log.i("json",response.body().string());
                             try {
 //                                //年龄分布
                                 JSONObject jsonObject = new JSONObject(response.body().string());
@@ -460,6 +446,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                                     handler.sendEmptyMessage(4);
                                     //手机品牌分布
                                     JSONObject json_model = new JSONObject(json_obj.get("model").toString());
+                                    list_model.clear();
                                     Iterator<String> model = json_model.keys();
                                     while (model.hasNext()) {
                                         // 获得key
@@ -473,6 +460,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                                     //手机型号分布
                                     JSONObject json_brand = new JSONObject(json_obj.get("brand").toString());
                                     Iterator<String> brand = json_brand.keys();
+                                    list_brand.clear();
                                     while (brand.hasNext()) {
                                         // 获得key
                                         String key = brand.next();
@@ -538,5 +526,11 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
         }
     }
 
+    //获取当天的日期
+    public String gettodayDate() {
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(d);
+    }
 
 }

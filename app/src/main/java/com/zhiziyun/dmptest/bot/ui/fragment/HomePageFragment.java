@@ -1,6 +1,7 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -16,12 +17,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.ChartEntity;
+import com.zhiziyun.dmptest.bot.entity.HomePage;
 import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
+import com.zhiziyun.dmptest.bot.entity.Trend;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.ui.activity.AddStoryActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.PassengerFlowAnalysisActivity;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.widget.HollowPieNewChart;
 import com.zhiziyun.dmptest.bot.widget.LineChart;
 
@@ -38,6 +43,22 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import lecho.lib.hellocharts.gesture.ZoomType;
+import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
+import lecho.lib.hellocharts.model.Axis;
+import lecho.lib.hellocharts.model.AxisValue;
+import lecho.lib.hellocharts.model.Column;
+import lecho.lib.hellocharts.model.ColumnChartData;
+import lecho.lib.hellocharts.model.Line;
+import lecho.lib.hellocharts.model.LineChartData;
+import lecho.lib.hellocharts.model.PieChartData;
+import lecho.lib.hellocharts.model.PointValue;
+import lecho.lib.hellocharts.model.SliceValue;
+import lecho.lib.hellocharts.model.SubcolumnValue;
+import lecho.lib.hellocharts.util.ChartUtils;
+import lecho.lib.hellocharts.view.ColumnChartView;
+import lecho.lib.hellocharts.view.LineChartView;
+import lecho.lib.hellocharts.view.PieChartView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -55,12 +76,28 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private SwipeRefreshLayout srl;
     private int[] mColors = {0xFFCCFF00, 0xFF6495ED, 0xFFE32636, 0xFF800000, 0xFF808000, 0xFFFF8C69, 0xFF808080,
             0xFFE6B800, 0xFF7CFC00};
-    private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest, tv_oldguest;
+    private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest, tv_oldguest,tv_new,tv_old;
     private ImageView iv_addstory;
     private RelativeLayout rl_today_people;
     private boolean b_flag1 = false;
     private boolean b_flag2 = false;
     private String token;
+    private PieChartView pie_chart;//饼形图控件
+    private PieChartData pieChardata;//数据
+    List<SliceValue> values = new ArrayList<SliceValue>();
+    //定义数据，实际情况肯定不是这样写固定值的
+    private int[] data = {21, 20};
+    private int[] colorData = {Color.parseColor("#ec063d"),
+            Color.parseColor("#f1c704"),
+            Color.parseColor("#c9c9c9"),
+            Color.parseColor("#2bc208"),
+            Color.parseColor("#333333")};
+    private String[] stateChar = {"新客", "老客"};
+    //折线图
+    private LineChartView chartView;
+    private LineChartData lineData;
+    private HomePage page;
+    private MyDialog dialog;
 
     @Nullable
     @Override
@@ -76,7 +113,10 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     }
 
     public void initView() {
-        getTableInfo();
+        //折线图
+        chartView = getView().findViewById(R.id.linechart);
+        tv_new=getView().findViewById(R.id.tv_new);
+        tv_old=getView().findViewById(R.id.tv_old);
         tv_companyname = getView().findViewById(R.id.tv_companyname);
         iv_addstory = getView().findViewById(R.id.iv_addstory);
         iv_addstory.setOnClickListener(this);
@@ -87,7 +127,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         tv_person = getView().findViewById(R.id.tv_person);
         tv_newguest = getView().findViewById(R.id.tv_newguest);
         tv_oldguest = getView().findViewById(R.id.tv_oldguest);
-
+        getTableInfo();
         getData();
 
         srl = getView().findViewById(R.id.srl);
@@ -98,51 +138,18 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onRefresh() {
                 //清空状态标志位
-                b_flag1=false;
-                b_flag2=false;
+                b_flag1 = false;
+                b_flag2 = false;
+                values.clear();
                 getData();
-                if (b_flag1 == true && b_flag2 == true) {//如果所有接口都拿到数据才停止刷新
-                    // 加载完数据设置为不刷新状态，将下拉进度收起来
-                    srl.setRefreshing(false);
-                }
             }
         });
 
-        //线性图
-        LineChart lineChart = getView().findViewById(R.id.linechart);
-        List<ChartEntity> data = new ArrayList<>();
-        for (int i = 1; i <= 7; i++) {
-            data.add(new ChartEntity(getWeek(i), (float) (20000)));
-        }
-//        lineChart.setData(data,null);
-    }
-
-    private String getWeek(int i) {
-        String week = null;
-        switch (i) {
-            case 1:
-                week = "星期一";
-                break;
-            case 2:
-                week = "星期二";
-                break;
-            case 3:
-                week = "星期三";
-                break;
-            case 4:
-                week = "星期四";
-                break;
-            case 5:
-                week = "星期五";
-                break;
-            case 6:
-                week = "星期六";
-                break;
-            case 7:
-                week = "星期日";
-                break;
-        }
-        return week;
+        //饼状图
+        pie_chart = getView().findViewById(R.id.pie_chart);
+//        pie_chart.setOnValueTouchListener(selectListener);//设置点击事件监听
+//        setPieChartData();
+//        initPieChart();
     }
 
     @Override
@@ -158,6 +165,9 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     }
 
     public void getData() {
+        //加载动画
+        dialog = MyDialog.showDialog(getActivity());
+        dialog.show();
         //token加密
         try {
             token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
@@ -195,7 +205,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            b_flag1=true;
+                            b_flag1 = true;
                             try {
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 JSONObject json = new JSONObject(jsonObject.get("obj").toString());
@@ -206,6 +216,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                                 bundle.putString("probe", json.get("probe").toString());
                                 message.setData(bundle);
                                 myHandler.sendMessage(message);
+                                myHandler.sendEmptyMessage(5);//加载完后停止刷新
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -215,7 +226,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Log.e("erro", e.toString());
                 }
             }
         }).start();
@@ -250,7 +260,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            b_flag2=true;
+                            b_flag2 = true;
 
                             try {
                                 JSONObject jsonObject = new JSONObject(response.body().string());
@@ -286,10 +296,11 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     String token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("siteId", "0zoTLi29XRgq");
-                    jsonObject.put("beginTime", getDate());
-                    jsonObject.put("endTime", getPastDate(6));
+                    jsonObject.put("beginTime", getPastDate(6));
+                    jsonObject.put("endTime", getDate());
                     jsonObject.put("microprobeId", 0);
                     jsonObject.put("storeId", 0);
+                    Log.i("inf",jsonObject.toString());
                     OkHttpClient client = new OkHttpClient();
                     String url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + jsonObject.toString();
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
@@ -301,8 +312,23 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                             .build();
 
                     Response response = null;
-                    response = client.newCall(request).execute();
-                    Log.i("info", response.body().string());
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            Gson gson=new Gson();
+                            page=gson.fromJson(response.body().string(),HomePage.class);
+                            if (page.getRows().size() == 0) {//如果没数据就提示
+                                myHandler.sendEmptyMessage(4);
+                            } else {
+                                myHandler.sendEmptyMessage(3);
+                            }
+                        }
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -337,7 +363,21 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     tv_person.setText(bundle1.get("all").toString());
                     tv_newguest.setText(bundle1.get("new").toString());
                     tv_oldguest.setText(bundle1.get("old").toString());
-                    drawpiechart(Integer.parseInt(bundle1.get("new").toString()), Integer.parseInt(bundle1.get("old").toString()));
+                    tv_new.setText("  ("+computations(Float.parseFloat(bundle1.get("all").toString()),Float.parseFloat(bundle1.get("new").toString()))+")");
+                    tv_old.setText("  ("+computations(Float.parseFloat(bundle1.get("all").toString()),Float.parseFloat(bundle1.get("old").toString()))+")");
+//                    drawpiechart(Integer.parseInt(bundle1.get("new").toString()), Integer.parseInt(bundle1.get("old").toString()));
+                    setPieChartData(Float.parseFloat(bundle1.get("new").toString()), Float.parseFloat(bundle1.get("old").toString()));
+                    initPieChart();
+                    dialog.dismiss();//关闭加载动画
+                    break;
+                case 3:
+                    generateInitialLineData(page);
+                    break;
+                case 4:
+                    Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
+                    break;
+                case 5:
+                    srl.setRefreshing(false);
                     break;
             }
             super.handleMessage(msg);
@@ -347,24 +387,120 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     //绘制饼状图
     public void drawpiechart(int a, int b) {
         //饼状图
-        HollowPieNewChart pieChart = getView().findViewById(R.id.chart);
-        List<PieDataEntity> dataEntities = new ArrayList<>();
-        PieDataEntity entity1 = new PieDataEntity("name" + 0, a, mColors[0]);
-        dataEntities.add(entity1);
-        PieDataEntity entity2 = new PieDataEntity("name" + 1, b, mColors[1]);
-        dataEntities.add(entity2);
-        pieChart.setDataList(dataEntities);
+//        HollowPieNewChart pieChart = getView().findViewById(R.id.chart);
+//        List<PieDataEntity> dataEntities = new ArrayList<>();
+//        PieDataEntity entity1 = new PieDataEntity("name" + 0, a, mColors[0]);
+//        dataEntities.add(entity1);
+//        PieDataEntity entity2 = new PieDataEntity("name" + 1, b, mColors[1]);
+//        dataEntities.add(entity2);
+//        pieChart.setDataList(dataEntities);
+//
+//        pieChart.setOnItemPieClickListener(new HollowPieNewChart.OnItemPieClickListener() {
+//            @Override
+//            public void onClick(int position) {
+//                if (position == 0) {
+//                    Toast.makeText(getActivity(), "新客", Toast.LENGTH_SHORT).show();
+//                } else if (position == 1) {
+//                    Toast.makeText(getActivity(), "老客", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
 
-        pieChart.setOnItemPieClickListener(new HollowPieNewChart.OnItemPieClickListener() {
-            @Override
-            public void onClick(int position) {
-                if (position == 0) {
-                    Toast.makeText(getActivity(), "新客", Toast.LENGTH_SHORT).show();
-                } else if (position == 1) {
-                    Toast.makeText(getActivity(), "老客", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
     }
 
+
+    /**
+     * 获取数据
+     */
+    private void setPieChartData(float a, float b) {
+        SliceValue sliceValue = new SliceValue(a, Color.parseColor("#2bc208"));
+        values.add(sliceValue);
+        SliceValue sliceValue2 = new SliceValue(b, Color.parseColor("#f1c704"));
+        values.add(sliceValue2);
+    }
+
+
+    /**
+     * 初始化
+     */
+    private void initPieChart() {
+        pieChardata = new PieChartData();
+        pieChardata.setHasLabels(true);//显示表情
+        pieChardata.setHasLabelsOnlyForSelected(false);//不用点击显示占的百分比
+        pieChardata.setHasLabelsOutside(false);//占的百分比是否显示在饼图外面
+        pieChardata.setHasCenterCircle(true);//是否是环形显示
+        pieChardata.setValues(values);//填充数据
+        pieChardata.setCenterCircleColor(Color.WHITE);//设置环形中间的颜色
+        pieChardata.setCenterCircleScale(0.5f);//设置环形的大小级别
+        pie_chart.setPieChartData(pieChardata);
+        pie_chart.setValueSelectionEnabled(true);//选择饼图某一块变大
+        pie_chart.setAlpha(0.9f);//设置透明度
+        pie_chart.setCircleFillRatio(1f);//设置饼图大小
+    }
+
+
+    /**
+     * 监听事件
+     */
+//    private PieChartOnValueSelectListener selectListener = new PieChartOnValueSelectListener() {
+//
+//        @Override
+//        public void onValueDeselected() {
+//            // TODO Auto-generated method stub
+//
+//        }
+//
+//        @Override
+//        public void onValueSelected(int arg0, SliceValue value) {
+//            //选择对应图形后，在中间部分显示相应信息
+//            pieChardata.setCenterText1(stateChar[arg0]);
+//            pieChardata.setCenterText1Color(colorData[arg0]);
+//            pieChardata.setCenterText1FontSize(1);//
+//            pieChardata.setCenterText2(value.getValue() + "（" + calPercent(arg0) + ")");
+//            pieChardata.setCenterText2Color(colorData[arg0]);
+//            pieChardata.setCenterText2FontSize(1);
+////            Toast.makeText(MainActivity.this, stateChar[arg0] + ":" + value.getValue(), Toast.LENGTH_SHORT).show();
+//        }
+//    };
+//
+//    private String calPercent(int i) {
+//        String result = "";
+//        int sum = 0;
+//        for (int i1 = 0; i1 < data.length; i1++) {
+//            sum += data[i1];
+//        }
+//        result = String.format("%.2f", (float) data[i] * 100 / sum) + "%";
+//        return result;
+//    }
+
+    //计算百分比
+    public String computations(float sum,float num){
+        return String.format("%.2f", num * 100 / sum) + "%";
+    }
+
+    //折线图
+    private void generateInitialLineData(HomePage homePage) {
+        int numValues = homePage.getRows().size();
+        List<AxisValue> axisValues = new ArrayList<AxisValue>();
+        List<PointValue> values = new ArrayList<PointValue>();
+        List<PointValue> values2 = new ArrayList<PointValue>();
+        for (int i = 0; i < numValues; ++i) {
+            values.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getPv().toString())));//到店人次
+            values2.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getUv())));//到店人数
+            axisValues.add(new AxisValue(i).setLabel(homePage.getRows().get(i).getStatDate()));
+        }
+        Line line = new Line(values);
+        line.setColor(ChartUtils.COLOR_GREEN).setCubic(true);
+        Line line2 = new Line(values2);
+        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(true);
+        List<Line> lines = new ArrayList<Line>();
+        lines.add(line);
+        lines.add(line2);
+        lineData = new LineChartData(lines);
+        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
+        lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(5));
+        chartView.setLineChartData(lineData);
+        chartView.setViewportCalculationEnabled(false);
+        chartView.setZoomType(ZoomType.HORIZONTAL);
+    }
 }
