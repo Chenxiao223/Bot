@@ -74,13 +74,9 @@ import okhttp3.Response;
  */
 public class HomePageFragment extends Fragment implements View.OnClickListener {
     private SwipeRefreshLayout srl;
-    private int[] mColors = {0xFFCCFF00, 0xFF6495ED, 0xFFE32636, 0xFF800000, 0xFF808000, 0xFFFF8C69, 0xFF808080,
-            0xFFE6B800, 0xFF7CFC00};
     private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest, tv_oldguest,tv_new,tv_old;
     private ImageView iv_addstory;
     private RelativeLayout rl_today_people;
-    private boolean b_flag1 = false;
-    private boolean b_flag2 = false;
     private String token;
     private PieChartView pie_chart;//饼形图控件
     private PieChartData pieChardata;//数据
@@ -138,8 +134,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onRefresh() {
                 //清空状态标志位
-                b_flag1 = false;
-                b_flag2 = false;
                 values.clear();
                 getData();
             }
@@ -147,9 +141,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
         //饼状图
         pie_chart = getView().findViewById(R.id.pie_chart);
-//        pie_chart.setOnValueTouchListener(selectListener);//设置点击事件监听
-//        setPieChartData();
-//        initPieChart();
     }
 
     @Override
@@ -205,7 +196,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            b_flag1 = true;
                             try {
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 JSONObject json = new JSONObject(jsonObject.get("obj").toString());
@@ -260,8 +250,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            b_flag2 = true;
-
                             try {
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 JSONObject json = new JSONObject(jsonObject.get("obj").toString());
@@ -365,7 +353,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     tv_oldguest.setText(bundle1.get("old").toString());
                     tv_new.setText("  ("+computations(Float.parseFloat(bundle1.get("all").toString()),Float.parseFloat(bundle1.get("new").toString()))+")");
                     tv_old.setText("  ("+computations(Float.parseFloat(bundle1.get("all").toString()),Float.parseFloat(bundle1.get("old").toString()))+")");
-//                    drawpiechart(Integer.parseInt(bundle1.get("new").toString()), Integer.parseInt(bundle1.get("old").toString()));
                     setPieChartData(Float.parseFloat(bundle1.get("new").toString()), Float.parseFloat(bundle1.get("old").toString()));
                     initPieChart();
                     dialog.dismiss();//关闭加载动画
@@ -384,29 +371,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         }
     };
 
-    //绘制饼状图
-    public void drawpiechart(int a, int b) {
-        //饼状图
-//        HollowPieNewChart pieChart = getView().findViewById(R.id.chart);
-//        List<PieDataEntity> dataEntities = new ArrayList<>();
-//        PieDataEntity entity1 = new PieDataEntity("name" + 0, a, mColors[0]);
-//        dataEntities.add(entity1);
-//        PieDataEntity entity2 = new PieDataEntity("name" + 1, b, mColors[1]);
-//        dataEntities.add(entity2);
-//        pieChart.setDataList(dataEntities);
-//
-//        pieChart.setOnItemPieClickListener(new HollowPieNewChart.OnItemPieClickListener() {
-//            @Override
-//            public void onClick(int position) {
-//                if (position == 0) {
-//                    Toast.makeText(getActivity(), "新客", Toast.LENGTH_SHORT).show();
-//                } else if (position == 1) {
-//                    Toast.makeText(getActivity(), "老客", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-
-    }
 
 
     /**
@@ -418,7 +382,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         SliceValue sliceValue2 = new SliceValue(b, Color.parseColor("#f1c704"));
         values.add(sliceValue2);
     }
-
 
     /**
      * 初始化
@@ -438,40 +401,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         pie_chart.setCircleFillRatio(1f);//设置饼图大小
     }
 
-
-    /**
-     * 监听事件
-     */
-//    private PieChartOnValueSelectListener selectListener = new PieChartOnValueSelectListener() {
-//
-//        @Override
-//        public void onValueDeselected() {
-//            // TODO Auto-generated method stub
-//
-//        }
-//
-//        @Override
-//        public void onValueSelected(int arg0, SliceValue value) {
-//            //选择对应图形后，在中间部分显示相应信息
-//            pieChardata.setCenterText1(stateChar[arg0]);
-//            pieChardata.setCenterText1Color(colorData[arg0]);
-//            pieChardata.setCenterText1FontSize(1);//
-//            pieChardata.setCenterText2(value.getValue() + "（" + calPercent(arg0) + ")");
-//            pieChardata.setCenterText2Color(colorData[arg0]);
-//            pieChardata.setCenterText2FontSize(1);
-////            Toast.makeText(MainActivity.this, stateChar[arg0] + ":" + value.getValue(), Toast.LENGTH_SHORT).show();
-//        }
-//    };
-//
-//    private String calPercent(int i) {
-//        String result = "";
-//        int sum = 0;
-//        for (int i1 = 0; i1 < data.length; i1++) {
-//            sum += data[i1];
-//        }
-//        result = String.format("%.2f", (float) data[i] * 100 / sum) + "%";
-//        return result;
-//    }
 
     //计算百分比
     public String computations(float sum,float num){
@@ -497,7 +426,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         lines.add(line);
         lines.add(line2);
         lineData = new LineChartData(lines);
-        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
+        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true).setHasTiltedLabels(true));
         lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(5));
         chartView.setLineChartData(lineData);
         chartView.setViewportCalculationEnabled(false);

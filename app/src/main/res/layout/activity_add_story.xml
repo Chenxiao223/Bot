@@ -31,6 +31,18 @@
         android:layout_width="match_parent"
         android:layout_height="300dp">
 
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/bmapView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:clickable="true" />
+
+        <Button
+            android:id="@+id/btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="普通"
+            android:layout_alignParentTop="true" />
     </RelativeLayout>
 
     <LinearLayout
@@ -40,12 +52,14 @@
         android:orientation="vertical">
 
         <EditText
+            android:id="@+id/et_storeId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@null"
             android:hint="门店名称"
-            android:paddingLeft="10dp" />
+            android:paddingLeft="10dp"
+            android:textColorHint="@color/gray" />
 
         <ImageView
             android:layout_width="match_parent"
@@ -54,12 +68,14 @@
             android:src="@drawable/grayline" />
 
         <EditText
+            android:id="@+id/et_floorArea"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@null"
             android:hint="建筑面积()"
-            android:paddingLeft="10dp" />
+            android:paddingLeft="10dp"
+            android:textColorHint="@color/gray" />
     </LinearLayout>
 
     <RelativeLayout
@@ -73,6 +89,7 @@
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
             android:background="@color/blue"
+            android:onClick="next"
             android:text="下一步"
             android:textColor="@color/white" />
 
