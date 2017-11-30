@@ -1,12 +1,15 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import com.zhiziyun.dmptest.bot.R;
 
@@ -16,6 +19,7 @@ import com.zhiziyun.dmptest.bot.R;
 
 public class LoginActivity extends Activity {
     private EditText tv_username, tv_password;
+    private LinearLayout traceroute_rootview;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,6 +33,15 @@ public class LoginActivity extends Activity {
         tv_password = findViewById(R.id.edit_password);
         tv_username.setInputType(EditorInfo.TYPE_CLASS_PHONE);
         tv_password.setInputType(EditorInfo.TYPE_CLASS_PHONE);
+        traceroute_rootview=findViewById(R.id.traceroute_rootview);
+        traceroute_rootview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //让软键盘隐藏
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+            }
+        });
     }
 
     public void login(View view) {

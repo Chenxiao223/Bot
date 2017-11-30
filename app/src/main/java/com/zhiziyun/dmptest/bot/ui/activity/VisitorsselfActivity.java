@@ -104,7 +104,7 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-
+                            Log.i("data",response.body().string());
 //                            Gson gson = new Gson();
 //                            vp = gson.fromJson(response.body().string(), Visitorsselfparticulars.class);
 //                            handler.sendEmptyMessage(1);

@@ -1,12 +1,17 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
@@ -16,6 +21,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -35,6 +41,7 @@ public class BindingActivity extends Activity implements View.OnClickListener {
     private EditText et_name, et_area;
     private String token;
     private Intent intent;
+    private RelativeLayout traceroute_rootview;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,6 +51,8 @@ public class BindingActivity extends Activity implements View.OnClickListener {
     }
 
     private void initView() {
+        traceroute_rootview=findViewById(R.id.traceroute_rootview);
+        traceroute_rootview.setOnClickListener(this);
         intent = getIntent();
         et_name = findViewById(R.id.et_name);
         et_area = findViewById(R.id.et_area);
@@ -56,6 +65,11 @@ public class BindingActivity extends Activity implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.tv_back:
                 finish();
+                break;
+            case R.id.traceroute_rootview:
+                //让软键盘隐藏
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
                 break;
         }
     }
@@ -94,18 +108,20 @@ public class BindingActivity extends Activity implements View.OnClickListener {
             @Override
             public void run() {
                 try {
-                    float lat = Float.parseFloat(intent.getStringExtra("lat"));
-                    float lon = Float.parseFloat(intent.getStringExtra("lon"));
+                    float lat = intent.getFloatExtra("lat",0);
+                    float lon = intent.getFloatExtra("lon",0);
                     final JSONObject json = new JSONObject();
                     double signalStrength=Double.parseDouble(et_area.getText().toString());
                     json.put("siteId", "0zoTLi29XRgq");
-                    json.put("storeId", intent.getStringExtra("storeId"));
+                    json.put("storeId", Integer.parseInt(intent.getStringExtra("storeId")));
                     json.put("name", et_name.getText().toString());
-                    json.put("mac", intent.getStringExtra("mac"));
+//                    json.put("mac", intent.getStringExtra("mac"));
+                    json.put("mac", "a020a61114ff");
                     json.put("floorArea", intent.getStringExtra("floorArea"));
                     json.put("signalStrength", (int) computations(signalStrength));
-                    json.put("longitude", (float) (Math.round(lat * 100)) / 1000);
-                    json.put("latitude", (float) (Math.round(lon * 100)) / 1000);
+                    json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
+                    json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
+                    Log.i("jss",json.toString());
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -129,7 +145,7 @@ public class BindingActivity extends Activity implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-
+                            Log.i("info",response.body().string());
                         }
                     });
 

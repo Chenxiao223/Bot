@@ -8,7 +8,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,21 +87,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         //
         initView();
     }
-
-//    @Override
-//    public void setUserVisibleHint(boolean isVisibleToUser) {
-//        super.setUserVisibleHint(isVisibleToUser);
-//        if (isVisibleToUser) {
-//            //初始化接口没有的数据
-//            list_shop.add("全部门店");
-//            list_tanzhen.add("全部探针");
-//            hm_store.put("全部门店", "0");
-//            hm_probe.put("全部探针", "0");
-//            getSiteOption();
-//        } else {
-//            clearAllData();
-//        }
-//    }
 
     //清空所有数据
     public void clearAllData() {

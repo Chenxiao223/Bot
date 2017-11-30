@@ -105,6 +105,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         hm_probe.clear();
         token = null;
         pageNum = 1;
+        list_trend.clear();
     }
 
     @Override
@@ -375,6 +376,8 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         hm_trend.clear();
         clearAllData();
         getTrend(pageNum);
+        Log.i("data",hm_trend.toString());
+        Log.i("data",list_trend.size()+"");
     }
 
     // 加载更多
@@ -424,7 +427,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         for (int i = 0; i < numValues; ++i) {
             values.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getPv().toString())));//到店人次
             values2.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getUv())));//到店人数
-            axisValues.add(new AxisValue(i).setLabel(trend.getRows().get(i).getStatDate()));
+            axisValues.add(new AxisValue(i).setLabel(trend.getRows().get(i).getStatDate().substring(2)));//为缩小长度，将2017改为17
         }
         Line line = new Line(values);
         line.setColor(ChartUtils.COLOR_GREEN).setCubic(true);

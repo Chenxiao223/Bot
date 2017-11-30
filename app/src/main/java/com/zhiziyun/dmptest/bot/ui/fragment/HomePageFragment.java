@@ -416,7 +416,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         for (int i = 0; i < numValues; ++i) {
             values.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getPv().toString())));//到店人次
             values2.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getUv())));//到店人数
-            axisValues.add(new AxisValue(i).setLabel(homePage.getRows().get(i).getStatDate()));
+            axisValues.add(new AxisValue(i).setLabel(homePage.getRows().get(i).getStatDate().substring(2)));//为缩短字段去掉年份前的21
         }
         Line line = new Line(values);
         line.setColor(ChartUtils.COLOR_GREEN).setCubic(true);
@@ -426,7 +426,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         lines.add(line);
         lines.add(line2);
         lineData = new LineChartData(lines);
-        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true).setHasTiltedLabels(true));
+        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
         lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(5));
         chartView.setLineChartData(lineData);
         chartView.setViewportCalculationEnabled(false);

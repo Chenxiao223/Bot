@@ -1,14 +1,18 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
@@ -30,6 +34,23 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.xys.libzxing.zxing.activity.CaptureActivity;
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.http.DESCoder;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.DecimalFormat;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by Administrator on 2017/11/15.
@@ -49,6 +70,9 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
     private float lon = 0;//经度
     private float lat = 0;//纬度
     private EditText et_floorArea, et_storeId;
+    private String token;
+    private String storeId;
+    private LinearLayout traceroute_rootview;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,6 +85,8 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
     }
 
     private void initView() {
+        traceroute_rootview = findViewById(R.id.traceroute_rootview);
+        traceroute_rootview.setOnClickListener(this);
         et_storeId = findViewById(R.id.et_storeId);
         et_floorArea = findViewById(R.id.et_floorArea);
         iv_back = findViewById(R.id.iv_back);
@@ -153,18 +179,88 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
             case R.id.iv_back:
                 finish();
                 break;
+            case R.id.traceroute_rootview:
+                //让软键盘隐藏
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+                break;
         }
     }
 
     //点击下一步
     public void next(View view) {
         if (lat != 0 && lon != 0 && !TextUtils.isEmpty(et_floorArea.getText().toString()) && !TextUtils.isEmpty(et_storeId.getText().toString())) {
-            Intent it = new Intent();
-            it.setClass(this, CaptureActivity.class);
-            //返回一个二维码的信息
-            startActivityForResult(it, 99);
-        }else{
-            Toast.makeText(this, "请将数据填写完整", Toast.LENGTH_SHORT).show();
+            //token加密
+            try {
+                token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //新增门店接口
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        final JSONObject json = new JSONObject();
+                        json.put("siteId", "0zoTLi29XRgq");
+                        json.put("name", et_storeId.getText().toString());
+                        json.put("area", Integer.parseInt(et_floorArea.getText().toString()));
+                        json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
+                        json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
+                        OkHttpClient client = new OkHttpClient();
+                        String url = null;
+                        try {
+                            url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                        RequestBody body = RequestBody.create(mediaType, url);
+                        final Request request = new Request.Builder()
+                                .url("http://dmptest.zhiziyun.com/api/v1/store/add.action")
+                                .post(body)
+                                .addHeader("content-type", "application/x-www-form-urlencoded")
+                                .build();
+
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                try {
+                                    JSONObject jsonObject = new JSONObject(response.body().string());
+                                    storeId = jsonObject.get("obj").toString();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                //成功之后才执行
+                            Intent it = new Intent();
+                            it.setClass(AddStoryActivity.this, CaptureActivity.class);
+                            //返回一个二维码的信息
+                            startActivityForResult(it, 99);
+                                //测试完之后删除
+//                                Intent it1 = new Intent(AddStoryActivity.this, BindingActivity.class);
+//                                it1.putExtra("lat", lat);
+//                                it1.putExtra("lon", lon);
+//                                it1.putExtra("storeId", storeId);
+//                                it1.putExtra("storeId", et_storeId.getText().toString());
+//                                it1.putExtra("floorArea", et_floorArea.getText().toString());
+//                                startActivity(it1);
+
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        } else {
+            Toast.makeText(AddStoryActivity.this, "请将数据填写完整", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -175,13 +271,13 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
             Bundle bundle = data.getExtras();
             //返回二维码扫描的信息
             String result = bundle.get("result").toString();
-
-            Intent it=new Intent(this, BindingActivity.class);
-            it.putExtra("lat",lat);
-            it.putExtra("lon",lon);
-            it.putExtra("storeId",et_storeId.getText().toString());
-            it.putExtra("floorArea",et_floorArea.getText().toString());
-            it.putExtra("mac",result);
+            Intent it = new Intent(this, BindingActivity.class);
+            it.putExtra("lat", lat);
+            it.putExtra("lon", lon);
+            it.putExtra("storeId", et_storeId.getText().toString());
+            it.putExtra("floorArea", et_floorArea.getText().toString());
+            it.putExtra("mac", result);
+            it.putExtra("storeId", storeId);
             startActivity(it);
         }
     }
