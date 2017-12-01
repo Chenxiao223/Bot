@@ -1,6 +1,8 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,8 +27,10 @@ import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
 import com.zhiziyun.dmptest.bot.entity.Trend;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.ui.activity.AddStoryActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.LoginActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.PassengerFlowAnalysisActivity;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.widget.HollowPieNewChart;
 import com.zhiziyun.dmptest.bot.widget.LineChart;
 
@@ -77,7 +81,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest, tv_oldguest,tv_new,tv_old;
     private ImageView iv_addstory;
     private RelativeLayout rl_today_people;
-    private String token;
     private PieChartView pie_chart;//饼形图控件
     private PieChartData pieChardata;//数据
     List<SliceValue> values = new ArrayList<SliceValue>();
@@ -94,6 +97,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private LineChartData lineData;
     private HomePage page;
     private MyDialog dialog;
+    private SharedPreferences share;
 
     @Nullable
     @Override
@@ -109,11 +113,13 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     }
 
     public void initView() {
+         share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //折线图
         chartView = getView().findViewById(R.id.linechart);
         tv_new=getView().findViewById(R.id.tv_new);
         tv_old=getView().findViewById(R.id.tv_old);
         tv_companyname = getView().findViewById(R.id.tv_companyname);
+        tv_companyname.setText(share.getString("company","无数据"));
         iv_addstory = getView().findViewById(R.id.iv_addstory);
         iv_addstory.setOnClickListener(this);
         rl_today_people = getView().findViewById(R.id.rl_today_people);
@@ -159,24 +165,17 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         //加载动画
         dialog = MyDialog.showDialog(getActivity());
         dialog.show();
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-            Log.i("info", token);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取门店数和探针数
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid",""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -226,11 +225,11 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid",""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -281,16 +280,15 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             public void run() {
                 try {
                     //token加密
-                    String token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("siteId", "0zoTLi29XRgq");
+                    jsonObject.put("siteId", share.getString("siteid",""));
                     jsonObject.put("beginTime", getPastDate(6));
                     jsonObject.put("endTime", getDate());
                     jsonObject.put("microprobeId", 0);
                     jsonObject.put("storeId", 0);
                     Log.i("inf",jsonObject.toString());
                     OkHttpClient client = new OkHttpClient();
-                    String url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + jsonObject.toString();
+                    String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + jsonObject.toString();
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     Request request = new Request.Builder()
@@ -416,7 +414,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         for (int i = 0; i < numValues; ++i) {
             values.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getPv().toString())));//到店人次
             values2.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getUv())));//到店人数
-            axisValues.add(new AxisValue(i).setLabel(homePage.getRows().get(i).getStatDate().substring(2)));//为缩短字段去掉年份前的21
+            axisValues.add(new AxisValue(i).setLabel(homePage.getRows().get(i).getStatDate().substring(5)));//为缩短字段去掉年份2017去掉
         }
         Line line = new Line(values);
         line.setColor(ChartUtils.COLOR_GREEN).setCubic(true);

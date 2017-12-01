@@ -1,7 +1,9 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,6 +27,7 @@ import com.zhiziyun.dmptest.bot.entity.Visitorsself;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.ui.activity.VisitorsselfActivity;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
@@ -61,7 +64,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private ArrayAdapter<String> adp_shop;
     private ArrayAdapter<String> adp_tanzhen;
     private LinearLayout line_date;
-    private String token;
     private HashMap<String, String> hm_store = new HashMap<String, String>();
     private HashMap<String, String> hm_probe = new HashMap<String, String>();
     private String beginTime, endTime;
@@ -74,6 +76,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private int pageNum = 1;
     private Visitorsself visitorsself;
     private MyDialog dialog;
+    private SharedPreferences share;
 
     @Nullable
     @Override
@@ -93,11 +96,10 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         beginTime=gettodayDate();
         endTime=beginTime;
 
-        list_shop.clear();
-        list_tanzhen.clear();
-        token = null;
-        hm_store.clear();
-        hm_probe.clear();
+//        list_shop.clear();
+//        list_tanzhen.clear();
+//        hm_store.clear();
+//        hm_probe.clear();
         microprobeId = 0;
         storeId = 0;
         pageNum = 1;
@@ -105,6 +107,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     }
 
     public void initView() {
+        share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -144,23 +147,17 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     }
 
     public void getSiteOption() {
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取站点选项
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid",""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -192,7 +189,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                     list_shop.add(key);
                                 }
                                 handler.sendEmptyMessage(1);
-
                                 JSONObject json_probe = new JSONObject(json_obj.get("probe").toString());
                                 Iterator<String> probe = json_probe.keys();
                                 while (probe.hasNext()) {
@@ -275,19 +271,13 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         //加载动画
         dialog = MyDialog.showDialog(getActivity());
         dialog.show();
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取访客信息列表
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("siteId", "0zoTLi29XRgq");
+                    jsonObject.put("siteId", share.getString("siteid",""));
                     jsonObject.put("starttime", beginTime);
                     jsonObject.put("endtime", endTime);
                     jsonObject.put("page", page);
@@ -299,8 +289,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     OkHttpClient okHttpClient = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + jsonObject.toString();
-                    } catch (UnsupportedEncodingException e) {
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + jsonObject.toString();
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
@@ -394,6 +384,12 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     public void onRefresh() {
         hm_visitors.clear();
         clearAllData();
+        //初始化接口没有的数据
+//        list_shop.add("全部门店");
+//        list_tanzhen.add("全部探针");
+//        hm_store.put("全部门店", "0");
+//        hm_probe.put("全部探针", "0");
+//        getSiteOption();
         getData(pageNum);
     }
 

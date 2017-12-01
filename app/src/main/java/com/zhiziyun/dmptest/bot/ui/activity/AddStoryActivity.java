@@ -3,6 +3,7 @@ package com.zhiziyun.dmptest.bot.ui.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -35,6 +36,7 @@ import com.baidu.mapapi.model.LatLng;
 import com.xys.libzxing.zxing.activity.CaptureActivity;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
+import com.zhiziyun.dmptest.bot.util.Token;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,9 +72,9 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
     private float lon = 0;//经度
     private float lat = 0;//纬度
     private EditText et_floorArea, et_storeId;
-    private String token;
     private String storeId;
     private LinearLayout traceroute_rootview;
+    private SharedPreferences share;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,6 +87,7 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
     }
 
     private void initView() {
+        share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         traceroute_rootview = findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
         et_storeId = findViewById(R.id.et_storeId);
@@ -189,60 +192,57 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
 
     //点击下一步
     public void next(View view) {
-        if (lat != 0 && lon != 0 && !TextUtils.isEmpty(et_floorArea.getText().toString()) && !TextUtils.isEmpty(et_storeId.getText().toString())) {
-            //token加密
-            try {
-                token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //新增门店接口
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final JSONObject json = new JSONObject();
-                        json.put("siteId", "0zoTLi29XRgq");
-                        json.put("name", et_storeId.getText().toString());
-                        json.put("area", Integer.parseInt(et_floorArea.getText().toString()));
-                        json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
-                        json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
-                        OkHttpClient client = new OkHttpClient();
-                        String url = null;
+        if (lat != 0 && lon != 0 && !TextUtils.isEmpty(et_floorArea.getText().toString())
+                && !TextUtils.isEmpty(et_storeId.getText().toString())) {
+            //面积必须大于100小于三万
+            if (Long.parseLong(et_floorArea.getText().toString()) > 100 && Long.parseLong(et_floorArea.getText().toString()) < 30000) {
+                //新增门店接口
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
                         try {
-                            url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                        RequestBody body = RequestBody.create(mediaType, url);
-                        final Request request = new Request.Builder()
-                                .url("http://dmptest.zhiziyun.com/api/v1/store/add.action")
-                                .post(body)
-                                .addHeader("content-type", "application/x-www-form-urlencoded")
-                                .build();
-
-                        client.newCall(request).enqueue(new Callback() {
-                            @Override
-                            public void onFailure(Call call, IOException e) {
-
+                            final JSONObject json = new JSONObject();
+                            json.put("siteId", share.getString("siteid",""));
+                            json.put("name", et_storeId.getText().toString());
+                            json.put("area", Integer.parseInt(et_floorArea.getText().toString()));
+                            json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
+                            json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
+                            OkHttpClient client = new OkHttpClient();
+                            String url = null;
+                            try {
+                                url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
                             }
+                            MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                            RequestBody body = RequestBody.create(mediaType, url);
+                            final Request request = new Request.Builder()
+                                    .url("http://dmptest.zhiziyun.com/api/v1/store/add.action")
+                                    .post(body)
+                                    .addHeader("content-type", "application/x-www-form-urlencoded")
+                                    .build();
 
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                try {
-                                    JSONObject jsonObject = new JSONObject(response.body().string());
-                                    storeId = jsonObject.get("obj").toString();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                            client.newCall(request).enqueue(new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+
                                 }
 
-                                //成功之后才执行
-                            Intent it = new Intent();
-                            it.setClass(AddStoryActivity.this, CaptureActivity.class);
-                            //返回一个二维码的信息
-                            startActivityForResult(it, 99);
-                                //测试完之后删除
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(response.body().string());
+                                        storeId = jsonObject.get("obj").toString();
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    //成功之后才执行
+                                    Intent it = new Intent();
+                                    it.setClass(AddStoryActivity.this, CaptureActivity.class);
+                                    //返回一个二维码的信息
+                                    startActivityForResult(it, 99);
+                                    //测试完之后删除
 //                                Intent it1 = new Intent(AddStoryActivity.this, BindingActivity.class);
 //                                it1.putExtra("lat", lat);
 //                                it1.putExtra("lon", lon);
@@ -251,14 +251,17 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
 //                                it1.putExtra("floorArea", et_floorArea.getText().toString());
 //                                startActivity(it1);
 
-                            }
-                        });
+                                }
+                            });
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-            }).start();
+                }).start();
+            } else {
+                Toast.makeText(this, "面积必须在1百到3万之间", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(AddStoryActivity.this, "请将数据填写完整", Toast.LENGTH_SHORT).show();
         }

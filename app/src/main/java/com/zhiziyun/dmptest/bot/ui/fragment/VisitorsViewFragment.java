@@ -1,5 +1,7 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,6 +25,7 @@ import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.widget.PieChart_active;
 import com.zhiziyun.dmptest.bot.widget.PieChart_age;
 import com.zhiziyun.dmptest.bot.widget.PieChart_mpb;
@@ -67,7 +70,6 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     private LinearLayout line_date;
     private int[] mColors = {0xFFCCFF00, 0xFF6495ED, 0xFFE32636, 0xFF800000, 0xFF808000, 0xFFFF8C69, 0xFF808080,
             0xFFE6B800, 0xFF7CFC00, 0xFF800000};
-    private String token;
     private HashMap<String, String> hm_store = new HashMap<String, String>();
     private HashMap<String, String> hm_probe = new HashMap<String, String>();
     private String beginTime, endTime;
@@ -83,6 +85,8 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     public ArrayList<String> list_brand = new ArrayList<>();
     private TextView tv_age, tv_sex, tv_mpb, tv_mpm, tv_mpp, tv_active;
     private MyDialog dialog;
+    private SharedPreferences share;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -98,6 +102,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     }
 
     public void initView() {
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -123,23 +128,17 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     }
 
     public void getSiteOption() {
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取站点选项
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid", ""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -378,19 +377,13 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
         list_brand.clear();
         hm_price.clear();
         hm_activity.clear();
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取图表信息
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid", ""));
                     json.put("beginTime", beginTime);
                     json.put("endTime", endTime);
                     json.put("microprobeId", microprobeId);
@@ -399,7 +392,7 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }

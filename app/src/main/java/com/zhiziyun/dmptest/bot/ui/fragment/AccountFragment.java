@@ -3,7 +3,9 @@ package com.zhiziyun.dmptest.bot.ui.fragment;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -28,9 +30,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.activity.LoginActivity;
 import com.zhiziyun.dmptest.bot.view.TakePhotoPopWin;
 
 import java.io.File;
@@ -49,6 +53,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     public static final int TAKE_PHOTO = 1;
     public static final int CHOOSE_FROM_AIBUM = 2;
     private Uri imageUri;
+    private SharedPreferences share;
 
     @Nullable
     @Override
@@ -65,8 +70,11 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     }
 
     public void initView() {
+        share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         iv_head = getView().findViewById(R.id.iv_head);
         iv_head.setOnClickListener(this);
+        TextView tv_companyname=getView().findViewById(R.id.tv_companyname);
+        tv_companyname.setText(share.getString("company",""));
     }
 
     @Override
@@ -163,6 +171,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
             e.printStackTrace();
         }
         if (Build.VERSION.SDK_INT >= 24) {
+            //这里报空指针
             imageUri = FileProvider.getUriForFile(getActivity(), "com.example.cameraalbumtest.fileprovider", outputImg);
         } else {
             imageUri = Uri.fromFile(outputImg);

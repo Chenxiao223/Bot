@@ -44,6 +44,7 @@
                 android:layout_height="match_parent"
                 android:background="@null"
                 android:maxLength="40"
+                android:singleLine="true"
                 android:textColorHint="@color/gray"
                 android:hint="Email"/>
         </LinearLayout>
@@ -72,6 +73,8 @@
                 android:layout_height="match_parent"
                 android:background="@null"
                 android:maxLength="40"
+                android:inputType="textPassword"
+                android:singleLine="true"
                 android:textColorHint="@color/gray"
                 android:hint="Password"/>
         </LinearLayout>

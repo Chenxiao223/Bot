@@ -1,11 +1,12 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +21,9 @@ import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.TimeSlot;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
@@ -69,7 +70,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     private XListView xlistview;
     private HashMap<String, String> hm_store = new HashMap<String, String>();
     private HashMap<String, String> hm_probe = new HashMap<String, String>();
-    private String token;
     private int microprobeId = 0;
     private int storeId = 0;
     private String beginTime, endTime;
@@ -79,6 +79,8 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     private TimeSlotAdapter adapter;
     ColumnChartView columnChartView = null;
     private MyDialog dialog;
+    private SharedPreferences share;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -100,15 +102,15 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
 
     //清空数据
     public void clearAllData() {
-        list_shop.clear();
-        list_tanzhen.clear();
-        hm_store.clear();
-        hm_probe.clear();
-        token = null;
+//        list_shop.clear();
+//        list_tanzhen.clear();
+//        hm_store.clear();
+//        hm_probe.clear();
         list_timeslot.clear();
     }
 
     public void initView() {
+        share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -151,7 +153,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
             //给每一个柱子表上值
             column.setHasLabels(true);
             columns.add(column);
-            axisValuess.add(new AxisValue(i).setLabel(timeSlot.getObj().get(i).getHour() + ":00"));
+            axisValuess.add(new AxisValue(i).setLabel(timeSlot.getObj().get(i).getHour() + ""));
         }
         //给表格添加写好数据的柱子
         columnChartData = new ColumnChartData(columns);
@@ -169,23 +171,17 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     }
 
     public void getSiteOption() {
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取站点选项
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid",""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -245,19 +241,13 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
         //加载动画
         dialog = MyDialog.showDialog(getActivity());
         dialog.show();
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取站点选项
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid",""));
                     json.put("beginTime", beginTime);
                     json.put("endTime", endTime);
                     json.put("microprobeId", microprobeId);
@@ -265,7 +255,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }

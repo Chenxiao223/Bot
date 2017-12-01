@@ -3,6 +3,7 @@ package com.zhiziyun.dmptest.bot.ui.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -12,10 +13,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
+import com.zhiziyun.dmptest.bot.util.Token;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -39,9 +43,9 @@ import okhttp3.Response;
 public class BindingActivity extends Activity implements View.OnClickListener {
     private ImageView tv_back;
     private EditText et_name, et_area;
-    private String token;
     private Intent intent;
     private RelativeLayout traceroute_rootview;
+    private SharedPreferences share;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,6 +55,7 @@ public class BindingActivity extends Activity implements View.OnClickListener {
     }
 
     private void initView() {
+        share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         traceroute_rootview=findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
         intent = getIntent();
@@ -97,12 +102,6 @@ public class BindingActivity extends Activity implements View.OnClickListener {
     }
 
     public void complete(View view) {
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         //获取站点选项
         new Thread(new Runnable() {
             @Override
@@ -112,7 +111,7 @@ public class BindingActivity extends Activity implements View.OnClickListener {
                     float lon = intent.getFloatExtra("lon",0);
                     final JSONObject json = new JSONObject();
                     double signalStrength=Double.parseDouble(et_area.getText().toString());
-                    json.put("siteId", "0zoTLi29XRgq");
+                    json.put("siteId", share.getString("siteid",""));
                     json.put("storeId", Integer.parseInt(intent.getStringExtra("storeId")));
                     json.put("name", et_name.getText().toString());
 //                    json.put("mac", intent.getStringExtra("mac"));
@@ -125,7 +124,7 @@ public class BindingActivity extends Activity implements View.OnClickListener {
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -145,7 +144,12 @@ public class BindingActivity extends Activity implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Log.i("info",response.body().string());
+                            try {
+                                JSONObject jsonObject=new JSONObject(response.body().string());
+                                Toast.makeText(BindingActivity.this, jsonObject.get("msg").toString(), Toast.LENGTH_SHORT).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
 

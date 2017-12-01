@@ -34,4 +34,6 @@
     <dimen name="relativeLayout_h">200dp</dimen>
     <dimen name="imagview_top">40dp</dimen>
     <dimen name="text_top">22dp</dimen>
+
+    <dimen name="toolbar_padding_top">0dp</dimen>
 </resources>
