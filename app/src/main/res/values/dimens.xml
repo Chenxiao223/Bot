@@ -13,6 +13,7 @@
     <dimen name="activity_title_tvtitle">18dp</dimen>
     <dimen name="activity_title_btn">18dp</dimen>
     <dimen name="title_text_size">18sp</dimen>
+    <dimen name="title_text_right">10dp</dimen>
 
     <dimen name="baidumap_height">300dp</dimen>
     <dimen name="control_height">90dp</dimen>

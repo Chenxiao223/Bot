@@ -30,15 +30,32 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.ui.activity.LoginActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.TransactionDetailsActivity;
+import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.view.TakePhotoPopWin;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Iterator;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 /**
@@ -54,6 +71,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     public static final int CHOOSE_FROM_AIBUM = 2;
     private Uri imageUri;
     private SharedPreferences share;
+    private RelativeLayout rl_account;
 
     @Nullable
     @Override
@@ -70,6 +88,8 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     }
 
     public void initView() {
+        rl_account=getView().findViewById(R.id.rl_account);
+        rl_account.setOnClickListener(this);
         share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         iv_head = getView().findViewById(R.id.iv_head);
         iv_head.setOnClickListener(this);
@@ -83,6 +103,9 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
             case R.id.iv_head:
                 TakePhotoPopWin takePhotoPopWin = new TakePhotoPopWin(getActivity(), onClickListener, 0);
                 takePhotoPopWin.showAtLocation(getView().findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
+                break;
+            case R.id.rl_account:
+                startActivity(new Intent(getActivity(), TransactionDetailsActivity.class));
                 break;
         }
     }
@@ -299,5 +322,50 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(source, 0, 0, paint);
         return target;
+    }
+
+    //结算账户消费详情接口
+    public void ConsumptionDetails(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject json = new JSONObject();
+                    json.put("accountid", share.getString("siteid",""));
+                    json.put("startDate","");
+                    json.put("endDate","");
+                    json.put("page",1);
+                    json.put("row",10);
+                    OkHttpClient client = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url("http://dmptest.zhiziyun.com/api/v1/option/siteOption.action")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

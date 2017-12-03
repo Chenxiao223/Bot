@@ -40,4 +40,5 @@ dependencies {
     compile files('libs/hellocharts-library-1.5.8.jar')
     compile project(':libzxing2')
     compile files('libs/BaiduLBS_Android.jar')
+    compile 'com.contrarywind:Android-PickerView:3.2.6'
 }

@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -56,8 +58,10 @@ public class LoginActivity extends Activity {
         tv_username = (EditText) findViewById(R.id.edit_username);
         tv_password = (EditText) findViewById(R.id.edit_password);
         tv_username.setText(getemail());
+        tv_username.setSelection(getemail().length());//将光标定位到最后
 
         tv_password.setInputType(EditorInfo.TYPE_CLASS_PHONE);
+        tv_password.setTransformationMethod(PasswordTransformationMethod.getInstance());
         traceroute_rootview = (LinearLayout) findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,9 +116,10 @@ public class LoginActivity extends Activity {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
+//                            Log.i("info",response.body().string());
                             try {
                                 JSONObject json=new JSONObject(response.body().string());
-                                if (!TextUtils.isEmpty(json.get("siteid").toString())) {//返回为true表示登录成功
+                                if (json.get("success").toString().equals("true")) {//返回为true表示登录成功
                                     editors.putString("accountid",json.get("accountid").toString());
                                     editors.putString("siteid",json.get("siteid").toString());
                                     editors.putString("company",json.get("company").toString());

@@ -5,10 +5,12 @@
     android:background="@color/white"
     android:orientation="vertical">
 
-    <ImageView
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="120dp"
-        android:src="@drawable/temp" />
+        android:text="敬请期待"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textSize="30sp"/>
 
 </LinearLayout>

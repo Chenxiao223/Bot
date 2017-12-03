@@ -73,7 +73,7 @@
                 android:layout_height="match_parent"
                 android:background="@null"
                 android:maxLength="40"
-                android:inputType="textPassword"
+                android:inputType="numberPassword"
                 android:singleLine="true"
                 android:textColorHint="@color/gray"
                 android:hint="Password"/>

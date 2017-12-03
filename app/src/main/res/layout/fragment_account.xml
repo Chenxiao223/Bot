@@ -3,6 +3,7 @@
     android:id="@+id/main_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/gray"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -27,19 +28,19 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/text_top"
             android:text="上海智子信息科技股份有限公司"
+            android:singleLine="true"
+            android:maxEms="18"
+            android:ellipsize="end"
             android:textColor="@color/white"
             android:textSize="@dimen/title_text_size" />
 
     </RelativeLayout>
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:scaleType="fitXY"
-        android:src="@drawable/grayline" />
-
     <RelativeLayout
+        android:id="@+id/rl_account"
+        android:background="@color/white"
         android:layout_width="match_parent"
+        android:layout_marginTop="@dimen/control_padding"
         android:layout_height="@dimen/imagview_top">
 
         <ImageView
@@ -67,13 +68,9 @@
             android:src="@drawable/click" />
     </RelativeLayout>
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/line_height"
-        android:scaleType="fitXY"
-        android:src="@drawable/grayline" />
-
     <RelativeLayout
+        android:background="@color/white"
+        android:layout_marginTop="@dimen/line_height"
         android:layout_width="match_parent"
         android:layout_height="@dimen/imagview_top">
 
@@ -100,6 +97,80 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
             android:src="@drawable/click" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:background="@color/white"
+        android:layout_marginTop="@dimen/line_height"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/imagview_top">
+
+        <ImageView
+            android:id="@+id/imageView5"
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:padding="@dimen/control_padding"
+            android:src="@drawable/originality" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/imageView5"
+            android:layout_toRightOf="@+id/imageView5"
+            android:text="我的创意"
+            android:textSize="@dimen/textsizi" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="广告素材制作"
+            android:textSize="@dimen/textsizi"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/imageView2"
+            android:layout_toStartOf="@+id/imageView2" />
+
+        <ImageView
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/click"
+            android:id="@+id/imageView2" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:background="@color/white"
+        android:layout_marginTop="@dimen/control_padding"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/imagview_top">
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:padding="@dimen/control_padding"
+            android:src="@drawable/setting" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/imageView6"
+            android:layout_toRightOf="@+id/imageView6"
+            android:text="设置"
+            android:textSize="@dimen/textsizi" />
+
+        <ImageView
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/click" />
+
     </RelativeLayout>
 
 </LinearLayout>

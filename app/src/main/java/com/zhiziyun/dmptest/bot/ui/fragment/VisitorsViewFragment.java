@@ -22,9 +22,7 @@ import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
-import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.widget.PieChart_active;
 import com.zhiziyun.dmptest.bot.widget.PieChart_age;
@@ -84,7 +82,6 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     public ArrayList<String> list_model = new ArrayList<>();
     public ArrayList<String> list_brand = new ArrayList<>();
     private TextView tv_age, tv_sex, tv_mpb, tv_mpm, tv_mpp, tv_active;
-    private MyDialog dialog;
     private SharedPreferences share;
 
     @Nullable
@@ -353,11 +350,9 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     tv_mpm.setVisibility(View.VISIBLE);
                     tv_mpp.setVisibility(View.VISIBLE);
                     tv_active.setVisibility(View.VISIBLE);
-                    dialog.dismiss();//关闭加载动画
                     break;
                 case 9:
                     Toast.makeText(getActivity(), "查询无效", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);
@@ -365,9 +360,6 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
     };
 
     public void getTable() {
-        //加载动画
-        dialog = MyDialog.showDialog(getActivity());
-        dialog.show();
         //网络请求前先清空数据
         hm_age.clear();
         hm_gender.clear();

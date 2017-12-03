@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +23,6 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.TimeSlot;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
-import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
@@ -78,7 +78,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     private ArrayList<HashMap<String, String>> list_timeslot = new ArrayList<>();
     private TimeSlotAdapter adapter;
     ColumnChartView columnChartView = null;
-    private MyDialog dialog;
     private SharedPreferences share;
 
     @Nullable
@@ -238,9 +237,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
 
     //获取时段信息
     public void getvisitHour() {
-        //加载动画
-        dialog = MyDialog.showDialog(getActivity());
-        dialog.show();
         //获取站点选项
         new Thread(new Runnable() {
             @Override
@@ -277,7 +273,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
                             timeSlot = gson.fromJson(response.body().string(), TimeSlot.class);
-                            if (timeSlot.getObj().size() == 0) {//如果没数据就提示
+                            if (timeSlot.getObj().isEmpty()) {//如果没数据就提示
                                 handler.sendEmptyMessage(4);
                             } else {
                                 for (int i = 0; i < timeSlot.getObj().size(); i++) {
@@ -344,13 +340,11 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                 case 3:
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
-                    dialog.dismiss();//关闭加载动画
                     //柱状图
                     generateDefaultData(timeSlot);
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);

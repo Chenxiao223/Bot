@@ -10,7 +10,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,18 +20,11 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.entity.ChartEntity;
 import com.zhiziyun.dmptest.bot.entity.HomePage;
-import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
-import com.zhiziyun.dmptest.bot.entity.Trend;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.ui.activity.AddStoryActivity;
-import com.zhiziyun.dmptest.bot.ui.activity.LoginActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.PassengerFlowAnalysisActivity;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
-import com.zhiziyun.dmptest.bot.widget.HollowPieNewChart;
-import com.zhiziyun.dmptest.bot.widget.LineChart;
 
 
 import org.json.JSONException;
@@ -48,19 +40,14 @@ import java.util.Date;
 import java.util.List;
 
 import lecho.lib.hellocharts.gesture.ZoomType;
-import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
-import lecho.lib.hellocharts.model.Column;
-import lecho.lib.hellocharts.model.ColumnChartData;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PieChartData;
 import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.SliceValue;
-import lecho.lib.hellocharts.model.SubcolumnValue;
 import lecho.lib.hellocharts.util.ChartUtils;
-import lecho.lib.hellocharts.view.ColumnChartView;
 import lecho.lib.hellocharts.view.LineChartView;
 import lecho.lib.hellocharts.view.PieChartView;
 import okhttp3.Call;
@@ -286,7 +273,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     jsonObject.put("endTime", getDate());
                     jsonObject.put("microprobeId", 0);
                     jsonObject.put("storeId", 0);
-                    Log.i("inf",jsonObject.toString());
                     OkHttpClient client = new OkHttpClient();
                     String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + jsonObject.toString();
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
@@ -363,6 +349,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     break;
                 case 5:
                     srl.setRefreshing(false);
+                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);

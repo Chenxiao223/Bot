@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,13 +21,12 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.bigkoo.pickerview.TimePickerView;
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
 import com.zhiziyun.dmptest.bot.entity.Visitorsself;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.ui.activity.VisitorsselfActivity;
-import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
@@ -75,7 +75,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private ArrayList<HashMap<String, String>> list_visitors = new ArrayList<>();
     private int pageNum = 1;
     private Visitorsself visitorsself;
-    private MyDialog dialog;
     private SharedPreferences share;
 
     @Nullable
@@ -93,8 +92,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
 
     //清空所有数据
     public void clearAllData() {
-        beginTime=gettodayDate();
-        endTime=beginTime;
+        beginTime = gettodayDate();
+        endTime = beginTime;
 
 //        list_shop.clear();
 //        list_tanzhen.clear();
@@ -107,15 +106,15 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     }
 
     public void initView() {
-        share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
         hm_store.put("全部门店", "0");
         hm_probe.put("全部探针", "0");
         getSiteOption();
-        beginTime=gettodayDate();
-        endTime=beginTime;
+        beginTime = gettodayDate();
+        endTime = beginTime;
 
         xlistview = getView().findViewById(R.id.xlistview);
         xlistview.setPullLoadEnable(true);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
@@ -125,8 +124,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         xlistview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent=new Intent(getActivity(), VisitorsselfActivity.class);
-                intent.putExtra("mac",list_visitors.get(position).get("mac"));
+                Intent intent = new Intent(getActivity(), VisitorsselfActivity.class);
+                intent.putExtra("mac", list_visitors.get(position).get("mac"));
                 startActivity(intent);
             }
         });
@@ -153,7 +152,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid",""));
+                    json.put("siteId", share.getString("siteid", ""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -256,11 +255,9 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 case 3:
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
-                    dialog.dismiss();//关闭加载动画
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);
@@ -268,16 +265,13 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     };
 
     public void getData(final int page) {
-        //加载动画
-        dialog = MyDialog.showDialog(getActivity());
-        dialog.show();
         //获取访客信息列表
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("siteId", share.getString("siteid",""));
+                    jsonObject.put("siteId", share.getString("siteid", ""));
                     jsonObject.put("starttime", beginTime);
                     jsonObject.put("endtime", endTime);
                     jsonObject.put("page", page);
@@ -310,9 +304,9 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
                             visitorsself = gson.fromJson(response.body().string(), Visitorsself.class);
-                            if (visitorsself.getRows().size()==0){//如果没数据就提示
+                            if (visitorsself.getRows().size() == 0) {//如果没数据就提示
                                 handler.sendEmptyMessage(4);
-                            }else {
+                            } else {
                                 for (int i = 0; i < visitorsself.getRows().size(); i++) {
                                     hm_visitors = new HashMap<String, String>();
                                     hm_visitors.put("content1", visitorsself.getRows().get(i).getVisittime());
@@ -360,23 +354,46 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.line_date:
-                final Calendar c = Calendar.getInstance();
+//                final Calendar c = Calendar.getInstance();
                 //显示日期选择器
-                new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+                TimePickerView pvTime = new TimePickerView.Builder(getActivity(), new TimePickerView.OnTimeSelectListener() {
                     @Override
-                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                        c.set(year, monthOfYear, dayOfMonth);
-                        if (view.isShown()) { // 这里判断,防止点击事件执行两次
-                            beginTime = (String) DateFormat.format("yyy-MM-dd", c);
-                            endTime = beginTime;
+                    public void onTimeSelect(Date date, View v) {
+                        beginTime = getTime(date);
+                        endTime = beginTime;
 
-                            list_visitors.clear();
-                            getData(1);
-                        }
+                        list_visitors.clear();
+                        getData(1);
                     }
-                }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
-                break;
+                })
+                        .setType(new boolean[]{true, true, true, false, false, false})// 默认全部显示
+                        .setCancelText("取消")//取消按钮文字
+                        .setSubmitText("确定")//确认按钮文字
+                        .setContentSize(20)//滚轮文字大小
+                        .isCenterLabel(false) //是否只显示中间选中项的label文字，false则每项item全部都带有label。
+                        .build();
+
+                pvTime.show();
+//                new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+//                    @Override
+//                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+//                        c.set(year, monthOfYear, dayOfMonth);
+//                        if (view.isShown()) { // 这里判断,防止点击事件执行两次
+//                            beginTime = (String) DateFormat.format("yyy-MM-dd", c);
+//                            endTime = beginTime;
+//
+//                            list_visitors.clear();
+//                            getData(1);
+//                        }
+//                    }
+//                }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
+//                break;
         }
+    }
+
+    private String getTime(Date date) {//可根据需要自行截取数据显示
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        return format.format(date);
     }
 
     //下拉刷新

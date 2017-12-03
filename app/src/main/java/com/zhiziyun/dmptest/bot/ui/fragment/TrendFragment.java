@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +21,7 @@ import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.Trend;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
-import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
 
@@ -84,7 +81,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     //折线图
     private LineChartView chartView;
     private LineChartData lineData;
-    private MyDialog dialog;
     private SharedPreferences share;
 
     @Nullable
@@ -258,12 +254,10 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                     onLoad();//数据加载完后就停止刷新
                     //线性图
                     generateInitialLineData(trend);
-                    dialog.dismiss();//关闭加载动画
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
                     onLoad();//无数据时也需要关闭刷新
-                    dialog.dismiss();//关闭加载动画
                     break;
             }
             super.handleMessage(msg);
@@ -271,9 +265,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     };
 
     public void getTrend(final int page) {
-        //加载动画
-        dialog = MyDialog.showDialog(getActivity());
-        dialog.show();
         //获取站点选项
         new Thread(new Runnable() {
             @Override

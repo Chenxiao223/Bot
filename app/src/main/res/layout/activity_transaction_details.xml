@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_title"
+        android:background="@drawable/homepagebg"
+        android:id="@+id/relativeLayout">
+
+        <ImageView
+            android:id="@+id/tv_back"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:padding="@dimen/activity_title_padding"
+            android:layout_centerVertical="true"
+            android:src="@drawable/back_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="交易明细"
+            android:textColor="@color/white"
+            android:textSize="@dimen/activity_title_tvtitle"
+            android:id="@+id/textView2" />
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="日期"
+            android:textColor="@color/white"
+            android:textSize="@dimen/textsizi"
+            android:layout_alignBottom="@+id/textView2"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="@dimen/title_text_right"
+            android:layout_marginEnd="@dimen/title_text_right" />
+    </RelativeLayout>
+
+</LinearLayout>

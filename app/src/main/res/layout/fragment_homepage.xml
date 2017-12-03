@@ -56,11 +56,14 @@
 
                         <TextView
                             android:id="@+id/tv_companyname"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center_vertical"
                             android:text="上海智子信息"
+                            android:singleLine="true"
+                            android:maxEms="8"
+                            android:ellipsize="end"
                             android:textColor="@color/white"
                             android:textSize="@dimen/title_text_size"
                             android:textStyle="bold" />
@@ -106,10 +109,10 @@
 
                             <ImageView
                                 android:id="@+id/iv_addstory"
-                                android:layout_width="match_parent"
+                                android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:gravity="right"
-                                android:padding="10dp"
+                                android:padding="5dp"
                                 android:src="@drawable/add" />
 
                         </LinearLayout>
@@ -124,15 +127,14 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="180dp"
+                    android:layout_height="150dp"
                     android:background="@color/white"
                     android:orientation="vertical">
 
                     <RelativeLayout
                         android:id="@+id/rl_today_people"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/padding_left_right3"
-                        android:layout_marginTop="@dimen/control_marginbottom">
+                        android:layout_height="@dimen/padding_left_right3">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -191,7 +193,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_weight="1.3">
+                            android:layout_weight="1.7">
 
                             <lecho.lib.hellocharts.view.PieChartView
                                 android:id="@+id/pie_chart"
@@ -298,9 +300,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="32dp"
-                        android:layout_marginStart="32dp"
-                        android:layout_marginTop="15dp"
+                        android:layout_marginLeft="@dimen/padding_left_right3"
+                        android:layout_marginStart="@dimen/padding_left_right3"
                         android:text="近七日客流趋势"
                         android:textColor="@color/blue"
                         android:textSize="@dimen/title_text_size"
@@ -308,9 +309,10 @@
 
                     <lecho.lib.hellocharts.view.LineChartView
                         android:id="@+id/linechart"
+                        android:padding="10dp"
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="10dp" />
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
