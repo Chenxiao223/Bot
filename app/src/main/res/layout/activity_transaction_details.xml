@@ -42,4 +42,9 @@
             android:layout_marginEnd="@dimen/title_text_right" />
     </RelativeLayout>
 
+    <com.zhiziyun.dmptest.bot.xListView.XListView
+        android:id="@+id/xlistview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
 </LinearLayout>

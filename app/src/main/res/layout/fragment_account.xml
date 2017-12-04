@@ -57,9 +57,19 @@
             android:layout_toEndOf="@+id/imageView3"
             android:layout_toRightOf="@+id/imageView3"
             android:text="账户"
-            android:textSize="@dimen/textsizi" />
+            android:textSize="@dimen/title_text_size" />
+
+        <TextView
+            android:id="@+id/tv_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/textsizi"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/iv_1"
+            android:layout_toStartOf="@+id/iv_1" />
 
         <ImageView
+            android:id="@+id/iv_1"
             android:layout_width="@dimen/imagview_top"
             android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
@@ -88,7 +98,7 @@
             android:layout_toEndOf="@+id/imageView4"
             android:layout_toRightOf="@+id/imageView4"
             android:text="门店"
-            android:textSize="@dimen/textsizi" />
+            android:textSize="@dimen/title_text_size" />
 
         <ImageView
             android:layout_width="@dimen/imagview_top"
@@ -119,7 +129,7 @@
             android:layout_toEndOf="@+id/imageView5"
             android:layout_toRightOf="@+id/imageView5"
             android:text="我的创意"
-            android:textSize="@dimen/textsizi" />
+            android:textSize="@dimen/title_text_size" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -161,7 +171,7 @@
             android:layout_toEndOf="@+id/imageView6"
             android:layout_toRightOf="@+id/imageView6"
             android:text="设置"
-            android:textSize="@dimen/textsizi" />
+            android:textSize="@dimen/title_text_size" />
 
         <ImageView
             android:layout_width="@dimen/imagview_top"

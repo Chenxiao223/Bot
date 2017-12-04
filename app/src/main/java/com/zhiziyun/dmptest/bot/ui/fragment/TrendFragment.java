@@ -113,7 +113,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     }
 
     public void initView() {
-        share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -147,7 +147,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid",""));
+                    json.put("siteId", share.getString("siteid", ""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -220,7 +220,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
-                            list_trend.clear();
                             getTrend(1);
                         }
 
@@ -239,7 +238,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             microprobeId = Integer.parseInt(hm_probe.get(list_tanzhen.get(position)));
-                            list_trend.clear();
                             getTrend(1);
                         }
 
@@ -250,6 +248,19 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                     });
                     break;
                 case 3:
+                    if (trend.getRows().size() == 0) {//如果没数据就提示
+                        handler.sendEmptyMessage(4);
+                    } else {
+                        list_trend.clear();
+                        for (int i = 0; i < trend.getRows().size(); i++) {
+                            hm_trend = new HashMap<String, String>();
+                            hm_trend.put("content1", trend.getRows().get(i).getStatDate());
+                            hm_trend.put("content2", trend.getRows().get(i).getPv());
+                            hm_trend.put("content3", trend.getRows().get(i).getUv());
+                            list_trend.add(hm_trend);
+                        }
+                        pageNum++;
+                    }
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
                     //线性图
@@ -271,7 +282,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid",""));
+                    json.put("siteId", share.getString("siteid", ""));
                     json.put("beginTime", beginTime);
                     json.put("endTime", endTime);
                     json.put("microprobeId", microprobeId);
@@ -303,19 +314,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
                             trend = gson.fromJson(response.body().string(), Trend.class);
-                            if (trend.getRows().size() == 0) {//如果没数据就提示
-                                handler.sendEmptyMessage(4);
-                            } else {
-                                for (int i = 0; i < trend.getRows().size(); i++) {
-                                    hm_trend = new HashMap<String, String>();
-                                    hm_trend.put("content1", trend.getRows().get(i).getStatDate());
-                                    hm_trend.put("content2", trend.getRows().get(i).getPv());
-                                    hm_trend.put("content3", trend.getRows().get(i).getUv());
-                                    list_trend.add(hm_trend);
-                                }
-                                handler.sendEmptyMessage(3);//通知刷新适配器
-                                pageNum++;
-                            }
+                            handler.sendEmptyMessage(3);//通知刷新适配器
                         }
                     });
 
@@ -344,7 +343,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                         beginTime = textString.substring(0, index);
                         endTime = textString.substring(index + 1, textString.length());
 
-                        list_trend.clear();
                         getTrend(1);
                     }
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
@@ -356,7 +354,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     @Override
     public void onRefresh() {
         hm_trend.clear();
-        clearAllData();
+        pageNum = 1;
         getTrend(pageNum);
     }
 

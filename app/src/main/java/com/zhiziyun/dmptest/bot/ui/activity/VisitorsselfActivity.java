@@ -1,6 +1,7 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -12,9 +13,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.Visitorsselfparticulars;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.Token;
 
 import org.json.JSONObject;
 
@@ -36,10 +40,10 @@ import okhttp3.Response;
  */
 
 public class VisitorsselfActivity extends Activity implements View.OnClickListener {
-    String token;
     private ImageView iv_head;
-    private TextView tv_age, tv_marriage, tv_gender, tv_brands, tv_model, tv_did, tv_date;
+    private TextView tv_age, tv_marriage, tv_gender, tv_brands, tv_model, tv_did, tv_date, tv_num;
     private Visitorsselfparticulars vp;
+    private MyDialog dialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,20 +62,21 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
         tv_model = findViewById(R.id.tv_model);
         tv_did = findViewById(R.id.tv_did);
         tv_date = findViewById(R.id.tv_date);
+        tv_num = findViewById(R.id.tv_num);
 
         ImageView iv_back = findViewById(R.id.iv_back);
         iv_back.setOnClickListener(this);
-        String mac = getIntent().getStringExtra("mac");
+        Intent it=getIntent();
+        String mac = it.getStringExtra("mac");
         getData(mac);
+        tv_brands.setText(it.getStringExtra("brands"));
+        tv_model.setText(it.getStringExtra("model"));
     }
 
     public void getData(final String mac) {
-        //token加密
-        try {
-            token = DESCoder.encrypt("1" + System.currentTimeMillis(), "510be9ce-c796-4d2d-a8b6-9ca8a426ec63");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //加载动画
+        dialog = MyDialog.showDialog(this);
+        dialog.show();
         //获取站点选项
         new Thread(new Runnable() {
             @Override
@@ -79,11 +84,11 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("mac", mac);
-                    Log.i("jjj","mac:"+mac+" ,token:"+token);
+                    Log.i("mac", mac);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(token, "utf-8") + "&json=" + json.toString();
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -103,10 +108,30 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Log.i("data",response.body().string());
-//                            Gson gson = new Gson();
-//                            vp = gson.fromJson(response.body().string(), Visitorsselfparticulars.class);
-//                            handler.sendEmptyMessage(1);
+                            Gson gson = new Gson();
+                            vp = gson.fromJson(response.body().string(), Visitorsselfparticulars.class);
+                            if (vp != null) {
+                                if (vp.getPopulation() != null) {
+                                    Message message = new Message();
+                                    message.what=1;
+                                    Bundle bundle = new Bundle();
+                                    for (int i = 0; i < vp.getPopulation().size(); i++) {
+                                        String temp = vp.getPopulation().get(i).getName();
+                                        Log.i("info", temp);
+                                        if (front(temp).equals("性别")) {
+                                            bundle.putString("gender", bk(temp));
+                                        } else if (front(temp).equals("婚姻")) {
+                                            bundle.putString("marriage", bk(temp));
+                                        } else if (front(temp).equals("年龄")) {
+                                            bundle.putString("age", bk(temp));
+                                        }
+                                    }
+                                    message.setData(bundle);
+                                    handler.sendMessage(message);
+                                }
+                            } else {
+                                Toast.makeText(VisitorsselfActivity.this, "没数据", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     });
 
@@ -120,25 +145,67 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
     Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
+            super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
                     if (TextUtils.isEmpty(vp.getDid())) {//如果没数据就提示
                         Toast.makeText(VisitorsselfActivity.this, "无数据", Toast.LENGTH_SHORT).show();
                     } else {
-//                        if (vp)
-                        break;
+                        tv_did.setText(vp.getDid());
+                        tv_date.setText(vp.getVisittime().substring(0, vp.getVisittime().indexOf(" ")));
+                        tv_num.setText(vp.getProbe_log().size() + "");
+                        tv_gender.setText(msg.getData().getString("gender", "未知"));
+                        setImage(msg.getData().getString("gender", "未知"));
+                        tv_marriage.setText(msg.getData().getString("marriage", "未知"));
+                        tv_age.setText(msg.getData().getString("age", "未知"));
+                        dialog.dismiss();
                     }
-                    super.handleMessage(msg);
+                    break;
             }
         }
     };
 
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.iv_back:
-                    finish();
-                    break;
-            }
+    public void setImage(String gender){
+        switch (gender){
+            case "男":
+                iv_head.setImageResource(R.drawable.man);
+                break;
+            case "女":
+                iv_head.setImageResource(R.drawable.woman);
+                break;
+            case "未知":
+                iv_head.setImageResource(R.drawable.unknown);
+                break;
         }
     }
+
+    public String front(String str) {
+        if (!str.equals("性别未知") && judgment(str)) {
+            return str.substring(0, str.indexOf("-"));
+        }
+        return "未知";
+    }
+
+    public String bk(String str) {
+        if (!str.equals("性别未知") && judgment(str)) {
+            return str.substring(str.indexOf("-") + 1);
+        }
+        return "未知";
+    }
+
+    public boolean judgment(String str) {
+        if (str.indexOf("性别") != -1 || str.indexOf("年龄") != -1 || str.indexOf("婚姻") != -1) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_back:
+                finish();
+                break;
+        }
+    }
+}

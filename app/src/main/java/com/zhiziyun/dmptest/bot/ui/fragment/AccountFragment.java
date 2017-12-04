@@ -17,7 +17,8 @@ import android.graphics.PorterDuffXfermode;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -35,19 +36,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.ui.activity.LoginActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.TransactionDetailsActivity;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.view.TakePhotoPopWin;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Iterator;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -72,6 +70,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     private Uri imageUri;
     private SharedPreferences share;
     private RelativeLayout rl_account;
+    private TextView tv_balance;
 
     @Nullable
     @Override
@@ -83,18 +82,20 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //
-        fragment=this;
+        fragment = this;
         initView();
     }
 
     public void initView() {
-        rl_account=getView().findViewById(R.id.rl_account);
+        tv_balance = getView().findViewById(R.id.tv_balance);
+        ConsumptionDetails();
+        rl_account = getView().findViewById(R.id.rl_account);
         rl_account.setOnClickListener(this);
-        share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         iv_head = getView().findViewById(R.id.iv_head);
         iv_head.setOnClickListener(this);
-        TextView tv_companyname=getView().findViewById(R.id.tv_companyname);
-        tv_companyname.setText(share.getString("company",""));
+        TextView tv_companyname = getView().findViewById(R.id.tv_companyname);
+        tv_companyname.setText(share.getString("company", ""));
     }
 
     @Override
@@ -132,7 +133,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     }
 
     private void doHandlerPhoto(int type) {
-        if (type==PIC_FROM＿LOCALPHOTO){//相册
+        if (type == PIC_FROM＿LOCALPHOTO) {//相册
             /**
              * 因为相片是存在SD卡上的，所以我们需要SD卡的读写权限，因为读写权限在7.0属于高危权限了，所以在动态运行时去判断是否有这个权限，有则继续运行，没有则调用动态注册
              */
@@ -141,14 +142,14 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
             } else {
                 openAlbum();
             }
-        }else if (type==PIC_FROM_CAMERA){//拍照
+        } else if (type == PIC_FROM_CAMERA) {//拍照
             openCamara();
-        }else{
+        } else {
             show("未知错误");
         }
     }
 
-    public void show(String msg){
+    public void show(String msg) {
         Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
     }
 
@@ -225,10 +226,10 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
             case CHOOSE_FROM_AIBUM:
                 if (resultCode == getActivity().RESULT_OK) {
                     //判断手机系统版本号
-                    if (Build.VERSION.SDK_INT >= 19){
+                    if (Build.VERSION.SDK_INT >= 19) {
                         //4.4以上的系统使用这个方法处理照片
                         handleImageOnKitKat(data);
-                    }else{
+                    } else {
                         //4.4以下的使用这个方法处理
                         handleImageBeforeKitKat(data);
                     }
@@ -242,27 +243,28 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
      * 一般就是集中判断
      * 返回的URI是不是document类型，如果是那么就取出来document id 进行处理，如果不是就进行普通的URI处理
      * 如果URI的authority是media格式的话，document id 还需要再进行一次解析，通过字符串的分割取出真正的id，取出来的id用于构建新的URI和条件语句
+     *
      * @param data
      */
     @TargetApi(19)
     private void handleImageOnKitKat(Intent data) {
         String imagePath = null;
         Uri uri = data.getData();
-        if (DocumentsContract.isDocumentUri(getActivity(),uri)){
+        if (DocumentsContract.isDocumentUri(getActivity(), uri)) {
             //如果是document类型的uri，则通过document id 处理
             String docId = DocumentsContract.getDocumentId(uri);
-            if ("com.android.providers.media.documents".equals(uri.getAuthority())){
+            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
                 String id = docId.split(":")[1];//解析出数字格式的id
-                String selection = MediaStore.Images.Media._ID + "=" +id;
-                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
-            }else if("com.android.providers.downloads.documents".equals(uri.getAuthority())){
-                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docId));
-                imagePath = getImagePath(contentUri,null);
+                String selection = MediaStore.Images.Media._ID + "=" + id;
+                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection);
+            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(docId));
+                imagePath = getImagePath(contentUri, null);
             }
-        }else if ("content".equalsIgnoreCase(uri.getScheme())){
+        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
             //如果是content类型的uri则使用普通的方式处理
-            imagePath = getImagePath(uri,null);
-        }else if ("file".equalsIgnoreCase(uri.getScheme())){
+            imagePath = getImagePath(uri, null);
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
             //如果是file类型的URI则直接获取图片路径即可
             imagePath = uri.getPath();
         }
@@ -272,6 +274,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
     /**
      * 通过传过来的条件，获取图片的真实路径
+     *
      * @param uri
      * @param selection
      * @return
@@ -279,9 +282,9 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     private String getImagePath(Uri uri, String selection) {
         String path = null;
         //通过URI和selection来获取真是的图片路径
-        Cursor cursor = getActivity().getContentResolver().query(uri,null,selection,null,null);
-        if (cursor != null){
-            if (cursor.moveToFirst()){
+        Cursor cursor = getActivity().getContentResolver().query(uri, null, selection, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
                 path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
             }
             cursor.close();
@@ -291,21 +294,22 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
     /**
      * 在这里我使用的是GLIDE来显示图片，你可以选择使用其他方法
+     *
      * @param imagePath
      */
     private void displayImage(String imagePath) {
-        if (imagePath != null){
+        if (imagePath != null) {
             //将照片显示出来
             Bitmap imageBitmap = BitmapFactory.decodeFile(imagePath);
             iv_head.setImageBitmap(createCircleImage(imageBitmap));
-        }else{
+        } else {
             show("failed to get image!");
         }
     }
 
     private void handleImageBeforeKitKat(Intent data) {
         Uri uri = data.getData();
-        String imagePath = getImagePath(uri,null);
+        String imagePath = getImagePath(uri, null);
         displayImage(imagePath);
     }
 
@@ -325,28 +329,24 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     }
 
     //结算账户消费详情接口
-    public void ConsumptionDetails(){
+    public void ConsumptionDetails() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("accountid", share.getString("siteid",""));
-                    json.put("startDate","");
-                    json.put("endDate","");
-                    json.put("page",1);
-                    json.put("row",10);
+                    json.put("accountid", share.getString("accountid", ""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url("http://dmptest.zhiziyun.com/api/v1/option/siteOption.action")
+                            .url("http://test.zhiziyun.com/api-service/agentApp/account")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -359,6 +359,17 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                JSONObject jsonObject = new JSONObject(response.body().string());
+                                JSONObject json = new JSONObject(jsonObject.get("response").toString());
+                                Message message = new Message();
+                                message.what = 1;
+                                message.obj = json.get("balance").toString();
+                                handler.sendMessage(message);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
                         }
                     });
 
@@ -368,4 +379,16 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
             }
         }).start();
     }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    tv_balance.setText("余额：" + msg.obj.toString());
+                    break;
+            }
+        }
+    };
 }

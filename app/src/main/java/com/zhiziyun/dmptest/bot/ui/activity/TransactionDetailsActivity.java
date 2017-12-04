@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
+import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONObject;
 
@@ -39,6 +40,7 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
     private String beginTime;
     private String endTime;
     private SharedPreferences share;
+    private XListView xlistview;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -88,15 +90,16 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("accountid", share.getString("siteid",""));
+                    json.put("accountid", share.getString("accountid",""));
                     json.put("startDate",beginTime);
                     json.put("endDate",endTime);
                     json.put("page",1);
                     json.put("row",10);
+                    Log.i("jsons",json.toString());
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -116,7 +119,7 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Log.i("josns",response.body().string());
+                            Log.i("jsons",response.body().string());
                         }
                     });
 

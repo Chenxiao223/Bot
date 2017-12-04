@@ -76,6 +76,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private int pageNum = 1;
     private Visitorsself visitorsself;
     private SharedPreferences share;
+    private List<String> list_brands=new ArrayList<>();
+    private List<String> list_model=new ArrayList<>();
 
     @Nullable
     @Override
@@ -125,7 +127,10 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getActivity(), VisitorsselfActivity.class);
-                intent.putExtra("mac", list_visitors.get(position).get("mac"));
+                Log.i("position","位置："+(position-1));
+                intent.putExtra("mac", list_visitors.get(position-1).get("mac"));
+                intent.putExtra("brands",list_brands.get(position-1));
+                intent.putExtra("model",list_model.get(position-1));
                 startActivity(intent);
             }
         });
@@ -253,6 +258,23 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     });
                     break;
                 case 3:
+                    if (visitorsself.getRows().size() == 0) {//如果没数据就提示
+                        Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
+                    } else {
+                        for (int i = 0; i < visitorsself.getRows().size(); i++) {
+                            hm_visitors = new HashMap<String, String>();
+                            hm_visitors.put("content1", visitorsself.getRows().get(i).getVisittime());
+                            hm_visitors.put("content2", visitorsself.getRows().get(i).getBrand());
+                            list_brands.add(visitorsself.getRows().get(i).getBrand());
+                            hm_visitors.put("content3", visitorsself.getRows().get(i).getModel());
+                            list_model.add(visitorsself.getRows().get(i).getModel());
+                            hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
+                            hm_visitors.put("content5", visitorsself.getRows().get(i).getGender());
+                            hm_visitors.put("mac", visitorsself.getRows().get(i).getMac());//这个值与适配器无关
+                            list_visitors.add(hm_visitors);
+                        }
+                        pageNum++;
+                    }
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
                     break;
@@ -304,22 +326,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
                             visitorsself = gson.fromJson(response.body().string(), Visitorsself.class);
-                            if (visitorsself.getRows().size() == 0) {//如果没数据就提示
-                                handler.sendEmptyMessage(4);
-                            } else {
-                                for (int i = 0; i < visitorsself.getRows().size(); i++) {
-                                    hm_visitors = new HashMap<String, String>();
-                                    hm_visitors.put("content1", visitorsself.getRows().get(i).getVisittime());
-                                    hm_visitors.put("content2", visitorsself.getRows().get(i).getBrand());
-                                    hm_visitors.put("content3", visitorsself.getRows().get(i).getModel());
-                                    hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
-                                    hm_visitors.put("content5", visitorsself.getRows().get(i).getGender());
-                                    hm_visitors.put("mac", visitorsself.getRows().get(i).getMac());//这个值与适配器无关
-                                    list_visitors.add(hm_visitors);
-                                }
-                                handler.sendEmptyMessage(3);//通知刷新适配器
-                                pageNum++;
-                            }
+                            handler.sendEmptyMessage(3);//通知刷新适配器
                         }
                     });
                 } catch (JSONException e) {

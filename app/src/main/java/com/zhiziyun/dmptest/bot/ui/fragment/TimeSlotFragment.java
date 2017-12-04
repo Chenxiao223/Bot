@@ -109,7 +109,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     }
 
     public void initView() {
-        share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -133,7 +133,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
         xlistview.setAdapter(adapter);
         xlistview.setXListViewListener(this);
 
-        list_timeslot.clear();
         getvisitHour();
     }
 
@@ -176,7 +175,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid",""));
+                    json.put("siteId", share.getString("siteid", ""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -243,7 +242,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid",""));
+                    json.put("siteId", share.getString("siteid", ""));
                     json.put("beginTime", beginTime);
                     json.put("endTime", endTime);
                     json.put("microprobeId", microprobeId);
@@ -273,18 +272,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
                             timeSlot = gson.fromJson(response.body().string(), TimeSlot.class);
-                            if (timeSlot.getObj().isEmpty()) {//如果没数据就提示
-                                handler.sendEmptyMessage(4);
-                            } else {
-                                for (int i = 0; i < timeSlot.getObj().size(); i++) {
-                                    hm_timeslot = new HashMap<String, String>();
-                                    hm_timeslot.put("content1", timeSlot.getObj().get(i).getHour());
-                                    hm_timeslot.put("content2", timeSlot.getObj().get(i).getPv());
-                                    hm_timeslot.put("content3", timeSlot.getObj().get(i).getUv());
-                                    list_timeslot.add(hm_timeslot);
-                                }
-                                handler.sendEmptyMessage(3);//通知刷新适配器
-                            }
+                            handler.sendEmptyMessage(3);//通知刷新适配器
                         }
                     });
 
@@ -308,7 +296,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
-                            list_timeslot.clear();
                             getvisitHour();
                         }
 
@@ -327,7 +314,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             microprobeId = Integer.parseInt(hm_probe.get(list_tanzhen.get(position)));
-                            list_timeslot.clear();
                             getvisitHour();
                         }
 
@@ -338,6 +324,18 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                     });
                     break;
                 case 3:
+                    if (timeSlot.getObj().isEmpty()) {//如果没数据就提示
+                        handler.sendEmptyMessage(4);
+                    } else {
+                        list_timeslot.clear();
+                        for (int i = 0; i < timeSlot.getObj().size(); i++) {
+                            hm_timeslot = new HashMap<String, String>();
+                            hm_timeslot.put("content1", timeSlot.getObj().get(i).getHour());
+                            hm_timeslot.put("content2", timeSlot.getObj().get(i).getPv());
+                            hm_timeslot.put("content3", timeSlot.getObj().get(i).getUv());
+                            list_timeslot.add(hm_timeslot);
+                        }
+                    }
                     adapter.notifyDataSetChanged();
                     onLoad();//数据加载完后就停止刷新
                     //柱状图
@@ -368,7 +366,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                         int index = textString.indexOf(" ");
                         beginTime = textString.substring(0, index);
                         endTime = textString.substring(index + 1, textString.length());
-                        list_timeslot.clear();
                         getvisitHour();
                     }
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
@@ -380,7 +377,6 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onRefresh() {
         hm_timeslot.clear();
-        clearAllData();
         getvisitHour();
     }
 
