@@ -16,7 +16,6 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.Visitorsselfparticulars;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
 
@@ -69,8 +68,16 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
         Intent it=getIntent();
         String mac = it.getStringExtra("mac");
         getData(mac);
-        tv_brands.setText(it.getStringExtra("brands"));
-        tv_model.setText(it.getStringExtra("model"));
+        if (TextUtils.isEmpty(it.getStringExtra("brands"))){
+            tv_brands.setText("未知");
+        }else {
+            tv_brands.setText(it.getStringExtra("brands"));
+        }
+        if (TextUtils.isEmpty(it.getStringExtra("model"))) {
+            tv_model.setText("未知");
+        }else {
+            tv_model.setText(it.getStringExtra("model"));
+        }
     }
 
     public void getData(final String mac) {
@@ -84,7 +91,6 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("mac", mac);
-                    Log.i("mac", mac);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {

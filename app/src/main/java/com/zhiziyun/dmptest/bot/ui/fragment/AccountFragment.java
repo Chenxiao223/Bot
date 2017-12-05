@@ -36,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.activity.StoreListActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.TransactionDetailsActivity;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.view.TakePhotoPopWin;
@@ -69,7 +70,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     public static final int CHOOSE_FROM_AIBUM = 2;
     private Uri imageUri;
     private SharedPreferences share;
-    private RelativeLayout rl_account;
     private TextView tv_balance;
 
     @Nullable
@@ -89,8 +89,8 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     public void initView() {
         tv_balance = getView().findViewById(R.id.tv_balance);
         ConsumptionDetails();
-        rl_account = getView().findViewById(R.id.rl_account);
-        rl_account.setOnClickListener(this);
+        getView().findViewById(R.id.rl_account).setOnClickListener(this);
+        getView().findViewById(R.id.rl_store).setOnClickListener(this);
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         iv_head = getView().findViewById(R.id.iv_head);
         iv_head.setOnClickListener(this);
@@ -107,6 +107,9 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.rl_account:
                 startActivity(new Intent(getActivity(), TransactionDetailsActivity.class));
+                break;
+            case R.id.rl_store:
+                startActivity(new Intent(getActivity(), StoreListActivity.class));
                 break;
         }
     }

@@ -4,14 +4,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.adapter.TransactionDetailsAdapter;
+import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
+import com.zhiziyun.dmptest.bot.entity.TransactionDetails;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.xListView.XListView;
@@ -21,7 +28,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -36,11 +47,16 @@ import okhttp3.Response;
  * 交易明细页
  */
 
-public class TransactionDetailsActivity extends Activity implements View.OnClickListener {
+public class TransactionDetailsActivity extends Activity implements View.OnClickListener, XListView.IXListViewListener {
     private String beginTime;
     private String endTime;
     private SharedPreferences share;
     private XListView xlistview;
+    private TransactionDetails td;
+    private HashMap<String,String> hm_td;
+    private ArrayList<HashMap<String,String>> list_td=new ArrayList<>();
+    private TransactionDetailsAdapter adapter;
+    private int pageNum = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,6 +71,14 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
         tv_date.setOnClickListener(this);
         ImageView tv_back=findViewById(R.id.tv_back);
         tv_back.setOnClickListener(this);
+
+        xlistview = findViewById(R.id.xlistview);
+        xlistview.setPullLoadEnable(true);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
+        adapter = new TransactionDetailsAdapter(this, list_td);
+        xlistview.setAdapter(adapter);
+        xlistview.setXListViewListener(this);
+
+        getData(1);
     }
 
     @Override
@@ -74,7 +98,7 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
                         int index = textString.indexOf(" ");
                         beginTime = textString.substring(0, index);
                         endTime = textString.substring(index + 1, textString.length());
-                        getData();
+                        getData(1);
                     }
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
                 break;
@@ -84,7 +108,7 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
         }
     }
 
-    public void getData(){
+    public void getData(final int page){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -93,9 +117,8 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
                     json.put("accountid", share.getString("accountid",""));
                     json.put("startDate",beginTime);
                     json.put("endDate",endTime);
-                    json.put("page",1);
+                    json.put("page",page);
                     json.put("row",10);
-                    Log.i("jsons",json.toString());
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -119,7 +142,9 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Log.i("jsons",response.body().string());
+                            Gson gson=new Gson();
+                            td=gson.fromJson(response.body().string(),TransactionDetails.class);
+                            handler.sendEmptyMessage(1);
                         }
                     });
 
@@ -128,5 +153,67 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
                 }
             }
         }).start();
+    }
+
+    Handler handler=new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 1:
+                    if (td.getResponse().getData()!=null){
+                        for (int i=0;i<td.getResponse().getData().size();i++){
+                            hm_td=new HashMap<>();
+                            hm_td.put("content1",td.getResponse().getData().get(i).getSettleType());
+                            hm_td.put("content2",td.getResponse().getData().get(i).getSettleDate());
+                            hm_td.put("content3",td.getResponse().getData().get(i).getFee());
+                            list_td.add(hm_td);
+                        }
+                        pageNum++;
+                        adapter.notifyDataSetChanged();
+                    }
+                    break;
+            }
+        }
+    };
+
+    //清空所有数据
+    public void clearAllData() {
+        beginTime = gettodayDate();
+        endTime = beginTime;
+        pageNum = 1;
+        list_td.clear();
+    }
+
+    //获取当天的日期
+    public String gettodayDate() {
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(d);
+    }
+
+    @Override//下拉刷新
+    public void onRefresh() {
+        hm_td.clear();
+        clearAllData();
+        getData(pageNum);
+    }
+
+    @Override//上拉加载
+    public void onLoadMore() {
+        if (pageNum < ((td.getResponse().getTotal() / 10) + 3)) {
+            getData(pageNum);
+        } else {
+            Toast.makeText(this, "最后一页了", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * 停止刷新，
+     */
+    private void onLoad() {
+        xlistview.stopRefresh();
+        xlistview.stopLoadMore();
+        xlistview.setRefreshTime("刚刚");
     }
 }

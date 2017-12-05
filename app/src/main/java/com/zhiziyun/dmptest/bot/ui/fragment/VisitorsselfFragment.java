@@ -1,6 +1,5 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
-import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,14 +8,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -38,7 +34,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -96,11 +91,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     public void clearAllData() {
         beginTime = gettodayDate();
         endTime = beginTime;
-
-//        list_shop.clear();
-//        list_tanzhen.clear();
-//        hm_store.clear();
-//        hm_probe.clear();
+        list_brands.clear();
+        list_model.clear();
         microprobeId = 0;
         storeId = 0;
         pageNum = 1;
@@ -127,7 +119,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getActivity(), VisitorsselfActivity.class);
-                Log.i("position","位置："+(position-1));
                 intent.putExtra("mac", list_visitors.get(position-1).get("mac"));
                 intent.putExtra("brands",list_brands.get(position-1));
                 intent.putExtra("model",list_model.get(position-1));
@@ -381,20 +372,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         .build();
 
                 pvTime.show();
-//                new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
-//                    @Override
-//                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-//                        c.set(year, monthOfYear, dayOfMonth);
-//                        if (view.isShown()) { // 这里判断,防止点击事件执行两次
-//                            beginTime = (String) DateFormat.format("yyy-MM-dd", c);
-//                            endTime = beginTime;
-//
-//                            list_visitors.clear();
-//                            getData(1);
-//                        }
-//                    }
-//                }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
-//                break;
         }
     }
 
@@ -408,12 +385,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     public void onRefresh() {
         hm_visitors.clear();
         clearAllData();
-        //初始化接口没有的数据
-//        list_shop.add("全部门店");
-//        list_tanzhen.add("全部探针");
-//        hm_store.put("全部门店", "0");
-//        hm_probe.put("全部探针", "0");
-//        getSiteOption();
         getData(pageNum);
     }
 

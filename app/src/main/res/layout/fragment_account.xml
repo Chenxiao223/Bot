@@ -3,7 +3,7 @@
     android:id="@+id/main_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray"
+    android:background="@color/light_grey"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -64,6 +64,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/textsizi"
+            android:textColor="@color/blue"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/iv_1"
             android:layout_toStartOf="@+id/iv_1" />
@@ -79,6 +80,7 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/rl_store"
         android:background="@color/white"
         android:layout_marginTop="@dimen/line_height"
         android:layout_width="match_parent"

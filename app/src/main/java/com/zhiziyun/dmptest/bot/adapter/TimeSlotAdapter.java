@@ -47,7 +47,7 @@ public class TimeSlotAdapter extends BaseAdapter{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHold viewHold = null;
-        if (viewHold == null) {
+        if (convertView == null) {
             viewHold = new ViewHold();
             convertView = inflater.inflate(R.layout.listview_time_slot, null);
             viewHold.text1 = convertView.findViewById(R.id.tv_hour);
