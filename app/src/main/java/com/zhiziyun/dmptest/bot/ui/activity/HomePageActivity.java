@@ -21,7 +21,6 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.HomePageAdapter;
 
 public class HomePageActivity extends AppCompatActivity implements View.OnClickListener {
-    public static HomePageActivity homeActivity;
     private LinearLayout lv_homepage, lv_generalize, lv_visitors, lv_my;
     private ImageView iv_homepage, iv_visitors, iv_generalize, iv_my;
     private TextView tv_homepage, tv_visitors, tv_generalize, tv_my;

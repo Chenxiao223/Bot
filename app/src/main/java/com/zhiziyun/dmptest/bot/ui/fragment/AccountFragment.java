@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -164,17 +165,32 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         startActivityForResult(intent, CHOOSE_FROM_AIBUM);
     }
 
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        switch (requestCode) {
+//            case 1:
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    openAlbum();
+//                } else {
+//                    show("You denied the permission");
+//                }
+//                break;
+//        }
+//    }
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case 1:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    openAlbum();
-                } else {
-                    show("You denied the permission");
-                }
-                break;
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getActivity(), "可以拍照", Toast.LENGTH_SHORT).show();
+                //申请成功，可以拍照
+//                takePhoto();
+            } else {
+                Toast.makeText(getActivity(), "CAMERA PERMISSION DENIED", Toast.LENGTH_SHORT).show();
+            }
+            return;
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     /**
@@ -187,6 +203,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
      */
     //打开相机
     private void openCamara() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         //创建file对象，用于存储拍照后的图片
         File outputImg = new File(getActivity().getExternalCacheDir(), "output_image.jpg");
         try {
@@ -197,14 +214,22 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (Build.VERSION.SDK_INT >= 24) {
-            //这里报空指针
-            imageUri = FileProvider.getUriForFile(getActivity(), "com.example.cameraalbumtest.fileprovider", outputImg);
+//        if (Build.VERSION.SDK_INT >= 24) {
+//            //这里报空指针
+//            imageUri = FileProvider.getUriForFile(getActivity(), "com.example.cameraalbumtest.fileprovider", outputImg);
+//        } else {
+//            imageUri = Uri.fromFile(outputImg);
+//        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //如果是7.0及以上的系统使用FileProvider的方式创建一个Uri
+            imageUri = FileProvider.getUriForFile(getActivity(), "com.hm.camerademo.fileprovider", outputImg);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         } else {
+            //7.0以下使用这种方式创建一个Uri
             imageUri = Uri.fromFile(outputImg);
         }
         //启动相机
-        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         startActivityForResult(intent, TAKE_PHOTO);
     }

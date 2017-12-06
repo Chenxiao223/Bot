@@ -8,6 +8,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.activity.StoreListActivity;
+import com.zhiziyun.dmptest.bot.util.SlideItemView;
+import com.zhiziyun.dmptest.bot.util.SlideListView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,10 +24,12 @@ public class StoreListAdapter extends BaseAdapter {
     private Context context;
     private LayoutInflater inflater;
     private ArrayList<HashMap<String, String>> list;
+    private SlideListView listView;
 
-    public StoreListAdapter(Context context, ArrayList<HashMap<String, String>> list) {
+    public StoreListAdapter(Context context, SlideListView listView, ArrayList<HashMap<String, String>> list) {
         this.context = context;
         this.list = list;
+        this.listView = listView;
         inflater = LayoutInflater.from(context);
     }
 
@@ -44,25 +49,55 @@ public class StoreListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHold viewHold = null;
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        ViewHolder holder = null;
         if (convertView == null) {
-            viewHold = new ViewHold();
-            convertView = inflater.inflate(R.layout.listview_storelist, null);
-            viewHold.text1 = convertView.findViewById(R.id.tv_store);
-            viewHold.text2 = convertView.findViewById(R.id.tv_area);
-            viewHold.text3 = convertView.findViewById(R.id.tv_probeCount);
-            convertView.setTag(viewHold);
+            SlideItemView itemView = new SlideItemView(context);
+            itemView.setView(listView, R.layout.listview_storelist, R.layout.item_menu, 2.0f / 4);
+            holder = new ViewHolder(itemView);
+            itemView.setTag(holder);
+            convertView = itemView;
+            convertView.setTag(holder);
         } else {
-            viewHold = (ViewHold) convertView.getTag();
+            holder = (ViewHolder) convertView.getTag();
         }
-        viewHold.text1.setText(list.get(position).get("content1"));
-        viewHold.text2.setText(list.get(position).get("content2")+"㎡");
-        viewHold.text3.setText(list.get(position).get("content3"));
+        holder.text1.setText(list.get(position).get("content1"));
+        holder.text2.setText(list.get(position).get("content2") + "㎡");
+        holder.text3.setText(list.get(position).get("content3"));
+        final SlideItemView itemView = (SlideItemView) convertView;
+        holder.tv_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                itemView.showContent();
+                StoreListActivity.storeListActivity.editeStore(list.get(position).get("content1"),
+                        list.get(position).get("content2"),
+                        list.get(position).get("lat"),
+                        list.get(position).get("lon"),
+                        list.get(position).get("id"));
+            }
+        });
+        holder.tv_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                itemView.showContent();
+                StoreListActivity.storeListActivity.deleteStore(list.get(position).get("id"));
+            }
+        });
         return convertView;
     }
 
-    public static class ViewHold {
-        private TextView text1, text2, text3;
+    public class ViewHolder {
+        private TextView text1, text2, text3, tv_edit, tv_delete;
+
+        public ViewHolder(SlideItemView view) {
+            View content = view.getContent();
+            text1 = content.findViewById(R.id.tv_store);
+            text2 = content.findViewById(R.id.tv_area);
+            text3 = content.findViewById(R.id.tv_probeCount);
+            View menu = view.getMenu();
+            tv_edit = (TextView) menu.findViewById(R.id.tv_edit);
+            tv_delete = (TextView) menu.findViewById(R.id.tv_delete);
+        }
+
     }
 }

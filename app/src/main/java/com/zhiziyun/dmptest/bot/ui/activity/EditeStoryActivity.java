@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -35,7 +37,6 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.xys.libzxing.zxing.activity.CaptureActivity;
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.Token;
 
 import org.json.JSONException;
@@ -56,10 +57,10 @@ import okhttp3.Response;
 
 /**
  * Created by Administrator on 2017/11/15.
- * 添加门店
+ * 编辑门店
  */
 
-public class AddStoryActivity extends Activity implements View.OnClickListener {
+public class EditeStoryActivity extends Activity implements View.OnClickListener {
     private ImageView iv_back;
     private MapView mMapView;
     private BaiduMap mBaiduMap;
@@ -72,9 +73,9 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
     private float lon = 0;//经度
     private float lat = 0;//纬度
     private EditText et_floorArea, et_storeId;
-    private String storeId;
     private LinearLayout traceroute_rootview;
     private SharedPreferences share;
+    private Intent intent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,16 +83,25 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
         //在使用SDK各组件之前初始化context信息，传入ApplicationContext
         //注意该方法要再setContentView方法之前实现
         SDKInitializer.initialize(getApplicationContext());
-        setContentView(R.layout.activity_add_story);
+        setContentView(R.layout.activity_edite_story);
         initView();
     }
 
     private void initView() {
-        share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        intent = getIntent();
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         traceroute_rootview = findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
+        lon = Float.parseFloat(intent.getStringExtra("lon"));
+        lat = Float.parseFloat(intent.getStringExtra("lat"));
         et_storeId = findViewById(R.id.et_storeId);
         et_floorArea = findViewById(R.id.et_floorArea);
+        String name = intent.getStringExtra("name");
+        String area = intent.getStringExtra("area");
+        et_storeId.setText(name);
+        et_storeId.setSelection(name.length());
+        et_floorArea.setText(area);
+        et_floorArea.setSelection(area.length());
         iv_back = findViewById(R.id.iv_back);
         iv_back.setOnClickListener(this);
         requestLocButton = (Button) findViewById(R.id.btn);
@@ -190,23 +200,25 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    //点击下一步
-    public void next(View view) {
+    //点击完成
+    public void complete(View view) {
         if (lat != 0 && lon != 0 && !TextUtils.isEmpty(et_floorArea.getText().toString())
                 && !TextUtils.isEmpty(et_storeId.getText().toString())) {
             //面积必须大于100小于三万
-            if (Long.parseLong(et_floorArea.getText().toString()) >= 100 && Long.parseLong(et_floorArea.getText().toString()) <= 30000) {
-                //新增门店接口
+            if ((double) Float.parseFloat(et_floorArea.getText().toString()) >= 100 && (double) Float.parseFloat(et_floorArea.getText().toString()) <= 30000) {
+                //修改门店接口
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             final JSONObject json = new JSONObject();
-                            json.put("siteId", share.getString("siteid",""));
+                            json.put("siteId", share.getString("siteid", ""));
+                            json.put("id", intent.getStringExtra("id"));
                             json.put("name", et_storeId.getText().toString());
-                            json.put("area", Integer.parseInt(et_floorArea.getText().toString()));
+                            json.put("area", (int) Float.parseFloat(et_floorArea.getText().toString()));
                             json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
-                            json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));//这里看似反了其实没反
+                            json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
+                            Log.i("jsons", json.toString());
                             OkHttpClient client = new OkHttpClient();
                             String url = null;
                             try {
@@ -217,7 +229,7 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
                             MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                             RequestBody body = RequestBody.create(mediaType, url);
                             final Request request = new Request.Builder()
-                                    .url("http://dmptest.zhiziyun.com/api/v1/store/add.action")
+                                    .url("http://dmptest.zhiziyun.com/api/v1/store/edit.action")
                                     .post(body)
                                     .addHeader("content-type", "application/x-www-form-urlencoded")
                                     .build();
@@ -232,24 +244,15 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
                                 public void onResponse(Call call, Response response) throws IOException {
                                     try {
                                         JSONObject jsonObject = new JSONObject(response.body().string());
-                                        storeId = jsonObject.get("obj").toString();
+                                        if (jsonObject.get("msg").equals("编辑门店成功")){
+                                            handler.sendEmptyMessage(1);
+                                            finish();
+                                        }else{
+                                            handler.sendEmptyMessage(2);
+                                        }
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
-
-                                    //成功之后才执行
-                                    Intent it = new Intent();
-                                    it.setClass(AddStoryActivity.this, CaptureActivity.class);
-                                    //返回一个二维码的信息
-                                    startActivityForResult(it, 99);
-                                    //测试完之后删除
-//                                Intent it1 = new Intent(AddStoryActivity.this, BindingActivity.class);
-//                                it1.putExtra("lat", lat);
-//                                it1.putExtra("lon", lon);
-//                                it1.putExtra("storeId", storeId);
-//                                it1.putExtra("storeId", et_storeId.getText().toString());
-//                                it1.putExtra("floorArea", et_floorArea.getText().toString());
-//                                startActivity(it1);
 
                                 }
                             });
@@ -263,27 +266,24 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
                 Toast.makeText(this, "面积必须在1百到3万之间", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(AddStoryActivity.this, "请将数据填写完整", Toast.LENGTH_SHORT).show();
+            Toast.makeText(EditeStoryActivity.this, "请将数据填写完整", Toast.LENGTH_SHORT).show();
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 99 && resultCode == RESULT_OK) {
-            Bundle bundle = data.getExtras();
-            //返回二维码扫描的信息
-            String result = bundle.get("result").toString();
-            Intent it = new Intent(this, BindingActivity.class);
-            it.putExtra("lat", lat);
-            it.putExtra("lon", lon);
-            it.putExtra("storeId", et_storeId.getText().toString());
-            it.putExtra("floorArea", et_floorArea.getText().toString());
-            it.putExtra("mac", result);
-            it.putExtra("storeId", storeId);
-            startActivity(it);
+    Handler handler=new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 1:
+                    Toast.makeText(EditeStoryActivity.this, "编辑成功", Toast.LENGTH_SHORT).show();
+                    break;
+                case 2:
+                    Toast.makeText(EditeStoryActivity.this, "编辑失败", Toast.LENGTH_SHORT).show();
+                    break;
+            }
         }
-    }
+    };
 
     boolean isFirstLoc = true; // 是否首次定位
 
@@ -303,11 +303,19 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
             mBaiduMap.setMyLocationData(locData);
             if (isFirstLoc) {
                 isFirstLoc = false;
-                LatLng ll = new LatLng(location.getLatitude(),
-                        location.getLongitude());
+                LatLng ll = new LatLng(Double.parseDouble(intent.getStringExtra("lat")),
+                        Double.parseDouble(intent.getStringExtra("lon")));
                 MapStatus.Builder builder = new MapStatus.Builder();
                 builder.target(ll).zoom(18.0f);
                 mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+                //定义Maker坐标点
+                LatLng point = new LatLng(Double.parseDouble(intent.getStringExtra("lat")), Double.parseDouble(intent.getStringExtra("lon")));
+                //构建Marker图标
+                BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.icom);
+                //构建MarkerOption，用于在地图上添加Marker
+                OverlayOptions option = new MarkerOptions().position(point).icon(bitmap);
+                //在地图上添加Marker，并显示
+                mBaiduMap.addOverlay(option);
             }
         }
 

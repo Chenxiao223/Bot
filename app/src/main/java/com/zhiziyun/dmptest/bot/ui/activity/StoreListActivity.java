@@ -13,16 +13,21 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.StoreListAdapter;
 import com.zhiziyun.dmptest.bot.entity.StoreList;
+import com.zhiziyun.dmptest.bot.util.SlideListView;
 import com.zhiziyun.dmptest.bot.util.Token;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -44,13 +49,16 @@ import okhttp3.Response;
  */
 
 public class StoreListActivity extends Activity implements View.OnClickListener {
+    public static StoreListActivity storeListActivity;
     private SharedPreferences share;
     private StoreList storeList;
-    private ListView lv_store;
+    private SlideListView lv_store;
     private StoreListAdapter adapter;
     private HashMap<String, String> hm_store;
     private ArrayList<HashMap<String, String>> list_store = new ArrayList<>();
     private EditText et_text;
+    private SmartRefreshLayout smartRefreshLayout;
+    private int pageNum = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,12 +67,19 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
         initView();
     }
 
+    public void clearAllData() {
+        pageNum = 1;
+        list_store.clear();
+    }
+
     private void initView() {
+        storeListActivity = this;
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.iv_addstory).setOnClickListener(this);
         lv_store = findViewById(R.id.lv_store);
-        adapter = new StoreListAdapter(this, list_store);
+        adapter = new StoreListAdapter(this, lv_store, list_store);
         lv_store.setAdapter(adapter);
         et_text = findViewById(R.id.et_text);
         //点击搜索键的监听
@@ -79,14 +94,37 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                                             .getCurrentFocus()
                                             .getWindowToken(),
                                     InputMethodManager.HIDE_NOT_ALWAYS);
-                    //实现自己的搜索逻辑
-                    Toast.makeText(StoreListActivity.this, "搜索了", Toast.LENGTH_SHORT).show();
+                    //以下是搜索逻辑
+                    list_store.clear();
+                    //查询门店
+                    getstoreList(1, et_text.getText().toString());
                     return true;
                 }
                 return false;
             }
         });
-        getstoreList(1);
+        //下拉刷新
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                hm_store.clear();
+                clearAllData();
+                getstoreList(pageNum, "");
+            }
+        });
+        //上拉加载
+        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
+            @Override
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                if (pageNum < ((storeList.getTotal() / 10) + 3)) {
+                    getstoreList(pageNum, "");
+                } else {
+                    Toast.makeText(StoreListActivity.this, "最后一页了", Toast.LENGTH_SHORT).show();
+                    smartRefreshLayout.finishLoadmore(0);
+                }
+            }
+        });
+        getstoreList(1, "");//第二个参数为空就是查所有
     }
 
     @Override
@@ -96,12 +134,13 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                 finish();
                 break;
             case R.id.iv_addstory:
-                startActivity(new Intent(this,AddStoryActivity.class));
+                startActivity(new Intent(this, AddStoryActivity.class));
                 break;
         }
     }
 
-    public void getstoreList(final int page) {
+    //第二个参数为空就是查所有
+    public void getstoreList(final int page, final String name) {
         //获取门店列表
         new Thread(new Runnable() {
             @Override
@@ -111,6 +150,7 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                     json.put("siteId", share.getString("siteid", ""));
                     json.put("page", page);
                     json.put("rows", 10);
+                    json.put("name", name);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -160,13 +200,88 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                             hm_store.put("content2", storeList.getRows().get(i).getArea());
                             hm_store.put("content3", storeList.getRows().get(i).getProbeCount());
                             hm_store.put("lat", storeList.getRows().get(i).getLatitude());
-                            hm_store.put("lon", storeList.getRows().get(i).getLatitude());
+                            hm_store.put("lon", storeList.getRows().get(i).getLongitude());
+                            hm_store.put("id", String.valueOf(storeList.getRows().get(i).getId()));
                             list_store.add(hm_store);
                         }
+                        smartRefreshLayout.finishRefresh(0);
+                        smartRefreshLayout.finishLoadmore(0);
+                        pageNum++;
                         adapter.notifyDataSetChanged();
                     }
+                    break;
+                case 2:
+                    list_store.clear();
+                    getstoreList(1, "");//第二个参数为空就是查所有
+                    Toast.makeText(StoreListActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
+                    break;
+                case 3:
+                    Toast.makeText(StoreListActivity.this, "删除失败", Toast.LENGTH_SHORT).show();
                     break;
             }
         }
     };
+
+    public void editeStore(String name, String area, String lat, String lon, String id) {
+        Intent it = new Intent(this, EditeStoryActivity.class);
+        it.putExtra("name", name);
+        it.putExtra("area", area);
+        it.putExtra("lat", lat);
+        it.putExtra("lon", lon);
+        it.putExtra("id", id);
+        startActivity(it);
+    }
+
+    public void deleteStore(final String id) {
+        //删除门店接口
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject json = new JSONObject();
+                    json.put("siteId", share.getString("siteid", ""));
+                    json.put("id", id);
+                    OkHttpClient client = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url("http://dmptest.zhiziyun.com/api/v1/store/delete.action")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                JSONObject jsonObject = new JSONObject(response.body().string());
+                                if (jsonObject.get("msg").equals("删除成功!")) {
+                                    handler.sendEmptyMessage(2);
+                                } else {
+                                    handler.sendEmptyMessage(3);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 }

@@ -4,10 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!--FixedBehind可以让Header固定在内容的背后，下拉的时候效果同微信浏览器的效果-->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="98dp"
+        android:layout_height="90dp"
         android:background="@drawable/homepagebg"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -34,16 +37,16 @@
                 android:id="@+id/iv_addstory"
                 android:layout_width="@dimen/activity_title"
                 android:layout_height="match_parent"
-                android:src="@drawable/add"
-                android:padding="@dimen/activity_title_padding"
-                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
+                android:layout_alignParentTop="true"
+                android:padding="@dimen/activity_title_padding"
+                android:src="@drawable/add" />
         </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="35dp"
+            android:layout_height="30dp"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:background="@drawable/shape_whitebg"
@@ -57,17 +60,32 @@
                 android:background="@null"
                 android:drawableLeft="@drawable/search"
                 android:hint="搜索你的相关内容"
-                android:maxLength="20"
                 android:imeOptions="actionSearch"
+                android:maxLength="20"
                 android:singleLine="true"
                 android:textColorHint="@color/gray" />
         </LinearLayout>
 
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/lv_store"
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/refreshLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <com.scwang.smartrefresh.layout.header.ClassicsHeader
+            srlClassicsSpinnerStyle="FixedBehind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <com.zhiziyun.dmptest.bot.util.SlideListView
+            android:id="@+id/lv_store"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:cacheColorHint="@android:color/transparent"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="1dp"
+            android:listSelector="@android:color/transparent" />
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 
 </LinearLayout>
