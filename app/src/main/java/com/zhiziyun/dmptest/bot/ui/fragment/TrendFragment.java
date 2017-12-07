@@ -364,6 +364,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         if (pageNum < ((trend.getTotal() / 10) + 3)) {
             getTrend(pageNum);
         } else {
+            onLoad();
             Toast.makeText(getActivity(), "最后一页了", Toast.LENGTH_SHORT).show();
         }
     }

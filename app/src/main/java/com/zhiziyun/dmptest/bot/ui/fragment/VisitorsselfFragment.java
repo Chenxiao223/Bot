@@ -394,6 +394,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         if (pageNum < ((visitorsself.getTotal() / 10) + 3)) {
             getData(pageNum);
         } else {
+            onLoad();
             Toast.makeText(getActivity(), "最后一页了", Toast.LENGTH_SHORT).show();
         }
     }

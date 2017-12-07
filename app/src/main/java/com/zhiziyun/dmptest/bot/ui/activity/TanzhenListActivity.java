@@ -21,9 +21,10 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.xys.libzxing.zxing.activity.CaptureActivity;
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.adapter.StoreListAdapter;
-import com.zhiziyun.dmptest.bot.entity.StoreList;
+import com.zhiziyun.dmptest.bot.adapter.TanzhenListAdapter;
+import com.zhiziyun.dmptest.bot.entity.TanzhenList;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.SlideListView;
 import com.zhiziyun.dmptest.bot.util.Token;
@@ -49,40 +50,42 @@ import okhttp3.Response;
  * Created by Administrator on 2017/12/5.
  */
 
-public class StoreListActivity extends Activity implements View.OnClickListener {
-    public static StoreListActivity storeListActivity;
+public class TanzhenListActivity extends Activity implements View.OnClickListener {
+    public static TanzhenListActivity tanzhenListActivity;
     private SharedPreferences share;
-    private StoreList storeList;
-    private SlideListView lv_store;
-    private StoreListAdapter adapter;
-    private HashMap<String, String> hm_store;
-    private ArrayList<HashMap<String, String>> list_store = new ArrayList<>();
+    private TanzhenList tanzhenList;
+    private SlideListView lv_tanzhen;
+    private TanzhenListAdapter adapter;
+    private HashMap<String, String> hm_tanzhen ;
+    private ArrayList<HashMap<String, String>> list_tanzhen = new ArrayList<>();
     private EditText et_text;
     private SmartRefreshLayout smartRefreshLayout;
     private int pageNum = 1;
+    private Intent intent;
     private MyDialog dialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_storelist);
+        setContentView(R.layout.activity_tanzhenlist);
         initView();
     }
 
     public void clearAllData() {
         pageNum = 1;
-        list_store.clear();
+        list_tanzhen.clear();
     }
 
     private void initView() {
-        storeListActivity = this;
+        tanzhenListActivity = this;
+        intent=getIntent();
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.iv_addstory).setOnClickListener(this);
-        lv_store = findViewById(R.id.lv_store);
-        adapter = new StoreListAdapter(this, lv_store, list_store);
-        lv_store.setAdapter(adapter);
+        lv_tanzhen = findViewById(R.id.lv_store);
+        adapter = new TanzhenListAdapter(this, lv_tanzhen, list_tanzhen);
+        lv_tanzhen.setAdapter(adapter);
         et_text = findViewById(R.id.et_text);
         //点击搜索键的监听
         et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -92,14 +95,14 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                     // 先隐藏键盘
                     ((InputMethodManager) et_text.getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
                             .hideSoftInputFromWindow(
-                                    StoreListActivity.this
+                                    TanzhenListActivity.this
                                             .getCurrentFocus()
                                             .getWindowToken(),
                                     InputMethodManager.HIDE_NOT_ALWAYS);
                     //以下是搜索逻辑
-                    list_store.clear();
+                    list_tanzhen.clear();
                     //查询门店
-                    getstoreList(1, et_text.getText().toString());
+                    gettanzhenList(1, et_text.getText().toString());
                     return true;
                 }
                 return false;
@@ -109,19 +112,24 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
         smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
-                hm_store.clear();
-                clearAllData();
-                getstoreList(pageNum, "");
+                try {
+                    hm_tanzhen .clear();
+                    clearAllData();
+                    gettanzhenList(pageNum, "");
+                } catch (Exception e) {
+                    dialog.dismiss();
+                    e.printStackTrace();
+                }
             }
         });
         //上拉加载
         smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
             @Override
             public void onLoadmore(RefreshLayout refreshlayout) {
-                if (pageNum < ((storeList.getTotal() / 10) + 3)) {
-                    getstoreList(pageNum, "");
+                if (pageNum < ((tanzhenList.getTotal() / 10) + 3)) {
+                    gettanzhenList(pageNum, "");
                 } else {
-                    Toast.makeText(StoreListActivity.this, "最后一页了", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TanzhenListActivity.this, "最后一页了", Toast.LENGTH_SHORT).show();
                     smartRefreshLayout.finishLoadmore(0);
                 }
             }
@@ -129,11 +137,12 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
         findViewById(R.id.traceroute_rootview).setOnClickListener(this);
     }
 
+    //以便刷新页面
     @Override
     protected void onResume() {
         super.onResume();
-        list_store.clear();
-        getstoreList(1, "");//第二个参数为空就是查所有
+        list_tanzhen.clear();
+        gettanzhenList(1, "");//第二个参数为空就是查所有
     }
 
     @Override
@@ -143,7 +152,10 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                 finish();
                 break;
             case R.id.iv_addstory:
-                startActivity(new Intent(this, AddStoryActivity.class));
+                Intent it = new Intent();
+                it.setClass(TanzhenListActivity.this, CaptureActivity.class);
+                //返回一个二维码的信息
+                startActivityForResult(it, 98);
                 break;
             case R.id.traceroute_rootview:
                 //让软键盘隐藏
@@ -153,8 +165,25 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 98 && resultCode == RESULT_OK) {
+            Bundle bundle = data.getExtras();
+            //返回二维码扫描的信息
+            String result = bundle.get("result").toString();
+            Intent it = new Intent(this, BindingActivity.class);
+            it.putExtra("lat", intent.getFloatExtra("lat",0));
+            it.putExtra("lon", intent.getFloatExtra("lon",0));
+            it.putExtra("floorArea", intent.getStringExtra("area"));
+            it.putExtra("mac", result);
+            it.putExtra("storeId", intent.getStringExtra("id"));
+            startActivity(it);
+        }
+    }
+
     //第二个参数为空就是查所有
-    public void getstoreList(final int page, final String name) {
+    public void gettanzhenList(final int page, final String name) {
         //加载动画
         dialog = MyDialog.showDialog(this);
         dialog.show();
@@ -165,6 +194,7 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
+                    json.put("storeId",intent.getStringExtra("id"));
                     json.put("page", page);
                     json.put("rows", 10);
                     json.put("name", name);
@@ -178,7 +208,7 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url("http://dmptest.zhiziyun.com/api/v1/store/list.action")
+                            .url("http://dmptest.zhiziyun.com/api/v1/probe/list.action")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -192,7 +222,7 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             Gson gson = new Gson();
-                            storeList = gson.fromJson(response.body().string(), StoreList.class);
+                            tanzhenList = gson.fromJson(response.body().string(), TanzhenList.class);
                             handler.sendEmptyMessage(1);
                         }
                     });
@@ -210,17 +240,14 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    if (storeList != null) {
-                        for (int i = 0; i < storeList.getRows().size(); i++) {
-                            hm_store = new HashMap<>();
-                            hm_store.put("content1", storeList.getRows().get(i).getName());
-                            hm_store.put("content2", storeList.getRows().get(i).getArea());
-                            hm_store.put("content3", storeList.getRows().get(i).getProbeCount());
-                            hm_store.put("lat", storeList.getRows().get(i).getLatitude());
-                            hm_store.put("lon", storeList.getRows().get(i).getLongitude());
-                            hm_store.put("id", String.valueOf(storeList.getRows().get(i).getId()));
-                            hm_store.put("area",storeList.getRows().get(i).getArea());
-                            list_store.add(hm_store);
+                    if (tanzhenList != null) {
+                        for (int i = 0; i < tanzhenList.getRows().size(); i++) {
+                            hm_tanzhen = new HashMap<>();
+                            hm_tanzhen .put("content1", tanzhenList.getRows().get(i).getName());
+                            hm_tanzhen .put("content2", tanzhenList.getRows().get(i).getMac());
+                            hm_tanzhen .put("content3", tanzhenList.getRows().get(i).getFloorArea());
+                            hm_tanzhen .put("id", tanzhenList.getRows().get(i).getId());
+                            list_tanzhen.add(hm_tanzhen );
                         }
                         smartRefreshLayout.finishRefresh(0);
                         smartRefreshLayout.finishLoadmore(0);
@@ -230,29 +257,20 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                     }
                     break;
                 case 2:
-                    list_store.clear();
-                    getstoreList(1, "");//第二个参数为空就是查所有
-                    Toast.makeText(StoreListActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
+                    list_tanzhen.clear();
+                    gettanzhenList(1, "");//第二个参数为空就是查所有
+                    Toast.makeText(TanzhenListActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
                     break;
                 case 3:
-                    Toast.makeText(StoreListActivity.this, "删除失败", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TanzhenListActivity.this, "删除失败", Toast.LENGTH_SHORT).show();
                     break;
             }
         }
     };
 
-    public void editeStore(String name, String area, String lat, String lon, String id) {
-        Intent it = new Intent(this, EditeStoryActivity.class);
-        it.putExtra("name", name);
-        it.putExtra("area", area);
-        it.putExtra("lat", lat);
-        it.putExtra("lon", lon);
-        it.putExtra("id", id);
-        startActivity(it);
-    }
 
-    public void deleteStore(final String id) {
-        //删除门店接口
+    public void unbindTanzhen(final String id) {
+        //解绑探针接口
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -270,7 +288,7 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url("http://dmptest.zhiziyun.com/api/v1/store/delete.action")
+                            .url("http://dmptest.zhiziyun.com/api/v1/probe/delete.action")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -285,7 +303,7 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
                                 JSONObject jsonObject = new JSONObject(response.body().string());
-                                if (jsonObject.get("msg").equals("删除成功!")) {
+                                if (jsonObject.get("msg").equals("解除探针成功")) {
                                     handler.sendEmptyMessage(2);
                                 } else {
                                     handler.sendEmptyMessage(3);
@@ -302,14 +320,5 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
                 }
             }
         }).start();
-    }
-
-    public void checkTanzhen(String id,float lat,float lon,String area){
-        Intent it=new Intent(this,TanzhenListActivity.class);
-        it.putExtra("id",id);
-        it.putExtra("lat",lat);
-        it.putExtra("lon",lon);
-        it.putExtra("area",area);
-        startActivity(it);
     }
 }

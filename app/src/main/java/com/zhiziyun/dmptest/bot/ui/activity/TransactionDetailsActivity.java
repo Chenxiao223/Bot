@@ -204,6 +204,7 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
         if (pageNum < ((td.getResponse().getTotal() / 10) + 3)) {
             getData(pageNum);
         } else {
+            onLoad();
             Toast.makeText(this, "最后一页了", Toast.LENGTH_SHORT).show();
         }
     }

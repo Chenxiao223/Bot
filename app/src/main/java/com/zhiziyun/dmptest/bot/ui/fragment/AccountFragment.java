@@ -32,7 +32,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -165,19 +164,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         startActivityForResult(intent, CHOOSE_FROM_AIBUM);
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        switch (requestCode) {
-//            case 1:
-//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    openAlbum();
-//                } else {
-//                    show("You denied the permission");
-//                }
-//                break;
-//        }
-//    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1) {
@@ -214,12 +200,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        if (Build.VERSION.SDK_INT >= 24) {
-//            //这里报空指针
-//            imageUri = FileProvider.getUriForFile(getActivity(), "com.example.cameraalbumtest.fileprovider", outputImg);
-//        } else {
-//            imageUri = Uri.fromFile(outputImg);
-//        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             //如果是7.0及以上的系统使用FileProvider的方式创建一个Uri
             imageUri = FileProvider.getUriForFile(getActivity(), "com.hm.camerademo.fileprovider", outputImg);
@@ -419,4 +399,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
             }
         }
     };
+
+
 }

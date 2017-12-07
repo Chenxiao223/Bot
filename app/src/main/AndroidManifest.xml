@@ -77,6 +77,10 @@
             android:name=".ui.activity.EditeStoryActivity"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan|stateHidden" />
+        <activity
+            android:name=".ui.activity.TanzhenListActivity"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustPan|stateHidden" />
         <activity android:name="com.xys.libzxing.zxing.activity.CaptureActivity" />
     </application>
 

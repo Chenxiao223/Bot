@@ -5,18 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.http.DESCoder;
 import com.zhiziyun.dmptest.bot.util.Token;
 
 import org.json.JSONException;
@@ -43,7 +43,7 @@ import okhttp3.Response;
 public class BindingActivity extends Activity implements View.OnClickListener {
     private ImageView tv_back;
     private EditText et_name, et_area;
-    private Intent intent;
+    private Intent it;
     private RelativeLayout traceroute_rootview;
     private SharedPreferences share;
 
@@ -56,9 +56,9 @@ public class BindingActivity extends Activity implements View.OnClickListener {
 
     private void initView() {
         share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        it = getIntent();
         traceroute_rootview=findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
-        intent = getIntent();
         et_name = findViewById(R.id.et_name);
         et_area = findViewById(R.id.et_area);
         tv_back = findViewById(R.id.tv_back);
@@ -107,16 +107,15 @@ public class BindingActivity extends Activity implements View.OnClickListener {
             @Override
             public void run() {
                 try {
-                    float lat = intent.getFloatExtra("lat",0);
-                    float lon = intent.getFloatExtra("lon",0);
+                    float lat = it.getFloatExtra("lat",0);
+                    float lon = it.getFloatExtra("lon",0);
                     final JSONObject json = new JSONObject();
                     double signalStrength=Double.parseDouble(et_area.getText().toString());
                     json.put("siteId", share.getString("siteid",""));
-                    json.put("storeId", Integer.parseInt(intent.getStringExtra("storeId")));
+                    json.put("storeId", Integer.parseInt(it.getStringExtra("storeId")));
                     json.put("name", et_name.getText().toString());
-//                    json.put("mac", intent.getStringExtra("mac"));
-                    json.put("mac", "a020a61114ff");
-                    json.put("floorArea", intent.getStringExtra("floorArea"));
+                    json.put("mac", it.getStringExtra("mac"));
+                    json.put("floorArea", it.getStringExtra("floorArea"));
                     json.put("signalStrength", (int) computations(signalStrength));
                     json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
                     json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
@@ -146,7 +145,11 @@ public class BindingActivity extends Activity implements View.OnClickListener {
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
                                 JSONObject jsonObject=new JSONObject(response.body().string());
-                                Toast.makeText(BindingActivity.this, jsonObject.get("msg").toString(), Toast.LENGTH_SHORT).show();
+                                if (jsonObject.get("msg").equals("绑定探针成功")) {
+                                    handler.sendEmptyMessage(1);
+                                }else{
+                                    handler.sendEmptyMessage(2);
+                                }
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -159,5 +162,21 @@ public class BindingActivity extends Activity implements View.OnClickListener {
             }
         }).start();
     }
+
+    Handler handler=new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 1:
+                    Toast.makeText(BindingActivity.this, "绑定探针成功", Toast.LENGTH_SHORT).show();
+                    finish();
+                    break;
+                case 2:
+                    Toast.makeText(BindingActivity.this, "绑定探针失败", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
 
 }

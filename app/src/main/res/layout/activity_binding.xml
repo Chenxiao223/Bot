@@ -90,7 +90,7 @@
         android:background="@color/blue"
         android:onClick="complete"
         android:text="绑定完成"
-        android:layout_marginBottom="@dimen/control_marginbottom"
+        android:layout_marginBottom="@dimen/imagview_top"
         android:layout_marginLeft="@dimen/padding_left_right2"
         android:layout_marginRight="@dimen/padding_left_right2"
         android:textColor="@color/white"

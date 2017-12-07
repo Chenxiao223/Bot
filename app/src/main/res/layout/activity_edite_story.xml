@@ -40,12 +40,40 @@
             android:layout_height="fill_parent"
             android:clickable="true" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height"
+            android:layout_marginLeft="@dimen/padding_left_right4"
+            android:layout_marginRight="@dimen/padding_left_right4"
+            android:layout_marginTop="@dimen/control_marginbottom"
+            android:background="@color/white"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/et_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@null"
+                android:drawableLeft="@drawable/search"
+                android:hint="输入地名"
+                android:imeOptions="actionSearch"
+                android:maxLength="20"
+                android:singleLine="true"
+                android:textColorHint="@color/gray" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:text="普通" />
+            android:text="普通"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="28dp" />
     </RelativeLayout>
 
     <LinearLayout

@@ -53,7 +53,7 @@ public class StoreListAdapter extends BaseAdapter {
         ViewHolder holder = null;
         if (convertView == null) {
             SlideItemView itemView = new SlideItemView(context);
-            itemView.setView(listView, R.layout.listview_storelist, R.layout.item_menu, 2.0f / 4);
+            itemView.setView(listView, R.layout.listview_storelist, R.layout.item_menu, 2.0f / 3);//最后一个参数是滑动块的长度
             holder = new ViewHolder(itemView);
             itemView.setTag(holder);
             convertView = itemView;
@@ -68,12 +68,22 @@ public class StoreListAdapter extends BaseAdapter {
         holder.tv_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                itemView.showContent();
                 StoreListActivity.storeListActivity.editeStore(list.get(position).get("content1"),
                         list.get(position).get("content2"),
                         list.get(position).get("lat"),
                         list.get(position).get("lon"),
                         list.get(position).get("id"));
+                itemView.showContent();
+            }
+        });
+        holder.tv_view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                itemView.showContent();
+                StoreListActivity.storeListActivity.checkTanzhen(list.get(position).get("id"),
+                        Float.parseFloat(list.get(position).get("lat")),
+                        Float.parseFloat(list.get(position).get("lon")),
+                        list.get(position).get("area"));
             }
         });
         holder.tv_delete.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +97,7 @@ public class StoreListAdapter extends BaseAdapter {
     }
 
     public class ViewHolder {
-        private TextView text1, text2, text3, tv_edit, tv_delete;
+        private TextView text1, text2, text3, tv_edit, tv_delete, tv_view;
 
         public ViewHolder(SlideItemView view) {
             View content = view.getContent();
@@ -95,8 +105,9 @@ public class StoreListAdapter extends BaseAdapter {
             text2 = content.findViewById(R.id.tv_area);
             text3 = content.findViewById(R.id.tv_probeCount);
             View menu = view.getMenu();
-            tv_edit = (TextView) menu.findViewById(R.id.tv_edit);
-            tv_delete = (TextView) menu.findViewById(R.id.tv_delete);
+            tv_edit = menu.findViewById(R.id.tv_edit);
+            tv_delete = menu.findViewById(R.id.tv_delete);
+            tv_view = menu.findViewById(R.id.tv_view);
         }
 
     }

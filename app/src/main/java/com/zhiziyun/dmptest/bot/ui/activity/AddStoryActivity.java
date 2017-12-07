@@ -8,12 +8,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
@@ -33,6 +36,12 @@ import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.core.SearchResult;
+import com.baidu.mapapi.search.geocode.GeoCodeOption;
+import com.baidu.mapapi.search.geocode.GeoCodeResult;
+import com.baidu.mapapi.search.geocode.GeoCoder;
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.xys.libzxing.zxing.activity.CaptureActivity;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.http.DESCoder;
@@ -59,7 +68,7 @@ import okhttp3.Response;
  * 添加门店
  */
 
-public class AddStoryActivity extends Activity implements View.OnClickListener {
+public class AddStoryActivity extends Activity implements View.OnClickListener, OnGetGeoCoderResultListener {
     private ImageView iv_back;
     private MapView mMapView;
     private BaiduMap mBaiduMap;
@@ -71,10 +80,11 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
     private BitmapDescriptor mCurrentMarker;
     private float lon = 0;//经度
     private float lat = 0;//纬度
-    private EditText et_floorArea, et_storeId;
+    private EditText et_floorArea, et_storeId,et_text;
     private String storeId;
     private LinearLayout traceroute_rootview;
     private SharedPreferences share;
+    GeoCoder mSearch = null; // 搜索模块，也可去掉地图模块独立使用
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,6 +108,31 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
 
         mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
         requestLocButton.setText("普通");
+
+        // 初始化搜索模块，注册事件监听
+        mSearch = GeoCoder.newInstance();
+        mSearch.setOnGetGeoCodeResultListener(this);
+
+        et_text=findViewById(R.id.et_text);
+        //点击搜索键的监听
+        et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_SEARCH) {
+                    // 先隐藏键盘
+                    ((InputMethodManager) et_text.getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
+                            .hideSoftInputFromWindow(
+                                    AddStoryActivity.this
+                                            .getCurrentFocus()
+                                            .getWindowToken(),
+                                    InputMethodManager.HIDE_NOT_ALWAYS);
+                    //实现自己的搜索逻辑
+                    SearchButtonProcess();
+                    return true;
+                }
+                return false;
+            }
+        });
 
         //按钮的一个监听，改变改变定位图标的模式
         View.OnClickListener btnClickListener = new View.OnClickListener() {
@@ -242,15 +277,6 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
                                     it.setClass(AddStoryActivity.this, CaptureActivity.class);
                                     //返回一个二维码的信息
                                     startActivityForResult(it, 99);
-                                    //测试完之后删除
-//                                Intent it1 = new Intent(AddStoryActivity.this, BindingActivity.class);
-//                                it1.putExtra("lat", lat);
-//                                it1.putExtra("lon", lon);
-//                                it1.putExtra("storeId", storeId);
-//                                it1.putExtra("storeId", et_storeId.getText().toString());
-//                                it1.putExtra("floorArea", et_floorArea.getText().toString());
-//                                startActivity(it1);
-
                                 }
                             });
 
@@ -277,15 +303,44 @@ public class AddStoryActivity extends Activity implements View.OnClickListener {
             Intent it = new Intent(this, BindingActivity.class);
             it.putExtra("lat", lat);
             it.putExtra("lon", lon);
-            it.putExtra("storeId", et_storeId.getText().toString());
             it.putExtra("floorArea", et_floorArea.getText().toString());
             it.putExtra("mac", result);
             it.putExtra("storeId", storeId);
             startActivity(it);
+            finish();
         }
     }
 
     boolean isFirstLoc = true; // 是否首次定位
+
+    /**
+     * 地址搜索返回结果
+     */
+    @Override
+    public void onGetGeoCodeResult(GeoCodeResult result) {
+        if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {
+            Toast.makeText(AddStoryActivity.this, "抱歉，未能找到结果", Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
+        mBaiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(result
+                .getLocation()));
+    }
+
+    @Override
+    public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
+
+    }
+
+    /**
+     * 发起地址搜索
+     */
+    public void SearchButtonProcess() {
+        // Geo搜索
+        mSearch.geocode(new GeoCodeOption().city(
+                "上海市").address(
+                et_text.getText().toString()));
+    }
 
     public class MyLocationListenner implements BDLocationListener {
 
