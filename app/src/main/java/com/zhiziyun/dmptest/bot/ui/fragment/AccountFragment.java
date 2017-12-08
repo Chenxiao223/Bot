@@ -3,6 +3,7 @@ package com.zhiziyun.dmptest.bot.ui.fragment;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -200,9 +201,16 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             //如果是7.0及以上的系统使用FileProvider的方式创建一个Uri
-            imageUri = FileProvider.getUriForFile(getActivity(), "com.hm.camerademo.fileprovider", outputImg);
+//            imageUri = FileProvider.getUriForFile(getActivity(), "com.hm.camerademo.fileprovider", outputImg);
+//            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            //兼容android7.0 使用共享文件的形式
+            ContentValues contentValues = new ContentValues(1);
+            contentValues.put(MediaStore.Images.Media.DATA, outputImg.getAbsolutePath());
+            imageUri = getActivity().getApplication().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         } else {

@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.support.design.widget.TabLayout;
+import android.widget.LinearLayout;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.ui.fragment.TimeSlotFragment;
@@ -24,7 +25,7 @@ import java.util.List;
  * 客流分析
  */
 
-public class PassengerFlowAnalysisActivity extends AppCompatActivity implements View.OnClickListener {
+public class PassengerFlowAnalysisActivity extends BaseActivity implements View.OnClickListener {
     private ImageView iv_back;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -40,6 +41,11 @@ public class PassengerFlowAnalysisActivity extends AppCompatActivity implements 
     }
 
     private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
+
         iv_back= (ImageView) findViewById(R.id.iv_back);
         viewPager= (ViewPager) findViewById(R.id.vp_view);
         tabLayout= (TabLayout) findViewById(R.id.tabs);

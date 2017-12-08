@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +39,7 @@ import okhttp3.Response;
  * 访客详情页
  */
 
-public class VisitorsselfActivity extends Activity implements View.OnClickListener {
+public class VisitorsselfActivity extends BaseActivity implements View.OnClickListener {
     private ImageView iv_head;
     private TextView tv_age, tv_marriage, tv_gender, tv_brands, tv_model, tv_did, tv_date, tv_num;
     private Visitorsselfparticulars vp;
@@ -53,17 +54,22 @@ public class VisitorsselfActivity extends Activity implements View.OnClickListen
     }
 
     private void initView() {
-        iv_head = findViewById(R.id.iv_head);
-        tv_age = findViewById(R.id.tv_age);
-        tv_marriage = findViewById(R.id.tv_marriage);
-        tv_gender = findViewById(R.id.tv_gender);
-        tv_brands = findViewById(R.id.tv_brands);
-        tv_model = findViewById(R.id.tv_model);
-        tv_did = findViewById(R.id.tv_did);
-        tv_date = findViewById(R.id.tv_date);
-        tv_num = findViewById(R.id.tv_num);
+        //设置系统栏颜色
+        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
 
-        ImageView iv_back = findViewById(R.id.iv_back);
+        iv_head = (ImageView) findViewById(R.id.iv_head);
+        tv_age = (TextView) findViewById(R.id.tv_age);
+        tv_marriage = (TextView) findViewById(R.id.tv_marriage);
+        tv_gender = (TextView) findViewById(R.id.tv_gender);
+        tv_brands = (TextView) findViewById(R.id.tv_brands);
+        tv_model = (TextView) findViewById(R.id.tv_model);
+        tv_did = (TextView) findViewById(R.id.tv_did);
+        tv_date = (TextView) findViewById(R.id.tv_date);
+        tv_num = (TextView) findViewById(R.id.tv_num);
+
+        ImageView iv_back = (ImageView) findViewById(R.id.iv_back);
         iv_back.setOnClickListener(this);
         Intent it=getIntent();
         String mac = it.getStringExtra("mac");

@@ -2,20 +2,18 @@ package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -24,7 +22,7 @@ import android.widget.Toast;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.HomePageAdapter;
 
-public class HomePageActivity extends AppCompatActivity implements View.OnClickListener {
+public class HomePageActivity extends BaseActivity implements View.OnClickListener {
     private LinearLayout lv_homepage, lv_generalize, lv_visitors, lv_my;
     private ImageView iv_homepage, iv_visitors, iv_generalize, iv_my;
     private TextView tv_homepage, tv_visitors, tv_generalize, tv_my;
@@ -40,24 +38,13 @@ public class HomePageActivity extends AppCompatActivity implements View.OnClickL
         //
         initView();
     }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void initView() {
-
-//        Window window = this.getWindow();
-////设置透明状态栏,这样才能让 ContentView 向上
-//        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-//
-////需要设置这个 flag 才能调用 setStatusBarColor 来设置状态栏颜色
-//        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-////设置状态栏颜色
-////        window.setStatusBarColor(Color.BLACK);
-//
-//        ViewGroup mContentView = (ViewGroup) findViewById(Window.ID_ANDROID_CONTENT);
-//        View mChildView = mContentView.getChildAt(0);
-//        if (mChildView != null) {
-//            //注意不是设置 ContentView 的 FitsSystemWindows, 而是设置 ContentView 的第一个子 View . 使其不为系统 View 预留空间.
-//            ViewCompat.setFitsSystemWindows(mChildView, false);
-//        }
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
         iv_homepage = (ImageView) findViewById(R.id.iv_homepage);
         iv_visitors = (ImageView) findViewById(R.id.iv_visitors);
@@ -195,9 +182,14 @@ public class HomePageActivity extends AppCompatActivity implements View.OnClickL
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             //申请WRITE_EXTERNAL_STORAGE权限
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
-                    1);}
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+        }
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -207,13 +199,17 @@ public class HomePageActivity extends AppCompatActivity implements View.OnClickL
     private void doNext(int requestCode, int[] grantResults) {
         if (requestCode == 1) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission Granted
 
             } else {
-                // Permission Denied
-                //  displayFrameworkBugMessageAndExit();
                 Toast.makeText(this, "请在应用管理中打开“相机”访问权限！", Toast.LENGTH_LONG).show();
-//                finish();
+            }
+        }
+        if (requestCode == 2) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+                // 没有获取 到权限，从新请求，或者关闭app
+                Toast.makeText(this, "需要存储权限", Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ZoomControls;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -68,19 +69,19 @@ import okhttp3.Response;
  * 添加门店
  */
 
-public class AddStoryActivity extends Activity implements View.OnClickListener, OnGetGeoCoderResultListener {
+public class AddStoryActivity extends BaseActivity implements View.OnClickListener, OnGetGeoCoderResultListener {
     private ImageView iv_back;
     private MapView mMapView;
     private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
-    private Button requestLocButton;
+    private ImageView requestLocButton;
     private MyLocationConfiguration.LocationMode mCurrentMode;
     private LocationClient mLocClient;
     public MyLocationListenner myListener = new MyLocationListenner();
     private BitmapDescriptor mCurrentMarker;
     private float lon = 0;//经度
     private float lat = 0;//纬度
-    private EditText et_floorArea, et_storeId,et_text;
+    private EditText et_floorArea, et_storeId, et_text;
     private String storeId;
     private LinearLayout traceroute_rootview;
     private SharedPreferences share;
@@ -97,23 +98,27 @@ public class AddStoryActivity extends Activity implements View.OnClickListener, 
     }
 
     private void initView() {
-        share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
-        traceroute_rootview = findViewById(R.id.traceroute_rootview);
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        traceroute_rootview = (LinearLayout) findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
-        et_storeId = findViewById(R.id.et_storeId);
-        et_floorArea = findViewById(R.id.et_floorArea);
-        iv_back = findViewById(R.id.iv_back);
+        et_storeId = (EditText) findViewById(R.id.et_storeId);
+        et_floorArea = (EditText) findViewById(R.id.et_floorArea);
+        iv_back = (ImageView) findViewById(R.id.iv_back);
         iv_back.setOnClickListener(this);
-        requestLocButton = (Button) findViewById(R.id.btn);
+        requestLocButton = (ImageView) findViewById(R.id.iv_localize);
 
         mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
-        requestLocButton.setText("普通");
 
         // 初始化搜索模块，注册事件监听
         mSearch = GeoCoder.newInstance();
         mSearch.setOnGetGeoCodeResultListener(this);
 
-        et_text=findViewById(R.id.et_text);
+        et_text = (EditText) findViewById(R.id.et_text);
         //点击搜索键的监听
         et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -139,34 +144,14 @@ public class AddStoryActivity extends Activity implements View.OnClickListener, 
 
             @Override
             public void onClick(View v) {
-                switch (mCurrentMode) {
-                    case NORMAL: //正常模式
-                        requestLocButton.setText("跟随");
-                        mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
-                        mBaiduMap
-                                .setMyLocationConfigeration(new MyLocationConfiguration(
-                                        mCurrentMode, true, mCurrentMarker));
-
-                        break;
-                    case COMPASS:  //罗盘模式
-                        requestLocButton.setText("普通");
-                        mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
-                        mBaiduMap
-                                .setMyLocationConfigeration(new MyLocationConfiguration(
-                                        mCurrentMode, true, mCurrentMarker));
-                        break;
-                    case FOLLOWING: //跟随模式
-                        requestLocButton.setText("罗盘");
-                        mCurrentMode = MyLocationConfiguration.LocationMode.COMPASS;
-                        mBaiduMap
-                                .setMyLocationConfigeration(new MyLocationConfiguration(
-                                        mCurrentMode, true, mCurrentMarker));
-                        break;
-
-                    default:
-                        break;
-                }
-
+                mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
+                mBaiduMap
+                        .setMyLocationConfigeration(new MyLocationConfiguration(
+                                mCurrentMode, true, mCurrentMarker));
+                mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
+                mBaiduMap
+                        .setMyLocationConfigeration(new MyLocationConfiguration(
+                                mCurrentMode, true, mCurrentMarker));
             }
         };
         requestLocButton.setOnClickListener(btnClickListener);
@@ -209,6 +194,11 @@ public class AddStoryActivity extends Activity implements View.OnClickListener, 
                 return false;
             }
         });
+        // 隐藏百度地图logo
+        View child = mMapView.getChildAt(1);
+        if (child != null && (child instanceof ImageView || child instanceof ZoomControls)) {
+            child.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -237,7 +227,7 @@ public class AddStoryActivity extends Activity implements View.OnClickListener, 
                     public void run() {
                         try {
                             final JSONObject json = new JSONObject();
-                            json.put("siteId", share.getString("siteid",""));
+                            json.put("siteId", share.getString("siteid", ""));
                             json.put("name", et_storeId.getText().toString());
                             json.put("area", Integer.parseInt(et_floorArea.getText().toString()));
                             json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
@@ -374,6 +364,7 @@ public class AddStoryActivity extends Activity implements View.OnClickListener, 
         super.onDestroy();
         // 退出时销毁定位
         mLocClient.stop();
+        mSearch.destroy();
         // 关闭定位图层
         mBaiduMap.setMyLocationEnabled(false);
         mMapView.onDestroy();

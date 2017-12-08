@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.HomePage;
 import com.zhiziyun.dmptest.bot.ui.activity.AddStoryActivity;
-import com.zhiziyun.dmptest.bot.ui.activity.HomePageActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.PassengerFlowAnalysisActivity;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
@@ -62,25 +61,16 @@ import okhttp3.Response;
 
 
 /**
- * Created by Administrator on 2017/7/17 0017.
  * 首页
  */
 public class HomePageFragment extends Fragment implements View.OnClickListener {
     private SwipeRefreshLayout srl;
-    private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest, tv_oldguest,tv_new,tv_old;
+    private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest, tv_oldguest, tv_new, tv_old;
     private ImageView iv_addstory;
     private RelativeLayout rl_today_people;
     private PieChartView pie_chart;//饼形图控件
     private PieChartData pieChardata;//数据
     List<SliceValue> values = new ArrayList<SliceValue>();
-    //定义数据，实际情况肯定不是这样写固定值的
-    private int[] data = {21, 20};
-    private int[] colorData = {Color.parseColor("#ec063d"),
-            Color.parseColor("#f1c704"),
-            Color.parseColor("#c9c9c9"),
-            Color.parseColor("#2bc208"),
-            Color.parseColor("#333333")};
-    private String[] stateChar = {"新客", "老客"};
     //折线图
     private LineChartView chartView;
     private LineChartData lineData;
@@ -102,13 +92,13 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     }
 
     public void initView() {
-         share=getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         //折线图
         chartView = getView().findViewById(R.id.linechart);
-        tv_new=getView().findViewById(R.id.tv_new);
-        tv_old=getView().findViewById(R.id.tv_old);
+        tv_new = getView().findViewById(R.id.tv_new);
+        tv_old = getView().findViewById(R.id.tv_old);
         tv_companyname = getView().findViewById(R.id.tv_companyname);
-        tv_companyname.setText(share.getString("company","无数据"));
+        tv_companyname.setText(share.getString("company", "无数据"));
         iv_addstory = getView().findViewById(R.id.iv_addstory);
         iv_addstory.setOnClickListener(this);
         rl_today_people = getView().findViewById(R.id.rl_today_people);
@@ -160,11 +150,10 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid",""));
+                    json.put("siteId", share.getString("siteid", ""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        Log.i("token",Token.gettoken());
                         url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
@@ -215,7 +204,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid",""));
+                    json.put("siteId", share.getString("siteid", ""));
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -269,9 +258,8 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             @Override
             public void run() {
                 try {
-                    //token加密
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("siteId", share.getString("siteid",""));
+                    jsonObject.put("siteId", share.getString("siteid", ""));
                     jsonObject.put("beginTime", getPastDate(6));
                     jsonObject.put("endTime", getDate());
                     jsonObject.put("microprobeId", 0);
@@ -286,7 +274,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
 
-                    Response response = null;
                     client.newCall(request).enqueue(new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
@@ -295,12 +282,16 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson=new Gson();
-                            page=gson.fromJson(response.body().string(),HomePage.class);
-                            if (page.getRows().size() == 0) {//如果没数据就提示
-                                myHandler.sendEmptyMessage(4);
+                            Gson gson = new Gson();
+                            page = gson.fromJson(response.body().string(), HomePage.class);
+                            if (page != null) {
+                                if (page.getRows().size() == 0) {//如果没数据就提示
+                                    myHandler.sendEmptyMessage(4);
+                                } else {
+                                    myHandler.sendEmptyMessage(3);
+                                }
                             } else {
-                                myHandler.sendEmptyMessage(3);
+                                myHandler.sendEmptyMessage(4);
                             }
                         }
                     });
@@ -338,8 +329,8 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     tv_person.setText(bundle1.get("all").toString());
                     tv_newguest.setText(bundle1.get("new").toString());
                     tv_oldguest.setText(bundle1.get("old").toString());
-                    tv_new.setText("  ("+computations(Float.parseFloat(bundle1.get("all").toString()),Float.parseFloat(bundle1.get("new").toString()))+")");
-                    tv_old.setText("  ("+computations(Float.parseFloat(bundle1.get("all").toString()),Float.parseFloat(bundle1.get("old").toString()))+")");
+                    tv_new.setText("  (" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("new").toString())) + ")");
+                    tv_old.setText("  (" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("old").toString())) + ")");
                     setPieChartData(Float.parseFloat(bundle1.get("new").toString()), Float.parseFloat(bundle1.get("old").toString()));
                     initPieChart();
                     dialog.dismiss();//关闭加载动画
@@ -349,6 +340,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();//关闭加载动画
                     break;
                 case 5:
                     srl.setRefreshing(false);
@@ -358,7 +350,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             super.handleMessage(msg);
         }
     };
-
 
 
     /**
@@ -391,7 +382,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
 
     //计算百分比
-    public String computations(float sum,float num){
+    public String computations(float sum, float num) {
         return String.format("%.2f", num * 100 / sum) + "%";
     }
 

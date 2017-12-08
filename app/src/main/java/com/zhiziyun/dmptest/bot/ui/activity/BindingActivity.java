@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -40,7 +41,7 @@ import okhttp3.Response;
  * 绑定探针
  */
 
-public class BindingActivity extends Activity implements View.OnClickListener {
+public class BindingActivity extends BaseActivity implements View.OnClickListener {
     private ImageView tv_back;
     private EditText et_name, et_area;
     private Intent it;
@@ -55,13 +56,18 @@ public class BindingActivity extends Activity implements View.OnClickListener {
     }
 
     private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
+
         share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         it = getIntent();
-        traceroute_rootview=findViewById(R.id.traceroute_rootview);
+        traceroute_rootview= (RelativeLayout) findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
-        et_name = findViewById(R.id.et_name);
-        et_area = findViewById(R.id.et_area);
-        tv_back = findViewById(R.id.tv_back);
+        et_name = (EditText) findViewById(R.id.et_name);
+        et_area = (EditText) findViewById(R.id.et_area);
+        tv_back = (ImageView) findViewById(R.id.tv_back);
         tv_back.setOnClickListener(this);
     }
 

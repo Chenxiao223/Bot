@@ -11,13 +11,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TransactionDetailsAdapter;
-import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
 import com.zhiziyun.dmptest.bot.entity.TransactionDetails;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
@@ -47,14 +47,14 @@ import okhttp3.Response;
  * 交易明细页
  */
 
-public class TransactionDetailsActivity extends Activity implements View.OnClickListener, XListView.IXListViewListener {
+public class TransactionDetailsActivity extends BaseActivity implements View.OnClickListener, XListView.IXListViewListener {
     private String beginTime;
     private String endTime;
     private SharedPreferences share;
     private XListView xlistview;
     private TransactionDetails td;
-    private HashMap<String,String> hm_td;
-    private ArrayList<HashMap<String,String>> list_td=new ArrayList<>();
+    private HashMap<String, String> hm_td;
+    private ArrayList<HashMap<String, String>> list_td = new ArrayList<>();
     private TransactionDetailsAdapter adapter;
     private int pageNum = 1;
 
@@ -66,13 +66,18 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
     }
 
     private void initView() {
-        share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
-        TextView tv_date=findViewById(R.id.tv_date);
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        TextView tv_date = (TextView) findViewById(R.id.tv_date);
         tv_date.setOnClickListener(this);
-        ImageView tv_back=findViewById(R.id.tv_back);
+        ImageView tv_back = (ImageView) findViewById(R.id.tv_back);
         tv_back.setOnClickListener(this);
 
-        xlistview = findViewById(R.id.xlistview);
+        xlistview = (XListView) findViewById(R.id.xlistview);
         xlistview.setPullLoadEnable(true);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
         adapter = new TransactionDetailsAdapter(this, list_td);
         xlistview.setAdapter(adapter);
@@ -83,7 +88,7 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.tv_date:
                 Calendar c = Calendar.getInstance();
                 // 最后一个false表示不显示日期，如果要显示日期，最后参数可以是true或者不用输入
@@ -108,17 +113,17 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
         }
     }
 
-    public void getData(final int page){
+    public void getData(final int page) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("accountid", share.getString("accountid",""));
-                    json.put("startDate",beginTime);
-                    json.put("endDate",endTime);
-                    json.put("page",page);
-                    json.put("row",10);
+                    json.put("accountid", share.getString("accountid", ""));
+                    json.put("startDate", beginTime);
+                    json.put("endDate", endTime);
+                    json.put("page", page);
+                    json.put("row", 10);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -142,8 +147,8 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson=new Gson();
-                            td=gson.fromJson(response.body().string(),TransactionDetails.class);
+                            Gson gson = new Gson();
+                            td = gson.fromJson(response.body().string(), TransactionDetails.class);
                             handler.sendEmptyMessage(1);
                         }
                     });
@@ -155,18 +160,18 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
         }).start();
     }
 
-    Handler handler=new Handler(){
+    Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case 1:
-                    if (td.getResponse().getData()!=null){
-                        for (int i=0;i<td.getResponse().getData().size();i++){
-                            hm_td=new HashMap<>();
-                            hm_td.put("content1",td.getResponse().getData().get(i).getSettleType());
-                            hm_td.put("content2",td.getResponse().getData().get(i).getSettleDate());
-                            hm_td.put("content3",td.getResponse().getData().get(i).getFee());
+                    if (td.getResponse().getData() != null) {
+                        for (int i = 0; i < td.getResponse().getData().size(); i++) {
+                            hm_td = new HashMap<>();
+                            hm_td.put("content1", td.getResponse().getData().get(i).getSettleType());
+                            hm_td.put("content2", td.getResponse().getData().get(i).getSettleDate());
+                            hm_td.put("content3", td.getResponse().getData().get(i).getFee());
                             list_td.add(hm_td);
                         }
                         pageNum++;
@@ -194,9 +199,13 @@ public class TransactionDetailsActivity extends Activity implements View.OnClick
 
     @Override//下拉刷新
     public void onRefresh() {
-        hm_td.clear();
-        clearAllData();
-        getData(pageNum);
+        try {
+            hm_td.clear();
+            clearAllData();
+            getData(pageNum);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override//上拉加载

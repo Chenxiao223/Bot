@@ -68,12 +68,12 @@ public class StoreListAdapter extends BaseAdapter {
         holder.tv_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                itemView.showContent();
                 StoreListActivity.storeListActivity.editeStore(list.get(position).get("content1"),
                         list.get(position).get("content2"),
                         list.get(position).get("lat"),
                         list.get(position).get("lon"),
                         list.get(position).get("id"));
-                itemView.showContent();
             }
         });
         holder.tv_view.setOnClickListener(new View.OnClickListener() {

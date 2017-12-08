@@ -3,17 +3,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/linearLayout3">
+
+        <ImageView
+            android:id="@+id/iv_system"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/homepagebg" />
+    </LinearLayout>
+
     <com.zhiziyun.dmptest.bot.util.NoScrollViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/linearLayout" />
+        android:layout_above="@+id/linearLayout"
+        android:layout_below="@+id/linearLayout3" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
         android:layout_below="@+id/pager"
-        android:background="@color/gray"/>
+        android:background="@color/gray" />
 
     <LinearLayout
         android:id="@+id/linearLayout"

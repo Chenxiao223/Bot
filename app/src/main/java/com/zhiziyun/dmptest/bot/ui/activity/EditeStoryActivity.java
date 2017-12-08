@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ZoomControls;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -69,12 +70,12 @@ import okhttp3.Response;
  * 编辑门店
  */
 
-public class EditeStoryActivity extends Activity implements View.OnClickListener, OnGetGeoCoderResultListener {
+public class EditeStoryActivity extends BaseActivity implements View.OnClickListener, OnGetGeoCoderResultListener {
     private ImageView iv_back;
     private MapView mMapView;
     private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
-    private Button requestLocButton;
+    private ImageView requestLocButton;
     private MyLocationConfiguration.LocationMode mCurrentMode;
     private LocationClient mLocClient;
     public MyLocationListenner myListener = new MyLocationListenner();
@@ -99,32 +100,36 @@ public class EditeStoryActivity extends Activity implements View.OnClickListener
     }
 
     private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
         intent = getIntent();
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
-        traceroute_rootview = findViewById(R.id.traceroute_rootview);
+        traceroute_rootview = (LinearLayout) findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
         lon = Float.parseFloat(intent.getStringExtra("lon"));
         lat = Float.parseFloat(intent.getStringExtra("lat"));
-        et_storeId = findViewById(R.id.et_storeId);
-        et_floorArea = findViewById(R.id.et_floorArea);
+        et_storeId = (EditText) findViewById(R.id.et_storeId);
+        et_floorArea = (EditText) findViewById(R.id.et_floorArea);
         String name = intent.getStringExtra("name");
         String area = intent.getStringExtra("area");
         et_storeId.setText(name);
         et_storeId.setSelection(name.length());
         et_floorArea.setText(area);
         et_floorArea.setSelection(area.length());
-        iv_back = findViewById(R.id.iv_back);
+        iv_back = (ImageView) findViewById(R.id.iv_back);
         iv_back.setOnClickListener(this);
-        requestLocButton = (Button) findViewById(R.id.btn);
+        requestLocButton = (ImageView) findViewById(R.id.iv_localize);
 
         mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
-        requestLocButton.setText("普通");
 
         // 初始化搜索模块，注册事件监听
         mSearch = GeoCoder.newInstance();
         mSearch.setOnGetGeoCodeResultListener(this);
 
-        et_text=findViewById(R.id.et_text);
+        et_text = (EditText) findViewById(R.id.et_text);
         //点击搜索键的监听
         et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -150,33 +155,15 @@ public class EditeStoryActivity extends Activity implements View.OnClickListener
 
             @Override
             public void onClick(View v) {
-                switch (mCurrentMode) {
-                    case NORMAL: //正常模式
-                        requestLocButton.setText("跟随");
-                        mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
-                        mBaiduMap
-                                .setMyLocationConfigeration(new MyLocationConfiguration(
-                                        mCurrentMode, true, mCurrentMarker));
+                mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
+                mBaiduMap
+                        .setMyLocationConfigeration(new MyLocationConfiguration(
+                                mCurrentMode, true, mCurrentMarker));
 
-                        break;
-                    case COMPASS:  //罗盘模式
-                        requestLocButton.setText("普通");
-                        mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
-                        mBaiduMap
-                                .setMyLocationConfigeration(new MyLocationConfiguration(
-                                        mCurrentMode, true, mCurrentMarker));
-                        break;
-                    case FOLLOWING: //跟随模式
-                        requestLocButton.setText("罗盘");
-                        mCurrentMode = MyLocationConfiguration.LocationMode.COMPASS;
-                        mBaiduMap
-                                .setMyLocationConfigeration(new MyLocationConfiguration(
-                                        mCurrentMode, true, mCurrentMarker));
-                        break;
-
-                    default:
-                        break;
-                }
+                mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
+                mBaiduMap
+                        .setMyLocationConfigeration(new MyLocationConfiguration(
+                                mCurrentMode, true, mCurrentMarker));
 
             }
         };
@@ -220,6 +207,11 @@ public class EditeStoryActivity extends Activity implements View.OnClickListener
                 return false;
             }
         });
+        // 隐藏百度地图logo
+        View child = mMapView.getChildAt(1);
+        if (child != null && (child instanceof ImageView || child instanceof ZoomControls)) {
+            child.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -280,10 +272,10 @@ public class EditeStoryActivity extends Activity implements View.OnClickListener
                                 public void onResponse(Call call, Response response) throws IOException {
                                     try {
                                         JSONObject jsonObject = new JSONObject(response.body().string());
-                                        if (jsonObject.get("msg").equals("编辑门店成功")){
+                                        if (jsonObject.get("msg").equals("编辑门店成功")) {
                                             handler.sendEmptyMessage(1);
                                             finish();
-                                        }else{
+                                        } else {
                                             handler.sendEmptyMessage(2);
                                         }
                                     } catch (JSONException e) {
@@ -306,11 +298,11 @@ public class EditeStoryActivity extends Activity implements View.OnClickListener
         }
     }
 
-    Handler handler=new Handler(){
+    Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case 1:
                     Toast.makeText(EditeStoryActivity.this, "编辑成功", Toast.LENGTH_SHORT).show();
                     break;
@@ -392,6 +384,7 @@ public class EditeStoryActivity extends Activity implements View.OnClickListener
         super.onDestroy();
         // 退出时销毁定位
         mLocClient.stop();
+        mSearch.destroy();
         // 关闭定位图层
         mBaiduMap.setMyLocationEnabled(false);
         mMapView.onDestroy();

@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,9 +49,10 @@ import okhttp3.Response;
 
 /**
  * Created by Administrator on 2017/12/5.
+ * 门店列表列
  */
 
-public class StoreListActivity extends Activity implements View.OnClickListener {
+public class StoreListActivity extends BaseActivity implements View.OnClickListener {
     public static StoreListActivity storeListActivity;
     private SharedPreferences share;
     private StoreList storeList;
@@ -75,15 +78,20 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
     }
 
     private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
+
         storeListActivity = this;
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.iv_addstory).setOnClickListener(this);
-        lv_store = findViewById(R.id.lv_store);
+        lv_store = (SlideListView) findViewById(R.id.lv_store);
         adapter = new StoreListAdapter(this, lv_store, list_store);
         lv_store.setAdapter(adapter);
-        et_text = findViewById(R.id.et_text);
+        et_text = (EditText) findViewById(R.id.et_text);
         //点击搜索键的监听
         et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -132,7 +140,7 @@ public class StoreListActivity extends Activity implements View.OnClickListener 
     @Override
     protected void onResume() {
         super.onResume();
-        list_store.clear();
+//        list_store.clear();
         getstoreList(1, "");//第二个参数为空就是查所有
     }
 

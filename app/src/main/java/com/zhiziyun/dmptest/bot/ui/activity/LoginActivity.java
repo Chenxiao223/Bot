@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -38,7 +39,7 @@ import okhttp3.Response;
  * Created by Administrator on 2017/11/17.
  */
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends BaseActivity {
     private EditText tv_username, tv_password;
     private LinearLayout traceroute_rootview;
     SharedPreferences.Editor editors;
@@ -52,6 +53,11 @@ public class LoginActivity extends Activity {
     }
 
     private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
+
         SharedPreferences sharedPreferences=getSharedPreferences("logininfo",Context.MODE_PRIVATE);
         editors=sharedPreferences.edit();
 
@@ -116,7 +122,6 @@ public class LoginActivity extends Activity {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-//                            Log.i("info",response.body().string());
                             try {
                                 JSONObject json=new JSONObject(response.body().string());
                                 if (json.get("success").toString().equals("true")) {//返回为true表示登录成功

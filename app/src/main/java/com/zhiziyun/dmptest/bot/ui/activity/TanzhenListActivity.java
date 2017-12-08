@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,15 +50,16 @@ import okhttp3.Response;
 
 /**
  * Created by Administrator on 2017/12/5.
+ * 探针列表页
  */
 
-public class TanzhenListActivity extends Activity implements View.OnClickListener {
+public class TanzhenListActivity extends BaseActivity implements View.OnClickListener {
     public static TanzhenListActivity tanzhenListActivity;
     private SharedPreferences share;
     private TanzhenList tanzhenList;
     private SlideListView lv_tanzhen;
     private TanzhenListAdapter adapter;
-    private HashMap<String, String> hm_tanzhen ;
+    private HashMap<String, String> hm_tanzhen;
     private ArrayList<HashMap<String, String>> list_tanzhen = new ArrayList<>();
     private EditText et_text;
     private SmartRefreshLayout smartRefreshLayout;
@@ -77,16 +80,21 @@ public class TanzhenListActivity extends Activity implements View.OnClickListene
     }
 
     private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
         tanzhenListActivity = this;
-        intent=getIntent();
+        intent = getIntent();
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.iv_addstory).setOnClickListener(this);
-        lv_tanzhen = findViewById(R.id.lv_store);
+        lv_tanzhen = (SlideListView) findViewById(R.id.lv_store);
         adapter = new TanzhenListAdapter(this, lv_tanzhen, list_tanzhen);
         lv_tanzhen.setAdapter(adapter);
-        et_text = findViewById(R.id.et_text);
+        et_text = (EditText) findViewById(R.id.et_text);
         //点击搜索键的监听
         et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -113,7 +121,7 @@ public class TanzhenListActivity extends Activity implements View.OnClickListene
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
                 try {
-                    hm_tanzhen .clear();
+                    hm_tanzhen.clear();
                     clearAllData();
                     gettanzhenList(pageNum, "");
                 } catch (Exception e) {
@@ -173,8 +181,8 @@ public class TanzhenListActivity extends Activity implements View.OnClickListene
             //返回二维码扫描的信息
             String result = bundle.get("result").toString();
             Intent it = new Intent(this, BindingActivity.class);
-            it.putExtra("lat", intent.getFloatExtra("lat",0));
-            it.putExtra("lon", intent.getFloatExtra("lon",0));
+            it.putExtra("lat", intent.getFloatExtra("lat", 0));
+            it.putExtra("lon", intent.getFloatExtra("lon", 0));
             it.putExtra("floorArea", intent.getStringExtra("area"));
             it.putExtra("mac", result);
             it.putExtra("storeId", intent.getStringExtra("id"));
@@ -194,7 +202,7 @@ public class TanzhenListActivity extends Activity implements View.OnClickListene
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
-                    json.put("storeId",intent.getStringExtra("id"));
+                    json.put("storeId", intent.getStringExtra("id"));
                     json.put("page", page);
                     json.put("rows", 10);
                     json.put("name", name);
@@ -243,11 +251,11 @@ public class TanzhenListActivity extends Activity implements View.OnClickListene
                     if (tanzhenList != null) {
                         for (int i = 0; i < tanzhenList.getRows().size(); i++) {
                             hm_tanzhen = new HashMap<>();
-                            hm_tanzhen .put("content1", tanzhenList.getRows().get(i).getName());
-                            hm_tanzhen .put("content2", tanzhenList.getRows().get(i).getMac());
-                            hm_tanzhen .put("content3", tanzhenList.getRows().get(i).getFloorArea());
-                            hm_tanzhen .put("id", tanzhenList.getRows().get(i).getId());
-                            list_tanzhen.add(hm_tanzhen );
+                            hm_tanzhen.put("content1", tanzhenList.getRows().get(i).getName());
+                            hm_tanzhen.put("content2", tanzhenList.getRows().get(i).getMac());
+                            hm_tanzhen.put("content3", tanzhenList.getRows().get(i).getFloorArea());
+                            hm_tanzhen.put("id", tanzhenList.getRows().get(i).getId());
+                            list_tanzhen.add(hm_tanzhen);
                         }
                         smartRefreshLayout.finishRefresh(0);
                         smartRefreshLayout.finishLoadmore(0);
