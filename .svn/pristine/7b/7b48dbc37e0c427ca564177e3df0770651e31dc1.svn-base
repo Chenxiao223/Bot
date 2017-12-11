@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_grey"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/relativeLayout_h"
+        android:background="@drawable/homepagebg">
+
+        <ImageView
+            android:id="@+id/iv_head"
+            android:layout_width="@dimen/imagview_w_h"
+            android:layout_height="@dimen/imagview_w_h"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/imagview_top"
+            android:src="@drawable/head" />
+
+        <TextView
+            android:id="@+id/tv_companyname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/iv_head"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/text_top"
+            android:text="上海智子信息科技股份有限公司"
+            android:singleLine="true"
+            android:maxEms="18"
+            android:ellipsize="end"
+            android:textColor="@color/white"
+            android:textSize="@dimen/title_text_size" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_account"
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:layout_marginTop="@dimen/control_padding"
+        android:layout_height="@dimen/imagview_top">
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:padding="@dimen/control_padding"
+            android:src="@drawable/accounts" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/imageView3"
+            android:layout_toRightOf="@+id/imageView3"
+            android:text="账户"
+            android:textSize="@dimen/title_text_size" />
+
+        <TextView
+            android:id="@+id/tv_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/textsizi"
+            android:textColor="@color/blue"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/iv_1"
+            android:layout_toStartOf="@+id/iv_1" />
+
+        <ImageView
+            android:id="@+id/iv_1"
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/click" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_store"
+        android:background="@color/white"
+        android:layout_marginTop="@dimen/line_height"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/imagview_top">
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:padding="@dimen/control_padding"
+            android:src="@drawable/stores" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/imageView4"
+            android:layout_toRightOf="@+id/imageView4"
+            android:text="门店"
+            android:textSize="@dimen/title_text_size" />
+
+        <ImageView
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/click" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:background="@color/white"
+        android:layout_marginTop="@dimen/line_height"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/imagview_top">
+
+        <ImageView
+            android:id="@+id/imageView5"
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:padding="@dimen/control_padding"
+            android:src="@drawable/originality" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/imageView5"
+            android:layout_toRightOf="@+id/imageView5"
+            android:text="我的创意"
+            android:textSize="@dimen/title_text_size" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="广告素材制作"
+            android:textSize="@dimen/textsizi"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/imageView2"
+            android:layout_toStartOf="@+id/imageView2" />
+
+        <ImageView
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/click"
+            android:id="@+id/imageView2" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:background="@color/white"
+        android:layout_marginTop="@dimen/control_padding"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/imagview_top">
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:padding="@dimen/control_padding"
+            android:src="@drawable/setting" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/imageView6"
+            android:layout_toRightOf="@+id/imageView6"
+            android:text="设置"
+            android:textSize="@dimen/title_text_size" />
+
+        <ImageView
+            android:layout_width="@dimen/imagview_top"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/click" />
+
+    </RelativeLayout>
+
+</LinearLayout>

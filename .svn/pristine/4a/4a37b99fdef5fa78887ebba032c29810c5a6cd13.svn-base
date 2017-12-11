@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/traceroute_rootview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_grey"
+    android:clickable="true"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/iv_system"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/homepagebg" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_title"
+        android:background="@drawable/homepagebg">
+
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="编辑门店"
+            android:textColor="@color/white"
+            android:textSize="@dimen/title_text_size" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/bmapView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:clickable="true" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height"
+            android:layout_marginLeft="@dimen/padding_left_right4"
+            android:layout_marginRight="@dimen/padding_left_right4"
+            android:layout_marginTop="@dimen/control_marginbottom"
+            android:background="@color/white"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/et_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@null"
+                android:drawableLeft="@drawable/search"
+                android:hint="输入地名"
+                android:imeOptions="actionSearch"
+                android:maxLength="20"
+                android:singleLine="true"
+                android:textColorHint="@color/gray" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/iv_localize"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:layout_marginBottom="36dp"
+            android:src="@drawable/localize"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1.3"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/control_height"
+            android:background="@color/white"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/et_storeId"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="门店名称"
+                android:lines="1"
+                android:maxLength="40"
+                android:paddingLeft="@dimen/padding_left_right"
+                android:singleLine="true"
+                android:textColorHint="@color/gray" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height"
+                android:scaleType="fitXY"
+                android:src="@drawable/grayline" />
+
+            <EditText
+                android:id="@+id/et_floorArea"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:digits="1234567890."
+                android:hint="建筑面积(㎡)"
+                android:inputType="number"
+                android:lines="1"
+                android:paddingLeft="@dimen/padding_left_right"
+                android:textColorHint="@color/gray" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/buttom_height"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/padding_left_right2"
+                android:layout_marginRight="@dimen/padding_left_right2"
+                android:background="@color/blue"
+                android:onClick="complete"
+                android:text="完 成"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="@dimen/control_marginbottom"
+                android:gravity="center"
+                android:text="温馨提示：请在地图上标出门店位置"
+                android:textColor="@color/blue" />
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

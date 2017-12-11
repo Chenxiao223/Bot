@@ -1,0 +1,41 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    
+    <!--HomeActivity-->
+    <dimen name="activity_home_bottom">60dp</dimen>
+    <dimen name="activity_home_dibudaohang_size">30dp</dimen>
+
+    <!--TitleActivity-->
+    <dimen name="activity_title">48dp</dimen>
+    <dimen name="activity_title_padding">14dp</dimen>
+    <dimen name="activity_title_tvtitle">18dp</dimen>
+    <dimen name="activity_title_btn">18dp</dimen>
+    <dimen name="title_text_size">18sp</dimen>
+    <dimen name="title_text_right">10dp</dimen>
+
+    <dimen name="baidumap_height">300dp</dimen>
+    <dimen name="control_height">90dp</dimen>
+    <dimen name="padding_left_right">10dp</dimen>
+    <dimen name="padding_left_right2">50dp</dimen>
+    <dimen name="padding_left_right3">30dp</dimen>
+    <dimen name="padding_left_right4">20dp</dimen>
+    <dimen name="buttom_height">40dp</dimen>
+    <dimen name="control_marginbottom">10dp</dimen>
+    <dimen name="line_height">0.1dp</dimen>
+    <dimen name="control_padding">10dp</dimen>
+    <dimen name="image_small">5dp</dimen>
+    <dimen name="listview_h">90dp</dimen>
+    <dimen name="padding_top">7dp</dimen>
+
+    <dimen name="textsizi">14sp</dimen>
+
+    <!--accounfragment-->
+    <dimen name="imagview_w_h">90dp</dimen>
+    <dimen name="relativeLayout_h">200dp</dimen>
+    <dimen name="imagview_top">40dp</dimen>
+    <dimen name="text_top">22dp</dimen>
+
+    <dimen name="toolbar_padding_top">0dp</dimen>
+</resources>
