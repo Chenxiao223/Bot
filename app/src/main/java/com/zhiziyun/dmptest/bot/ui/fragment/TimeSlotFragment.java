@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +14,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.TimeSlot;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
-import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,13 +42,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import lecho.lib.hellocharts.gesture.ZoomType;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
-import lecho.lib.hellocharts.model.Column;
-import lecho.lib.hellocharts.model.ColumnChartData;
-import lecho.lib.hellocharts.model.SubcolumnValue;
+import lecho.lib.hellocharts.model.Line;
+import lecho.lib.hellocharts.model.LineChartData;
+import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.util.ChartUtils;
-import lecho.lib.hellocharts.view.ColumnChartView;
+import lecho.lib.hellocharts.view.LineChartView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -60,14 +63,15 @@ import okhttp3.Response;
  * Created by Administrator on 2017/7/17 0017.
  * 时段
  */
-public class TimeSlotFragment extends Fragment implements View.OnClickListener, XListView.IXListViewListener {
+public class TimeSlotFragment extends Fragment implements View.OnClickListener {
+    public static TimeSlotFragment fragment;
     private Spinner spn_shop, spn_tanzhen;
     private List<String> list_shop = new ArrayList<>();
     private List<String> list_tanzhen = new ArrayList<>();
     private ArrayAdapter<String> adp_shop;
     private ArrayAdapter<String> adp_tanzhen;
     private LinearLayout line_date;
-    private XListView xlistview;
+    private ListView xlistview;
     private HashMap<String, String> hm_store = new HashMap<String, String>();
     private HashMap<String, String> hm_probe = new HashMap<String, String>();
     private int microprobeId = 0;
@@ -77,8 +81,11 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     private HashMap<String, String> hm_timeslot;
     private ArrayList<HashMap<String, String>> list_timeslot = new ArrayList<>();
     private TimeSlotAdapter adapter;
-    ColumnChartView columnChartView = null;
+    //折线图
+    private LineChartView chartView;
+    private LineChartData lineData;
     private SharedPreferences share;
+    private SmartRefreshLayout smartRefreshLayout;
 
     @Nullable
     @Override
@@ -90,6 +97,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //
+        fragment = this;
         initView();
     }
 
@@ -110,6 +118,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
 
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -119,8 +128,8 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
         beginTime = gettodayDate();
         endTime = gettodayDate();
 
-        //柱状图
-        columnChartView = getView().findViewById(R.id.chart);
+        //折线图
+        chartView = getView().findViewById(R.id.chart);
 
         spn_shop = getView().findViewById(R.id.spn_shop);
         spn_tanzhen = getView().findViewById(R.id.spn_tanzhen);
@@ -128,44 +137,48 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
         line_date.setOnClickListener(this);
 
         xlistview = getView().findViewById(R.id.xlistview);
-        xlistview.setPullLoadEnable(false);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
         adapter = new TimeSlotAdapter(getContext(), list_timeslot);
         xlistview.setAdapter(adapter);
-        xlistview.setXListViewListener(this);
+        //下拉刷新
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                try {
+                    hm_timeslot.clear();
+                    getvisitHour();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         getvisitHour();
     }
 
     //柱状图
     private void generateDefaultData(TimeSlot timeSlot) {
-        //定义有多少个柱子
-        ColumnChartData columnChartData;
-        List<Column> columns = new ArrayList<>();
-        List<SubcolumnValue> values;
-        List<AxisValue> axisValuess = new ArrayList<>();
-        //循环初始化每根柱子，
-        for (int i = 0; i < timeSlot.getObj().size(); i++) {
-            values = new ArrayList<>();
-            values.add(new SubcolumnValue(Float.parseFloat(timeSlot.getObj().get(i).getUv()), ChartUtils.COLOR_BLUE));
-            Column column = new Column(values);
-            //给每一个柱子表上值
-            column.setHasLabels(true);
-            columns.add(column);
-            axisValuess.add(new AxisValue(i).setLabel(timeSlot.getObj().get(i).getHour() + ""));
+        int numValues = timeSlot.getObj().size();
+        List<AxisValue> axisValues = new ArrayList<AxisValue>();
+        List<PointValue> values = new ArrayList<PointValue>();
+        List<PointValue> values2 = new ArrayList<PointValue>();
+        for (int i = 0; i < numValues; ++i) {
+            values2.add(new PointValue(i, Float.parseFloat(timeSlot.getObj().get(i).getTotalUV().toString())));//环境客流
+            values.add(new PointValue(i, Float.parseFloat(timeSlot.getObj().get(i).getUv())));//到店客流
+            axisValues.add(new AxisValue(i).setLabel(timeSlot.getObj().get(i).getHour() + ""));
         }
-        //给表格添加写好数据的柱子
-        columnChartData = new ColumnChartData(columns);
-        Axis axisBootom = new Axis();
-        Axis axisLeft = new Axis();
-        axisBootom.setValues(axisValuess);
-        axisBootom.setName("时段");
-        axisLeft.setName("人数");
-        //加入横线
-        axisBootom.setHasLines(true);
-        axisLeft.setHasLines(true);
-        columnChartData.setAxisXBottom(axisBootom);
-        columnChartData.setAxisYLeft(axisLeft);
-        columnChartView.setColumnChartData(columnChartData);
+        Line line = new Line(values);
+        line.setColor(ChartUtils.COLOR_GREEN).setCubic(false).setPointRadius(2).setStrokeWidth(1);//false是折线，true是曲线
+        Line line2 = new Line(values2);
+        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(false).setPointRadius(2).setStrokeWidth(1);
+        List<Line> lines = new ArrayList<Line>();
+        lines.add(line);
+        lines.add(line2);
+        lineData = new LineChartData(lines);
+        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
+        lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(5));
+        chartView.setLineChartData(lineData);
+        chartView.setViewportCalculationEnabled(false);
+        chartView.setZoomType(ZoomType.HORIZONTAL);
     }
 
     public void getSiteOption() {
@@ -331,17 +344,18 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
                         for (int i = 0; i < timeSlot.getObj().size(); i++) {
                             hm_timeslot = new HashMap<String, String>();
                             hm_timeslot.put("content1", timeSlot.getObj().get(i).getHour());
-                            hm_timeslot.put("content2", timeSlot.getObj().get(i).getPv());
-                            hm_timeslot.put("content3", timeSlot.getObj().get(i).getUv());
+                            hm_timeslot.put("content2", timeSlot.getObj().get(i).getTotalUV());//环境客流
+                            hm_timeslot.put("content3", timeSlot.getObj().get(i).getUv());//到店客流
                             list_timeslot.add(hm_timeslot);
                         }
                     }
                     adapter.notifyDataSetChanged();
-                    onLoad();//数据加载完后就停止刷新
+                    smartRefreshLayout.finishLoadmore(0);//停止刷新
                     //柱状图
                     generateDefaultData(timeSlot);
                     break;
                 case 4:
+                    smartRefreshLayout.finishLoadmore(0);//停止刷新
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -373,30 +387,38 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener, 
         }
     }
 
-    //下拉刷新
-    @Override
-    public void onRefresh() {
-        hm_timeslot.clear();
-        getvisitHour();
-    }
-
-    @Override
-    public void onLoadMore() {
-        onLoad();
-    }
-
-    /**
-     * 停止刷新，
-     */
-    private void onLoad() {
-        xlistview.stopRefresh();
-        xlistview.stopLoadMore();
-        xlistview.setRefreshTime("刚刚");
-    }
-
     public String gettodayDate() {
         Date d = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(d);
+    }
+
+    public void clearmemory() {
+        try {
+            spn_shop.setAdapter(null);
+            spn_tanzhen.setAdapter(null);
+            list_shop.clear();
+            list_tanzhen.clear();
+            adp_shop.clear();
+            adp_tanzhen.clear();
+            line_date = null;
+            xlistview = null;
+            hm_store.clear();
+            hm_probe.clear();
+            microprobeId = 0;
+            storeId = 0;
+            beginTime = null;
+            endTime = null;
+            timeSlot = null;
+            hm_timeslot.clear();
+            list_timeslot.clear();
+            adapter = null;
+            chartView = null;
+            lineData = null;
+            share = null;
+            smartRefreshLayout = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,16 +1,11 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
 import android.Manifest;
-import android.annotation.TargetApi;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -18,16 +13,16 @@ import android.graphics.PorterDuffXfermode;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -35,20 +30,29 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.entity.GetHead;
 import com.zhiziyun.dmptest.bot.ui.activity.StoreListActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.TransactionDetailsActivity;
+import com.zhiziyun.dmptest.bot.util.PhotoUtils;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
 import com.zhiziyun.dmptest.bot.view.TakePhotoPopWin;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Iterator;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -58,19 +62,29 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static android.app.Activity.RESULT_OK;
+
 
 /**
  * Created by Administrator on 2017/7/17 0017.
  * 账户
  */
 public class AccountFragment extends Fragment implements View.OnClickListener {
+    private static final String TAG = "PhotoImageFragment";
+    private static final int CODE_GALLERY_REQUEST = 0xa0;
+    private static final int CODE_CAMERA_REQUEST = 0xa1;
+    private static final int CODE_RESULT_REQUEST = 0xa2;
+    private static final int CAMERA_PERMISSIONS_REQUEST_CODE = 0x03;
+    private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 0x04;
+    private File fileUri = new File(Environment.getExternalStorageDirectory().getPath() + "/photo.jpg");
+    private File fileCropUri = new File(Environment.getExternalStorageDirectory().getPath() + "/crop_photo.jpg");
+    private Uri imageUri;
+    private Uri cropImageUri;
+    private static final int OUTPUT_X = 480;
+    private static final int OUTPUT_Y = 480;
+
     public static AccountFragment fragment;
     private ImageView iv_head;
-    public final int PIC_FROM_CAMERA = 1;
-    public final int PIC_FROM＿LOCALPHOTO = 0;
-    public static final int TAKE_PHOTO = 1;
-    public static final int CHOOSE_FROM_AIBUM = 2;
-    private Uri imageUri;
     private SharedPreferences share;
     private TextView tv_balance;
 
@@ -89,11 +103,12 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     }
 
     public void initView() {
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         tv_balance = getView().findViewById(R.id.tv_balance);
+        getHead();//获取头像
         ConsumptionDetails();
         getView().findViewById(R.id.rl_account).setOnClickListener(this);
         getView().findViewById(R.id.rl_store).setOnClickListener(this);
-        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         iv_head = getView().findViewById(R.id.iv_head);
         iv_head.setOnClickListener(this);
         TextView tv_companyname = getView().findViewById(R.id.tv_companyname);
@@ -129,222 +144,189 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
     //相册
     public void photoAlbum() {
-        doHandlerPhoto(PIC_FROM＿LOCALPHOTO);
+        autoObtainStoragePermission();
     }
 
     //拍照
     public void photograph() {
-        doHandlerPhoto(PIC_FROM_CAMERA);
+        autoObtainCameraPermission();
     }
 
-    private void doHandlerPhoto(int type) {
-        if (type == PIC_FROM＿LOCALPHOTO) {//相册
-            /**
-             * 因为相片是存在SD卡上的，所以我们需要SD卡的读写权限，因为读写权限在7.0属于高危权限了，所以在动态运行时去判断是否有这个权限，有则继续运行，没有则调用动态注册
-             */
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+    /**
+     * 动态申请sdcard读写权限
+     */
+    private void autoObtainStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSIONS_REQUEST_CODE);
             } else {
-                openAlbum();
+                PhotoUtils.openPic(this, CODE_GALLERY_REQUEST);
             }
-        } else if (type == PIC_FROM_CAMERA) {//拍照
-            openCamara();
         } else {
-            show("未知错误");
+            PhotoUtils.openPic(this, CODE_GALLERY_REQUEST);
         }
     }
 
-    public void show(String msg) {
-        Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
-    }
+    /**
+     * 申请访问相机权限
+     */
+    private void autoObtainCameraPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                    || ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-    //打开相册
-    private void openAlbum() {
-        //打开相册
-        Intent intent = new Intent("android.intent.action.GET_CONTENT");
-        intent.setType("image/*");
-        startActivityForResult(intent, CHOOSE_FROM_AIBUM);
+                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.CAMERA)) {
+                    ToastUtils.showShort(getActivity(), "您已经拒绝过一次");
+                }
+                requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, CAMERA_PERMISSIONS_REQUEST_CODE);
+            } else {//有权限直接调用系统相机拍照
+                if (hasSdcard()) {
+                    imageUri = Uri.fromFile(fileUri);
+                    //通过FileProvider创建一个content类型的Uri
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        imageUri = FileProvider.getUriForFile(getActivity(), "com.zhiziyun.dmptest.bot", fileUri);
+                    }
+                    PhotoUtils.takePicture(this, imageUri, CODE_CAMERA_REQUEST);
+                } else {
+                    ToastUtils.showShort(getActivity(), "设备没有SD卡！");
+                }
+            }
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getActivity(), "可以拍照", Toast.LENGTH_SHORT).show();
-                //申请成功，可以拍照
-//                takePhoto();
-            } else {
-                Toast.makeText(getActivity(), "CAMERA PERMISSION DENIED", Toast.LENGTH_SHORT).show();
-            }
-            return;
-        }
+        Log.d(TAG, "onRequestPermissionsResult: ");
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    /**
-     * 应用关联缓存目录：就是指SD卡中专门用于存放当前应用缓存数据的位置，调用getExternalCacheDir()可以得到这个目录。具体路径是：/sdcard/Android/data/<package name>/cache
-     * 那么为什么要使用应用关联缓存目录来存放图片呢？应为从android6.0开始读写SD卡被列为了危险权限，如果将图片放在SD卡的其他地方，都要进行运行时权限处理才行，而使用应用缓存数据的位置则可以跳过这一步
-     * 从android7.0开始，直接使用本地真实路径的URI被认为是不安全的，会抛出一个FileUriExposedException异常，所以在低于7.0的时候调用URI的fromFile()方法将File对象转换成URI对象，这个URI对象标志着
-     * 图片地址的真实路径。
-     * 在高于7.0的时候调用FileProvider的getUriForFile（）方法将file对象转换成一个封装过的uri对象。FileProvider是一个特殊的内容提供器，它使用了和内容提供器类似的机制来保护数据，可以选择性的将封装过的URI共享外部，从而提高应用的安全性
-     * getUriForFile(context,Stirng,file)第一个是context对象，第二个是任意字符串，第三个是file对象
-     */
-    //打开相机
-    private void openCamara() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //创建file对象，用于存储拍照后的图片
-        File outputImg = new File(getActivity().getExternalCacheDir(), "head"+System.currentTimeMillis()+".jpg");
-        try {
-            if (outputImg.exists()) {
-                outputImg.delete();
-                deleteAllFiles(outputImg);
-            }
-            outputImg.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (Build.VERSION.SDK_INT >= 24) {
-            //改变Uri  com.xykj.customview.fileprovider注意和xml中的一致
-            imageUri = FileProvider.getUriForFile(getActivity(), "com.xykj.customview.fileprovider", outputImg);
-            //添加权限
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } else {
-            //7.0以下使用这种方式创建一个Uri
-            imageUri = Uri.fromFile(outputImg);
-        }
-        //启动相机
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        startActivityForResult(intent, TAKE_PHOTO);
-    }
-
-    //清空文件夹下所有文件
-    private void deleteAllFiles(File root) {
-        File files[] = root.listFiles();
-        if (files != null)
-            for (File f : files) {
-                if (f.isDirectory()) { // 判断是否为文件夹
-                    deleteAllFiles(f);
-                    try {
-                        f.delete();
-                    } catch (Exception e) {
+        switch (requestCode) {
+            //调用系统相机申请拍照权限回调
+            case CAMERA_PERMISSIONS_REQUEST_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (hasSdcard()) {
+                        imageUri = Uri.fromFile(fileUri);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            //通过FileProvider创建一个content类型的Uri
+                            imageUri = FileProvider.getUriForFile(getActivity(), "com.zhiziyun.dmptest.bot", fileUri);
+                        }
+                        PhotoUtils.takePicture(this, imageUri, CODE_CAMERA_REQUEST);
+                    } else {
+                        ToastUtils.showShort(getActivity(), "设备没有SD卡！");
                     }
                 } else {
-                    if (f.exists()) { // 判断是否存在
-                        deleteAllFiles(f);
-                        try {
-                            f.delete();
-                        } catch (Exception e) {
-                        }
-                    }
+                    ToastUtils.showShort(getActivity(), "请允许打开相机！！");
                 }
+                break;
             }
+            //调用系统相册申请Sdcard权限回调
+            case STORAGE_PERMISSIONS_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    PhotoUtils.openPic(this, CODE_GALLERY_REQUEST);
+                } else {
+                    ToastUtils.showShort(getActivity(), "请允许打操作SDCard！！");
+                }
+                break;
+            default:
+        }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult: requestCode: " + requestCode + "  resultCode:" + resultCode);
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) {
+            Log.e(TAG, "onActivityResult: resultCode!=RESULT_OK");
+            return;
+        }
         switch (requestCode) {
-            case TAKE_PHOTO:
-                if (resultCode == getActivity().RESULT_OK) {
-                    //将照片显示出来
+            //相机返回
+            case CODE_CAMERA_REQUEST:
+                cropImageUri = Uri.fromFile(fileCropUri);
+                PhotoUtils.cropImageUri(this, imageUri, cropImageUri, 1, 1, OUTPUT_X, OUTPUT_Y, CODE_RESULT_REQUEST);
+                break;
+            //相册返回
+            case CODE_GALLERY_REQUEST:
+
+                if (hasSdcard()) {
+                    cropImageUri = Uri.fromFile(fileCropUri);
+                    Uri newUri = Uri.parse(PhotoUtils.getPath(getActivity(), data.getData()));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        newUri = FileProvider.getUriForFile(getActivity(), "com.zhiziyun.dmptest.bot", new File(newUri.getPath()));
+                    }
+                    PhotoUtils.cropImageUri(this, newUri, cropImageUri, 1, 1, OUTPUT_X, OUTPUT_Y, CODE_RESULT_REQUEST);
+                } else {
+                    ToastUtils.showShort(getActivity(), "设备没有SD卡！");
+                }
+                break;
+            //裁剪返回
+            case CODE_RESULT_REQUEST:
+                Bitmap bitmap = PhotoUtils.getBitmapFromUri(cropImageUri, getActivity());
+                if (bitmap != null) {
+                    showImages(bitmap);
+                }
+                break;
+            default:
+        }
+    }
+
+    private void showImages(Bitmap bitmap) {
+        iv_head.setImageBitmap(createCircleImage(bitmap));
+        upImage(bitmapToBase64(bitmap));
+        Log.i("infoss", bitmapToBase64(bitmap));
+    }
+
+
+    public void upImage(final String str) {
+        //上传图片
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject json = new JSONObject();
+                    json.put("siteId", share.getString("siteid", ""));
+                    json.put("logo", str);
+                    json.put("logoSuffix", ".jpg");
+                    OkHttpClient client = new OkHttpClient();
+                    String url = null;
                     try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
-                        iv_head.setImageBitmap(createCircleImage(bitmap));
-                    } catch (IOException e) {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url("http://test.zhiziyun.com/api-service/advertiserApp/editLogoImg")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            Log.i("infoss", response.body().string());
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                break;
-            /**
-             * 因为从android4.4开始，选取相册中的图片就不再返回图片的真实URI了，而是返回一个封装过的URI，如果是4.4以上的就必须先对这个URI进行解析才行
-             */
-            case CHOOSE_FROM_AIBUM:
-                if (resultCode == getActivity().RESULT_OK) {
-                    //判断手机系统版本号
-                    if (Build.VERSION.SDK_INT >= 19) {
-                        //4.4以上的系统使用这个方法处理照片
-                        handleImageOnKitKat(data);
-                    } else {
-                        //4.4以下的使用这个方法处理
-                        handleImageBeforeKitKat(data);
-                    }
-                }
-                break;
-        }
-    }
-
-    /**
-     * 那么关于4.4以上的系统，对于返回的URI怎么进行解析呢？
-     * 一般就是集中判断
-     * 返回的URI是不是document类型，如果是那么就取出来document id 进行处理，如果不是就进行普通的URI处理
-     * 如果URI的authority是media格式的话，document id 还需要再进行一次解析，通过字符串的分割取出真正的id，取出来的id用于构建新的URI和条件语句
-     *
-     * @param data
-     */
-    @TargetApi(19)
-    private void handleImageOnKitKat(Intent data) {
-        String imagePath = null;
-        Uri uri = data.getData();
-        if (DocumentsContract.isDocumentUri(getActivity(), uri)) {
-            //如果是document类型的uri，则通过document id 处理
-            String docId = DocumentsContract.getDocumentId(uri);
-            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
-                String id = docId.split(":")[1];//解析出数字格式的id
-                String selection = MediaStore.Images.Media._ID + "=" + id;
-                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection);
-            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
-                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(docId));
-                imagePath = getImagePath(contentUri, null);
             }
-        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
-            //如果是content类型的uri则使用普通的方式处理
-            imagePath = getImagePath(uri, null);
-        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            //如果是file类型的URI则直接获取图片路径即可
-            imagePath = uri.getPath();
-        }
-        displayImage(imagePath);//根据图片路径显示图片
+        }).start();
     }
 
-
-    /**
-     * 通过传过来的条件，获取图片的真实路径
-     *
-     * @param uri
-     * @param selection
-     * @return
-     */
-    private String getImagePath(Uri uri, String selection) {
-        String path = null;
-        //通过URI和selection来获取真是的图片路径
-        Cursor cursor = getActivity().getContentResolver().query(uri, null, selection, null, null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            }
-            cursor.close();
-        }
-        return path;
-    }
-
-    /**
-     * 在这里我使用的是GLIDE来显示图片，你可以选择使用其他方法
-     *
-     * @param imagePath
-     */
-    private void displayImage(String imagePath) {
-        if (imagePath != null) {
-            //将照片显示出来
-            Bitmap imageBitmap = BitmapFactory.decodeFile(imagePath);
-            iv_head.setImageBitmap(createCircleImage(imageBitmap));
-        } else {
-            show("failed to get image!");
-        }
-    }
-
-    private void handleImageBeforeKitKat(Intent data) {
-        Uri uri = data.getData();
-        String imagePath = getImagePath(uri, null);
-        displayImage(imagePath);
+    //将bitmap转成Base64字符串
+    public static String bitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+        byte[] bytes = outputStream.toByteArray();
+        //Base64算法加密，当字符串过长（一般超过76）时会自动在中间加一个换行符，字符串最后也会加一个换行符。
+        // 导致和其他模块对接时结果不一致。所以不能用默认Base64.DEFAULT，而是Base64.NO_WRAP不换行
+        return Base64.encodeToString(bytes, Base64.NO_WRAP);
     }
 
     /**
@@ -360,6 +342,14 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(source, 0, 0, paint);
         return target;
+    }
+
+    /**
+     * 检查设备是否存在SDCard的工具方法
+     */
+    public static boolean hasSdcard() {
+        String state = Environment.getExternalStorageState();
+        return state.equals(Environment.MEDIA_MOUNTED);
     }
 
     //结算账户消费详情接口
@@ -422,9 +412,76 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 case 1:
                     tv_balance.setText("余额：" + msg.obj.toString());
                     break;
+                case 2:
+                    setHead(String.valueOf(msg.obj));
+                    break;
+                case 3:
+                    ToastUtils.showShort(getActivity(), "头像为空，请上传头像");
+                    break;
             }
         }
     };
 
+    //获取头像接口
+    public void getHead() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject json = new JSONObject();
+                    json.put("siteId", share.getString("siteid", ""));
+                    OkHttpClient client = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url("http://test.zhiziyun.com/api-service/advertiserApp/getLogoImg")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            Gson gson = new Gson();
+                            GetHead getHead = gson.fromJson(response.body().string(), GetHead.class);
+                            if (getHead != null) {
+                                if (getHead.getResponse().getLogoUrl() != null) {
+                                    Message msg = new Message();
+                                    msg.what = 2;
+                                    msg.obj = getHead.getResponse().getLogoUrl();
+                                    handler.sendMessage(msg);
+                                } else {
+                                    handler.sendEmptyMessage(3);
+                                }
+                            }
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void setHead(String url) {
+        Glide.with(getActivity()).load(url).asBitmap().into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                iv_head.setImageBitmap(createCircleImage(resource));
+            }
+        });
+    }
 
 }

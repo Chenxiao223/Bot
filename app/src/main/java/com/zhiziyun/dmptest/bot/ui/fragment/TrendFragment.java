@@ -14,16 +14,20 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.Trend;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.Token;
-import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,14 +64,15 @@ import okhttp3.Response;
  * Created by Administrator on 2017/7/17 0017.
  * 趋势
  */
-public class TrendFragment extends Fragment implements View.OnClickListener, XListView.IXListViewListener {
+public class TrendFragment extends Fragment implements View.OnClickListener {
+    public static TrendFragment fragment;
     private Spinner spn_shop, spn_tanzhen;
     private List<String> list_shop = new ArrayList<>();
     private List<String> list_tanzhen = new ArrayList<>();
     private ArrayAdapter<String> adp_shop;
     private ArrayAdapter<String> adp_tanzhen;
     private LinearLayout line_date;
-    private XListView xlistview;
+    private ListView xlistview;
     private HashMap<String, String> hm_store = new HashMap<String, String>();
     private HashMap<String, String> hm_probe = new HashMap<String, String>();
     private int microprobeId = 0;
@@ -82,6 +87,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     private LineChartView chartView;
     private LineChartData lineData;
     private SharedPreferences share;
+    private SmartRefreshLayout smartRefreshLayout;
 
     @Nullable
     @Override
@@ -93,6 +99,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //
+        fragment = this;
         initView();
     }
 
@@ -114,6 +121,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
 
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -132,10 +140,33 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         line_date.setOnClickListener(this);
 
         xlistview = getView().findViewById(R.id.xlistview);
-        xlistview.setPullLoadEnable(true);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
         adapter = new TimeSlotAdapter(getContext(), list_trend);
         xlistview.setAdapter(adapter);
-        xlistview.setXListViewListener(this);
+        //下拉刷新
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                try {
+                    hm_trend.clear();
+                    pageNum = 1;
+                    getTrend(pageNum);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        //上拉加载
+        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
+            @Override
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                if (pageNum < ((trend.getTotal() / 10) + 3)) {
+                    getTrend(pageNum);
+                } else {
+                    smartRefreshLayout.finishLoadmore(0);//停止加载
+                    Toast.makeText(getActivity(), "最后一页了", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         //初始化时查询第一页
         getTrend(1);
     }
@@ -255,20 +286,20 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
                         for (int i = 0; i < trend.getRows().size(); i++) {
                             hm_trend = new HashMap<String, String>();
                             hm_trend.put("content1", trend.getRows().get(i).getStatDate());
-                            hm_trend.put("content2", trend.getRows().get(i).getPv());
+                            hm_trend.put("content2", trend.getRows().get(i).getTotalUV());
                             hm_trend.put("content3", trend.getRows().get(i).getUv());
                             list_trend.add(hm_trend);
                         }
                         pageNum++;
                     }
                     adapter.notifyDataSetChanged();
-                    onLoad();//数据加载完后就停止刷新
+                    smartRefreshLayout.finishRefresh(0);//停止刷新
                     //线性图
                     generateInitialLineData(trend);
                     break;
                 case 4:
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
-                    onLoad();//无数据时也需要关闭刷新
+                    smartRefreshLayout.finishRefresh(0);//停止刷新
                     break;
             }
             super.handleMessage(msg);
@@ -350,34 +381,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         }
     }
 
-    //刷新
-    @Override
-    public void onRefresh() {
-        hm_trend.clear();
-        pageNum = 1;
-        getTrend(pageNum);
-    }
-
-    // 加载更多
-    @Override
-    public void onLoadMore() {
-        if (pageNum < ((trend.getTotal() / 10) + 3)) {
-            getTrend(pageNum);
-        } else {
-            onLoad();
-            Toast.makeText(getActivity(), "最后一页了", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * 停止刷新，
-     */
-    private void onLoad() {
-        xlistview.stopRefresh();
-        xlistview.stopLoadMore();
-        xlistview.setRefreshTime("刚刚");
-    }
-
     //获取当天的日期
     public String gettodayDate() {
         Date d = new Date();
@@ -404,14 +407,14 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         List<PointValue> values = new ArrayList<PointValue>();
         List<PointValue> values2 = new ArrayList<PointValue>();
         for (int i = 0; i < numValues; ++i) {
-            values.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getPv().toString())));//到店人次
-            values2.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getUv())));//到店人数
+            values2.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getTotalUV().toString())));//环境客流
+            values.add(new PointValue(i, Float.parseFloat(trend.getRows().get(i).getUv())));//到店客流
             axisValues.add(new AxisValue(i).setLabel(trend.getRows().get(i).getStatDate().substring(2)));//为缩小长度，将2017改为17
         }
         Line line = new Line(values);
-        line.setColor(ChartUtils.COLOR_GREEN).setCubic(true);
+        line.setColor(ChartUtils.COLOR_GREEN).setCubic(false).setPointRadius(2).setStrokeWidth(1);//false是折线，true是曲线
         Line line2 = new Line(values2);
-        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(true);
+        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(false).setPointRadius(2).setStrokeWidth(1);
         List<Line> lines = new ArrayList<Line>();
         lines.add(line);
         lines.add(line2);
@@ -421,5 +424,35 @@ public class TrendFragment extends Fragment implements View.OnClickListener, XLi
         chartView.setLineChartData(lineData);
         chartView.setViewportCalculationEnabled(false);
         chartView.setZoomType(ZoomType.HORIZONTAL);
+    }
+
+    public void clearmemory() {
+        try {
+            spn_shop.setAdapter(null);
+            spn_tanzhen.setAdapter(null);
+            list_shop.clear();
+            list_tanzhen.clear();
+            adp_shop.clear();
+            adp_tanzhen.clear();
+            line_date = null;
+            xlistview = null;
+            hm_store.clear();
+            hm_probe.clear();
+            microprobeId = 0;
+            storeId = 0;
+            beginTime = null;
+            endTime = null;
+            trend = null;
+            hm_trend.clear();
+            list_trend.clear();
+            adapter = null;
+            pageNum = 1;
+            chartView = null;
+            lineData = null;
+            share = null;
+            smartRefreshLayout = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

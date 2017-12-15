@@ -16,6 +16,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.GetHead;
@@ -32,6 +36,7 @@ import com.zhiziyun.dmptest.bot.entity.HomePage;
 import com.zhiziyun.dmptest.bot.ui.activity.AddStoryActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.PassengerFlowAnalysisActivity;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
 
 
@@ -371,12 +376,12 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private void setPieChartData(float a, float b) {
         SliceValue sliceValue = new SliceValue(a, Color.parseColor("#2bc208"));
         values.add(sliceValue);
-        SliceValue sliceValue2 = new SliceValue(b, Color.parseColor("#f1c704"));
+        SliceValue sliceValue2 = new SliceValue(b, Color.parseColor("#44a8c8"));
         values.add(sliceValue2);
     }
 
     /**
-     * 初始化
+     * 初始化饼状图
      */
     private void initPieChart() {
         pieChardata = new PieChartData();
@@ -388,7 +393,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         pieChardata.setCenterCircleColor(Color.WHITE);//设置环形中间的颜色
         pieChardata.setCenterCircleScale(0.5f);//设置环形的大小级别
         pie_chart.setPieChartData(pieChardata);
-        pie_chart.setValueSelectionEnabled(true);//选择饼图某一块变大
+        pie_chart.setValueSelectionEnabled(false);//选择饼图某一块变大
         pie_chart.setAlpha(0.9f);//设置透明度
         pie_chart.setCircleFillRatio(1f);//设置饼图大小
     }
@@ -406,14 +411,14 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         List<PointValue> values = new ArrayList<PointValue>();
         List<PointValue> values2 = new ArrayList<PointValue>();
         for (int i = 0; i < numValues; ++i) {
-            values.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getPv().toString())));//到店人次
-            values2.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getUv())));//到店人数
+            values.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getUv().toString())));//进店客流
+            values2.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getTotalUV())));//环境客流
             axisValues.add(new AxisValue(i).setLabel(homePage.getRows().get(i).getStatDate().substring(5)));//为缩短字段去掉年份2017去掉
         }
         Line line = new Line(values);
-        line.setColor(ChartUtils.COLOR_GREEN).setCubic(true);
+        line.setColor(ChartUtils.COLOR_GREEN).setCubic(false).setPointRadius(2).setStrokeWidth(1);//false是折线，true是曲线
         Line line2 = new Line(values2);
-        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(true);
+        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(false).setPointRadius(2).setStrokeWidth(1);
         List<Line> lines = new ArrayList<Line>();
         lines.add(line);
         lines.add(line2);
@@ -459,9 +464,12 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                             Gson gson = new Gson();
                             GetHead getHead = gson.fromJson(response.body().string(), GetHead.class);
                             if (getHead != null) {
-                                if (getHead.getResponse().getLogoUrl()!=null) {
-                                    setHead(getHead.getResponse().getLogoUrl());
-                                }else{
+                                if (getHead.getResponse().getLogoUrl() != null) {
+                                    Message msg = new Message();
+                                    msg.what = 1;
+                                    msg.obj = getHead.getResponse().getLogoUrl();
+                                    handler.sendMessage(msg);
+                                } else {
                                     handler.sendEmptyMessage(2);
                                 }
                             }
@@ -476,23 +484,10 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     }
 
     public void setHead(String url) {
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .build();
-        okHttpClient.newCall(request).enqueue(new Callback() {
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            public void onResponse(Call call, Response response) throws IOException {
-                InputStream inputStream = response.body().byteStream();//得到图片的流
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                Message msg = new Message();
-                msg.what = 1;
-                msg.obj = bitmap;
-                handler.sendMessage(msg);
+        Glide.with(getActivity()).load(url).asBitmap().into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                iv_head.setImageBitmap(createCircleImage(resource));
             }
         });
     }
@@ -503,11 +498,10 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    Bitmap bitmap = (Bitmap) msg.obj;
-                    iv_head.setImageBitmap(createCircleImage(bitmap));
+                    setHead(String.valueOf(msg.obj));
                     break;
                 case 2:
-                    Toast.makeText(getActivity(), "头像为空，请上传头像", Toast.LENGTH_SHORT).show();
+                    ToastUtils.showShort(getActivity(), "头像为空，请上传头像");
                     break;
             }
         }

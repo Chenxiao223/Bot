@@ -182,14 +182,14 @@ public class PieChart_mpb extends View {
             float v = startAngle % 360;
             if (startAngle % 360.0 >= 90.0 && startAngle % 360.0 <= 270.0) {//2 3 象限
                 canvas.drawLine(pxt, pyt, pxt - 30, pyt, mLinePaint);
-//                canvas.drawText(resToRound + "%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-//                check(canvas,true,i,resToRound,pxt,pyt);
                 canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_brand.get(i), pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
             } else {//1 4象限
-                canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
-//                canvas.drawText(resToRound+"%",pxt+30,pyt,mTextPaint);
-//                check(canvas,false,i,resToRound,pxt,pyt);
-                canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_brand.get(i), pxt + 30, pyt, mTextPaint);
+                try {
+                    canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
+                    canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_brand.get(i), pxt + 30, pyt, mTextPaint);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 

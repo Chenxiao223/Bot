@@ -1,6 +1,5 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -58,15 +57,15 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
 
     private void initView() {
         //设置系统栏颜色
-        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
-        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
-        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
-        share=getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         it = getIntent();
-        TextView tv_tanzhen= (TextView) findViewById(R.id.tv_tanzhen);
+        TextView tv_tanzhen = (TextView) findViewById(R.id.tv_tanzhen);
         tv_tanzhen.setText(it.getStringExtra("mac"));
-        traceroute_rootview= (RelativeLayout) findViewById(R.id.traceroute_rootview);
+        traceroute_rootview = (RelativeLayout) findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(this);
         et_name = (EditText) findViewById(R.id.et_name);
         et_area = (EditText) findViewById(R.id.et_area);
@@ -116,11 +115,11 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
             @Override
             public void run() {
                 try {
-                    float lat = it.getFloatExtra("lat",0);
-                    float lon = it.getFloatExtra("lon",0);
+                    float lat = it.getFloatExtra("lat", 0);
+                    float lon = it.getFloatExtra("lon", 0);
                     final JSONObject json = new JSONObject();
-                    double signalStrength=Double.parseDouble(et_area.getText().toString());
-                    json.put("siteId", share.getString("siteid",""));
+                    double signalStrength = Double.parseDouble(et_area.getText().toString());
+                    json.put("siteId", share.getString("siteid", ""));
                     json.put("storeId", Integer.parseInt(it.getStringExtra("storeId")));
                     json.put("name", et_name.getText().toString());
                     json.put("mac", it.getStringExtra("mac"));
@@ -128,7 +127,7 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
                     json.put("signalStrength", (int) computations(signalStrength));
                     json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
                     json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
-                    Log.i("jss",json.toString());
+                    Log.i("jss", json.toString());
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -153,10 +152,10 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
-                                JSONObject jsonObject=new JSONObject(response.body().string());
+                                JSONObject jsonObject = new JSONObject(response.body().string());
                                 if (jsonObject.get("msg").equals("绑定探针成功")) {
                                     handler.sendEmptyMessage(1);
-                                }else{
+                                } else {
                                     handler.sendEmptyMessage(2);
                                 }
                             } catch (JSONException e) {
@@ -172,13 +171,14 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
         }).start();
     }
 
-    Handler handler=new Handler(){
+    Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case 1:
                     Toast.makeText(BindingActivity.this, "绑定探针成功", Toast.LENGTH_SHORT).show();
+                    toFinish();
                     finish();
                     break;
                 case 2:
@@ -187,5 +187,24 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
             }
         }
     };
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    et_name = null;
+                    et_area = null;
+                    it = null;
+                    traceroute_rootview = null;
+                    share = null;
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
+    }
 
 }

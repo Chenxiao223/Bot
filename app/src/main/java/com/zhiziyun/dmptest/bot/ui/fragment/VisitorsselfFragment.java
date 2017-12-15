@@ -14,17 +14,21 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.bigkoo.pickerview.TimePickerView;
 import com.google.gson.Gson;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
 import com.zhiziyun.dmptest.bot.entity.Visitorsself;
 import com.zhiziyun.dmptest.bot.ui.activity.VisitorsselfActivity;
 import com.zhiziyun.dmptest.bot.util.Token;
-import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,7 +56,8 @@ import okhttp3.Response;
  * Created by Administrator on 2017/7/17 0017.
  * 访客
  */
-public class VisitorsselfFragment extends Fragment implements View.OnClickListener, XListView.IXListViewListener {
+public class VisitorsselfFragment extends Fragment implements View.OnClickListener {
+    public static VisitorsselfFragment fragment;
     private Spinner spn_shop, spn_tanzhen;
     private List<String> list_shop = new ArrayList<>();
     private List<String> list_tanzhen = new ArrayList<>();
@@ -64,15 +69,16 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private String beginTime, endTime;
     private int microprobeId = 0;
     private int storeId = 0;
-    private XListView xlistview;
+    private ListView xlistview;
     private VisitorsselfAdapter adapter;
     private HashMap<String, String> hm_visitors;
     private ArrayList<HashMap<String, String>> list_visitors = new ArrayList<>();
     private int pageNum = 1;
     private Visitorsself visitorsself;
     private SharedPreferences share;
-    private List<String> list_brands=new ArrayList<>();
-    private List<String> list_model=new ArrayList<>();
+    private List<String> list_brands = new ArrayList<>();
+    private List<String> list_model = new ArrayList<>();
+    private SmartRefreshLayout smartRefreshLayout;
 
     @Nullable
     @Override
@@ -84,6 +90,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //
+        fragment = this;
         initView();
     }
 
@@ -101,6 +108,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
 
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
         //初始化接口没有的数据
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
@@ -111,18 +119,42 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         endTime = beginTime;
 
         xlistview = getView().findViewById(R.id.xlistview);
-        xlistview.setPullLoadEnable(true);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
         adapter = new VisitorsselfAdapter(getContext(), list_visitors);
         xlistview.setAdapter(adapter);
-        xlistview.setXListViewListener(this);
         xlistview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getActivity(), VisitorsselfActivity.class);
-                intent.putExtra("mac", list_visitors.get(position-1).get("mac"));
-                intent.putExtra("brands",list_brands.get(position-1));
-                intent.putExtra("model",list_model.get(position-1));
+                intent.putExtra("mac", list_visitors.get(position).get("mac"));
+                intent.putExtra("brands", list_brands.get(position));
+                intent.putExtra("model", list_model.get(position));
                 startActivity(intent);
+            }
+        });
+
+        //下拉刷新
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                try {
+                    hm_visitors.clear();
+                    clearAllData();
+                    getData(pageNum);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        //上拉加载
+        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
+            @Override
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                if (pageNum < ((visitorsself.getTotal() / 10) + 3)) {
+                    getData(pageNum);
+                } else {
+                    Toast.makeText(getActivity(), "最后一页了", Toast.LENGTH_SHORT).show();
+                    smartRefreshLayout.finishLoadmore(0);//停止刷新
+                }
             }
         });
 
@@ -266,10 +298,13 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         }
                         pageNum++;
                     }
+                    smartRefreshLayout.finishRefresh(0);//停止刷新
+                    smartRefreshLayout.finishLoadmore(0);//停止加载
                     adapter.notifyDataSetChanged();
-                    onLoad();//数据加载完后就停止刷新
                     break;
                 case 4:
+                    smartRefreshLayout.finishRefresh(0);//停止刷新
+                    smartRefreshLayout.finishLoadmore(0);//停止加载
                     Toast.makeText(getActivity(), "无数据", Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -378,34 +413,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private String getTime(Date date) {//可根据需要自行截取数据显示
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         return format.format(date);
-    }
-
-    //下拉刷新
-    @Override
-    public void onRefresh() {
-        hm_visitors.clear();
-        clearAllData();
-        getData(pageNum);
-    }
-
-    //上拉加载
-    @Override
-    public void onLoadMore() {
-        if (pageNum < ((visitorsself.getTotal() / 10) + 3)) {
-            getData(pageNum);
-        } else {
-            onLoad();
-            Toast.makeText(getActivity(), "最后一页了", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * 停止刷新，
-     */
-    private void onLoad() {
-        xlistview.stopRefresh();
-        xlistview.stopLoadMore();
-        xlistview.setRefreshTime("刚刚");
     }
 
     //获取当天的日期

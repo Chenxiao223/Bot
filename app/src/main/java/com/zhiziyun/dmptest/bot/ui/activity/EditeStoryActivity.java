@@ -218,6 +218,7 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.iv_back:
+                toFinish();
                 finish();
                 break;
             case R.id.traceroute_rootview:
@@ -274,6 +275,7 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
                                         JSONObject jsonObject = new JSONObject(response.body().string());
                                         if (jsonObject.get("msg").equals("编辑门店成功")) {
                                             handler.sendEmptyMessage(1);
+                                            toFinish();
                                             finish();
                                         } else {
                                             handler.sendEmptyMessage(2);
@@ -382,13 +384,17 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 退出时销毁定位
-        mLocClient.stop();
-        mSearch.destroy();
-        // 关闭定位图层
-        mBaiduMap.setMyLocationEnabled(false);
-        mMapView.onDestroy();
-        mMapView = null;
+        try {
+            // 退出时销毁定位
+            mLocClient.stop();
+            mSearch.destroy();
+            // 关闭定位图层
+            mBaiduMap.setMyLocationEnabled(false);
+            mMapView.onDestroy();
+            mMapView = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -403,5 +409,36 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
         super.onPause();
         // 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
         mMapView.onPause();
+    }
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mMapView = null;
+                    mBaiduMap.clear();
+                    mLocationClient = null;
+                    requestLocButton = null;
+                    mCurrentMode = null;
+                    mLocClient = null;
+                    myListener = null;
+                    mCurrentMarker = null;
+                    lon = 0;
+                    lat = 0;
+                    et_floorArea = null;
+                    et_storeId = null;
+                    traceroute_rootview = null;
+                    share = null;
+                    intent = null;
+                    mSearch = null;
+                    et_text = null;
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
     }
 }

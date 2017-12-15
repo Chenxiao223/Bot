@@ -1,6 +1,5 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -27,6 +27,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.StoreListAdapter;
 import com.zhiziyun.dmptest.bot.entity.StoreList;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.SlideItemView;
 import com.zhiziyun.dmptest.bot.util.SlideListView;
 import com.zhiziyun.dmptest.bot.util.Token;
 
@@ -72,6 +73,18 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         initView();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (hm_store == null) {//根据这个值来判断是第一次进来还是第二次进来
+            getstoreList(1, "");//第二个参数为空就是查所有
+        } else {//第二次
+            hm_store.clear();
+            clearAllData();
+            getstoreList(pageNum, "");
+        }
+    }
+
     public void clearAllData() {
         pageNum = 1;
         list_store.clear();
@@ -79,9 +92,9 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
 
     private void initView() {
         //设置系统栏颜色
-        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
-        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
-        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
         storeListActivity = this;
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
@@ -117,9 +130,13 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
-                hm_store.clear();
-                clearAllData();
-                getstoreList(pageNum, "");
+                try {
+                    hm_store.clear();
+                    clearAllData();
+                    getstoreList(pageNum, "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
         //上拉加载
@@ -130,7 +147,7 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
                     getstoreList(pageNum, "");
                 } else {
                     Toast.makeText(StoreListActivity.this, "最后一页了", Toast.LENGTH_SHORT).show();
-                    smartRefreshLayout.finishLoadmore(0);
+                    smartRefreshLayout.finishLoadmore(0);//停止刷新
                 }
             }
         });
@@ -138,16 +155,10 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-//        list_store.clear();
-        getstoreList(1, "");//第二个参数为空就是查所有
-    }
-
-    @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.iv_back:
+                toFinish();
                 finish();
                 break;
             case R.id.iv_addstory:
@@ -227,19 +238,20 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
                             hm_store.put("lat", storeList.getRows().get(i).getLatitude());
                             hm_store.put("lon", storeList.getRows().get(i).getLongitude());
                             hm_store.put("id", String.valueOf(storeList.getRows().get(i).getId()));
-                            hm_store.put("area",storeList.getRows().get(i).getArea());
+                            hm_store.put("area", storeList.getRows().get(i).getArea());
                             list_store.add(hm_store);
                         }
-                        smartRefreshLayout.finishRefresh(0);
-                        smartRefreshLayout.finishLoadmore(0);
+                        smartRefreshLayout.finishRefresh(0);//停止刷新
+                        smartRefreshLayout.finishLoadmore(0);//停止加载
                         pageNum++;
                         dialog.dismiss();
                         adapter.notifyDataSetChanged();
                     }
                     break;
                 case 2:
-                    list_store.clear();
-                    getstoreList(1, "");//第二个参数为空就是查所有
+                    hm_store.clear();
+                    clearAllData();
+                    getstoreList(pageNum, "");
                     Toast.makeText(StoreListActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
                     break;
                 case 3:
@@ -312,12 +324,34 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         }).start();
     }
 
-    public void checkTanzhen(String id,float lat,float lon,String area){
-        Intent it=new Intent(this,TanzhenListActivity.class);
-        it.putExtra("id",id);
-        it.putExtra("lat",lat);
-        it.putExtra("lon",lon);
-        it.putExtra("area",area);
+    public void checkTanzhen(String id, float lat, float lon, String area) {
+        Intent it = new Intent(this, TanzhenListActivity.class);
+        it.putExtra("id", id);
+        it.putExtra("lat", lat);
+        it.putExtra("lon", lon);
+        it.putExtra("area", area);
         startActivity(it);
+    }
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    share = null;
+                    storeList = null;
+                    lv_store.setAdapter(null);
+                    adapter = null;
+                    list_store.clear();
+                    et_text = null;
+                    smartRefreshLayout = null;
+                    hm_store.clear();
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
     }
 }

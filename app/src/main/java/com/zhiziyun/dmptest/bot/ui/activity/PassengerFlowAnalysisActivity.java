@@ -1,12 +1,12 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.support.design.widget.TabLayout;
@@ -15,7 +15,6 @@ import android.widget.LinearLayout;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.ui.fragment.TimeSlotFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.TrendFragment;
-import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsViewFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,13 +41,13 @@ public class PassengerFlowAnalysisActivity extends BaseActivity implements View.
 
     private void initView() {
         //设置系统栏颜色
-        ImageView iv_system= (ImageView) findViewById(R.id.iv_system);
-        LinearLayout.LayoutParams params= (LinearLayout.LayoutParams) iv_system.getLayoutParams();
-        params.height=(int) getStatusBarHeight(this);//设置当前控件布局的高度
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
-        iv_back= (ImageView) findViewById(R.id.iv_back);
-        viewPager= (ViewPager) findViewById(R.id.vp_view);
-        tabLayout= (TabLayout) findViewById(R.id.tabs);
+        iv_back = (ImageView) findViewById(R.id.iv_back);
+        viewPager = (ViewPager) findViewById(R.id.vp_view);
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
         iv_back.setOnClickListener(this);
 
         //页面，数据源
@@ -64,8 +63,9 @@ public class PassengerFlowAnalysisActivity extends BaseActivity implements View.
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.iv_back:
+                toFinish();
                 finish();
                 break;
         }
@@ -76,6 +76,7 @@ public class PassengerFlowAnalysisActivity extends BaseActivity implements View.
         public MyAdapter(FragmentManager fm) {
             super(fm);
         }
+
         @Override
         public Fragment getItem(int position) {
             return list.get(position);
@@ -91,5 +92,17 @@ public class PassengerFlowAnalysisActivity extends BaseActivity implements View.
         public CharSequence getPageTitle(int position) {
             return titles[position];
         }
+    }
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                TimeSlotFragment.fragment.clearmemory();
+                TrendFragment.fragment.clearmemory();
+                System.gc();
+            }
+        }, 500);
     }
 }

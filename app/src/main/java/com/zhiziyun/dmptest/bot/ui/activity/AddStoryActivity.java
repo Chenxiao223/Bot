@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -205,6 +206,7 @@ public class AddStoryActivity extends BaseActivity implements View.OnClickListen
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.iv_back:
+                toFinish();
                 finish();
                 break;
             case R.id.traceroute_rootview:
@@ -297,6 +299,7 @@ public class AddStoryActivity extends BaseActivity implements View.OnClickListen
             it.putExtra("mac", result);
             it.putExtra("storeId", storeId);
             startActivity(it);
+            toFinish();
             finish();
         }
     }
@@ -383,5 +386,32 @@ public class AddStoryActivity extends BaseActivity implements View.OnClickListen
         super.onPause();
         // 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
         mMapView.onPause();
+    }
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mLocationClient = null;
+                    mCurrentMode = null;
+                    myListener = null;
+                    mCurrentMarker = null;
+                    lon = 0;
+                    lat = 0;
+                    et_floorArea = null;
+                    et_storeId = null;
+                    et_text = null;
+                    storeId = null;
+                    traceroute_rootview = null;
+                    share = null;
+                    requestLocButton = null;
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
     }
 }

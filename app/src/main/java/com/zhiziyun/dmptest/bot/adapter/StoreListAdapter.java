@@ -65,6 +65,7 @@ public class StoreListAdapter extends BaseAdapter {
         holder.text2.setText(list.get(position).get("content2") + "㎡");
         holder.text3.setText(list.get(position).get("content3"));
         final SlideItemView itemView = (SlideItemView) convertView;
+        itemView.showContent();
         holder.tv_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

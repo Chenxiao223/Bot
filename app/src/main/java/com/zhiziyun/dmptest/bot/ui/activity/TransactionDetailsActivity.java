@@ -10,17 +10,20 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TransactionDetailsAdapter;
 import com.zhiziyun.dmptest.bot.entity.TransactionDetails;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
-import com.zhiziyun.dmptest.bot.xListView.XListView;
 
 import org.json.JSONObject;
 
@@ -46,16 +49,17 @@ import okhttp3.Response;
  * 交易明细页
  */
 
-public class TransactionDetailsActivity extends BaseActivity implements View.OnClickListener, XListView.IXListViewListener {
+public class TransactionDetailsActivity extends BaseActivity implements View.OnClickListener {
     private String beginTime;
     private String endTime;
     private SharedPreferences share;
-    private XListView xlistview;
+    private ListView xlistview;
     private TransactionDetails td;
     private HashMap<String, String> hm_td;
     private ArrayList<HashMap<String, String>> list_td = new ArrayList<>();
     private TransactionDetailsAdapter adapter;
     private int pageNum = 1;
+    private SmartRefreshLayout smartRefreshLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,16 +75,44 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
         params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
         TextView tv_date = (TextView) findViewById(R.id.tv_date);
         tv_date.setOnClickListener(this);
         ImageView tv_back = (ImageView) findViewById(R.id.tv_back);
         tv_back.setOnClickListener(this);
 
-        xlistview = (XListView) findViewById(R.id.xlistview);
-        xlistview.setPullLoadEnable(true);// 设置让它上拉，FALSE为不让上拉，便不加载更多数据
+        beginTime = gettodayDate();
+        endTime = beginTime;
+
+        xlistview = (ListView) findViewById(R.id.xlistview);
         adapter = new TransactionDetailsAdapter(this, list_td);
         xlistview.setAdapter(adapter);
-        xlistview.setXListViewListener(this);
+
+        //下拉刷新
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                try {
+                    hm_td.clear();
+                    clearAllData();
+                    getData(pageNum);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        //上拉加载
+        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
+            @Override
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                if (pageNum < ((td.getResponse().getTotal() / 10) + 3)) {
+                    getData(pageNum);
+                } else {
+                    smartRefreshLayout.finishLoadmore(0);
+                    ToastUtils.showShort(TransactionDetailsActivity.this, "最后一页了");
+                }
+            }
+        });
 
         getData(1);
     }
@@ -107,6 +139,7 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
                 break;
             case R.id.tv_back:
+                toFinish();
                 finish();
                 break;
         }
@@ -170,15 +203,21 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
             switch (msg.what) {
                 case 1:
                     if (td.getResponse().getData() != null) {
-                        for (int i = 0; i < td.getResponse().getData().size(); i++) {
-                            hm_td = new HashMap<>();
-                            hm_td.put("content1", td.getResponse().getData().get(i).getSettleType());
-                            hm_td.put("content2", td.getResponse().getData().get(i).getSettleDate());
-                            hm_td.put("content3", td.getResponse().getData().get(i).getFee());
-                            list_td.add(hm_td);
+                        if (td.getResponse().getData().size()==0){//如果没数据
+                            ToastUtils.showShort(TransactionDetailsActivity.this,"无数据");
+                        }else {
+                            for (int i = 0; i < td.getResponse().getData().size(); i++) {
+                                hm_td = new HashMap<>();
+                                hm_td.put("content1", td.getResponse().getData().get(i).getSettleType());
+                                hm_td.put("content2", td.getResponse().getData().get(i).getSettleDate());
+                                hm_td.put("content3", td.getResponse().getData().get(i).getFee());
+                                list_td.add(hm_td);
+                            }
+                            pageNum++;
+                            adapter.notifyDataSetChanged();
                         }
-                        pageNum++;
-                        adapter.notifyDataSetChanged();
+                        smartRefreshLayout.finishRefresh(0);//停止刷新
+                        smartRefreshLayout.finishLoadmore(0);//停止加载
                     }
                     break;
             }
@@ -187,8 +226,6 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
 
     //清空所有数据
     public void clearAllData() {
-        beginTime = gettodayDate();
-        endTime = beginTime;
         pageNum = 1;
         list_td.clear();
     }
@@ -200,33 +237,26 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
         return sdf.format(d);
     }
 
-    @Override//下拉刷新
-    public void onRefresh() {
-        try {
-            hm_td.clear();
-            clearAllData();
-            getData(pageNum);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override//上拉加载
-    public void onLoadMore() {
-        if (pageNum < ((td.getResponse().getTotal() / 10) + 3)) {
-            getData(pageNum);
-        } else {
-            onLoad();
-            Toast.makeText(this, "最后一页了", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * 停止刷新，
-     */
-    private void onLoad() {
-        xlistview.stopRefresh();
-        xlistview.stopLoadMore();
-        xlistview.setRefreshTime("刚刚");
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    beginTime = null;
+                    endTime = null;
+                    share = null;
+                    td = null;
+                    hm_td.clear();
+                    list_td.clear();
+                    adapter = null;
+                    xlistview.setAdapter(null);
+                    smartRefreshLayout = null;
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
     }
 }

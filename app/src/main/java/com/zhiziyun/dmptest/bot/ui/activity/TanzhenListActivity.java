@@ -149,14 +149,20 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
     @Override
     protected void onResume() {
         super.onResume();
-        list_tanzhen.clear();
-        gettanzhenList(1, "");//第二个参数为空就是查所有
+        if (hm_tanzhen == null) {//第一次进来
+            gettanzhenList(1, "");//第二个参数为空就是查所有
+        } else {//第二次进来
+            hm_tanzhen.clear();
+            clearAllData();
+            gettanzhenList(pageNum, "");
+        }
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.iv_back:
+                toFinish();
                 finish();
                 break;
             case R.id.iv_addstory:
@@ -328,5 +334,28 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
                 }
             }
         }).start();
+    }
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    share = null;
+                    tanzhenList = null;
+                    lv_tanzhen.setAdapter(null);
+                    adapter = null;
+                    list_tanzhen.clear();
+                    et_text = null;
+                    smartRefreshLayout = null;
+                    intent = null;
+                    hm_tanzhen.clear();
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
     }
 }

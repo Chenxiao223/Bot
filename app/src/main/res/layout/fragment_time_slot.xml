@@ -78,7 +78,44 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <lecho.lib.hellocharts.view.ColumnChartView
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingRight="@dimen/padding_left_right">
+
+                <ImageView
+                    android:layout_width="@dimen/padding_left_right"
+                    android:layout_height="@dimen/padding_left_right"
+                    android:src="@drawable/blue" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" 环境客流" />
+
+                <ImageView
+                    android:layout_width="@dimen/padding_left_right"
+                    android:layout_height="@dimen/padding_left_right"
+                    android:layout_marginLeft="@dimen/image_small"
+                    android:src="@drawable/green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" 进店客流" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <lecho.lib.hellocharts.view.LineChartView
             android:id="@+id/chart"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -111,7 +148,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="到店人次"
+                    android:text="环境客流"
                     android:textColor="@color/white"
                     android:textSize="@dimen/title_text_size" />
 
@@ -120,15 +157,26 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="到店人数"
+                    android:text="进店客流"
                     android:textColor="@color/white"
                     android:textSize="@dimen/title_text_size" />
             </LinearLayout>
 
-            <com.zhiziyun.dmptest.bot.xListView.XListView
-                android:id="@+id/xlistview"
+            <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/refreshLayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent">
+
+                <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                    srlClassicsSpinnerStyle="FixedBehind"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <ListView
+                    android:id="@+id/xlistview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </com.scwang.smartrefresh.layout.SmartRefreshLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
