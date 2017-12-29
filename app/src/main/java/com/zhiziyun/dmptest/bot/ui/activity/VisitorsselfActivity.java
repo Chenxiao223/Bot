@@ -12,14 +12,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.AppImage;
 import com.zhiziyun.dmptest.bot.entity.Visitorsselfparticulars;
+import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
 
 import org.json.JSONObject;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import co.lujun.androidtagview.TagContainerLayout;
+import lib.homhomlib.design.SlidingLayout;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -41,7 +43,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static com.baidu.location.d.a.i;
 
 /**
  * Created by Administrator on 2017/11/27.
@@ -54,6 +55,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
     private Visitorsselfparticulars vp;
     private MyDialog dialog;
     private AppImage app;
+    private SlidingLayout slidingLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,12 +106,16 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
         } else {
             tv_model.setText(it.getStringExtra("model"));
         }
+
+        //果冻弹跳效果
+        slidingLayout = (SlidingLayout) findViewById(R.id.slidingLayout);
+        slidingLayout.setSlidingOffset(0.2f);
     }
 
     public void getData(final String mac) {
         //加载动画
         dialog = MyDialog.showDialog(this);
-        dialog.show();
+        dialog.SHOW();
         //获取站点选项
         new Thread(new Runnable() {
             @Override
@@ -127,7 +133,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url("http://dmptest.zhiziyun.com/api/v1/deviceVisit/queryTags.action")
+                            .url(BaseUrl.BaseWang + "deviceVisit/queryTags.action")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -173,7 +179,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
                                     handler.sendMessage(message);
                                 }
                             } else {
-                                Toast.makeText(VisitorsselfActivity.this, "没数据", Toast.LENGTH_SHORT).show();
+                                ToastUtils.showShort(VisitorsselfActivity.this, "无数据");
                             }
                         }
                     });
@@ -203,7 +209,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url("http://dmptest.zhiziyun.com/api/v1/deviceVisit/queryIcons.action")
+                            .url(BaseUrl.BaseWang + "deviceVisit/queryIcons.action")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -216,16 +222,20 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson = new Gson();
-                            app = gson.fromJson(response.body().string(), AppImage.class);
-                            if (app != null) {
-                                for (int i = 0; i < app.getTotal(); i++) {
-                                    Message msg = new Message();
-                                    msg.what = 2;
-                                    Bitmap bitmap = getAppBitmap(app.getRows().get(i).getIcon());
-                                    msg.obj = bitmap;
-                                    handler.sendMessage(msg);
+                            try {
+                                Gson gson = new Gson();
+                                app = gson.fromJson(response.body().string(), AppImage.class);
+                                if (app != null) {
+                                    for (int i = 0; i < app.getTotal(); i++) {
+                                        Message msg = new Message();
+                                        msg.what = 2;
+                                        Bitmap bitmap = getAppBitmap(app.getRows().get(i).getIcon());
+                                        msg.obj = bitmap;
+                                        handler.sendMessage(msg);
+                                    }
                                 }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                     });
@@ -290,7 +300,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
             switch (msg.what) {
                 case 1:
                     if (TextUtils.isEmpty(vp.getDid())) {//如果没数据就提示
-                        Toast.makeText(VisitorsselfActivity.this, "无数据", Toast.LENGTH_SHORT).show();
+                        ToastUtils.showShort(VisitorsselfActivity.this, "无数据");
                     } else {
                         tv_did.setText(vp.getDid());
                         tv_date.setText(vp.getVisittime().substring(0, vp.getVisittime().indexOf(" ")));
@@ -380,7 +390,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                iv_head=null;
+                iv_head = null;
                 tv_age = null;
                 tv_marriage = null;
                 tv_gender = null;

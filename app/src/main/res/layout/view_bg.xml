@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_grey"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="http://www.zhiziyun.com"
+        android:textSize="@dimen/textsizi"
+        android:layout_marginTop="@dimen/padding_left_right"
+        android:gravity="center"
+        android:textColor="@color/colorBlack"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="智子云"
+        android:textSize="@dimen/textsizi"
+        android:layout_marginTop="@dimen/image_small"
+        android:gravity="center"
+        android:textColor="@color/colorBlack"/>
+
+</LinearLayout>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:background="@color/light_grey"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:paddingLeft="@dimen/padding_left_right4"
+        android:layout_height="@dimen/padding_left_right2">
+
+        <EditText
+            android:layout_weight="1"
+            android:id="@+id/et_text"
+            android:layout_width="match_parent"
+            android:paddingLeft="@dimen/image_small"
+            android:layout_height="@dimen/padding_left_right3"
+            android:layout_gravity="center"
+            android:background="@color/white"
+            android:drawableLeft="@drawable/search"
+            android:hint="搜索你的相关内容"
+            android:imeOptions="actionSearch"
+            android:maxLength="20"
+            android:singleLine="true"
+            android:textColorHint="@color/gray" />
+
+        <ImageView
+            android:id="@+id/iv_add"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="4"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/add_blue" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/buttom_height"
+        android:background="#e7e9ea"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="名称"
+            android:textColor="@color/colorBlack"
+            android:textSize="@dimen/textsizi" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="0.1dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="状态"
+            android:textColor="@color/colorBlack"
+            android:textSize="@dimen/textsizi" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="发送日期"
+            android:textColor="@color/colorBlack"
+            android:textSize="@dimen/textsizi" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="送达数"
+            android:textColor="@color/colorBlack"
+            android:textSize="@dimen/textsizi" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/lv_sms"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>
