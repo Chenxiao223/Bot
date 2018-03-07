@@ -28,9 +28,11 @@ import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
 import com.zhiziyun.dmptest.bot.entity.Visitorsself;
 import com.zhiziyun.dmptest.bot.ui.activity.VisitorsselfActivity;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,7 +56,7 @@ import okhttp3.Response;
 
 
 /**
- * 访客
+ * 访客列表
  */
 public class VisitorsselfFragment extends Fragment implements View.OnClickListener {
     public static VisitorsselfFragment fragment;
@@ -67,7 +69,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private HashMap<String, String> hm_store = new HashMap<String, String>();
     private HashMap<String, String> hm_probe = new HashMap<String, String>();
     private String beginTime, endTime;
-    private int microprobeId = 0;
+    private String microprobeId;
     private int storeId = 0;
     private ListView xlistview;
     private VisitorsselfAdapter adapter;
@@ -81,6 +83,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private SmartRefreshLayout smartRefreshLayout;
     private boolean shop = true;
     private boolean tanzhen = true;
+    private LinearLayout line_page;
 
     @Nullable
     @Override
@@ -98,18 +101,50 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
 
     //清空所有数据
     public void clearAllData() {
-        hm_visitors.clear();
-        list_visitors.clear();
-        pageNum = 1;
-        list_brands.clear();
-        list_model.clear();
-        visitorsself = null;
+        try {
+            hm_visitors.clear();
+            list_visitors.clear();
+            pageNum = 1;
+            list_brands.clear();
+            list_model.clear();
+            visitorsself = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //当滑到当前碎片时调用该方法
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            requestNT();
+        }
+    }
+
+    public void requestNT() {
+        list_shop.clear();
+        list_tanzhen.clear();
+        hm_store.clear();
+        hm_probe.clear();
+        //初始化接口没有的数据
+        list_shop.add("全部门店");
+        list_tanzhen.add("全部探针");
+        hm_store.put("全部门店", "0");
+        hm_probe.put("全部探针", "0");
+        getSiteOption();
     }
 
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
+        line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
+        line_page.setOnClickListener(this);
         //初始化接口没有的数据
+        list_shop.clear();
+        list_tanzhen.clear();
+        hm_store.clear();
+        hm_probe.clear();
         list_shop.add("全部门店");
         list_tanzhen.add("全部探针");
         hm_store.put("全部门店", "0");
@@ -144,15 +179,20 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 }
             }
         });
+
         //上拉加载
         smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
             @Override
             public void onLoadmore(RefreshLayout refreshlayout) {
-                if (pageNum < ((visitorsself.getTotal() / 10) + 3)) {
-                    getData(pageNum);
-                } else {
-                    ToastUtils.showShort(getActivity(), "最后一页了");
-                    smartRefreshLayout.finishLoadmore(0);//停止刷新
+                try {
+                    if ((visitorsself.getTotal() - (pageNum - 1) * 10) > 0) {
+                        getData(pageNum);
+                    } else {
+                        ToastUtils.showShort(getActivity(), "最后一页了");
+                        smartRefreshLayout.finishLoadmore(0);//停止刷新
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -252,8 +292,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                 shop = false;
                             } else {
                                 storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
-                                list_visitors.clear();
-                                pageNum = 1;
+                                clearAllData();
                                 getData(pageNum);
                             }
                         }
@@ -274,9 +313,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                             if (tanzhen) {//spinner初始化的时候不执行点击事件
                                 tanzhen = false;
                             } else {
-                                microprobeId = Integer.parseInt(hm_probe.get(list_tanzhen.get(position)));
-                                list_visitors.clear();
-                                pageNum = 1;
+                                microprobeId = hm_probe.get(list_tanzhen.get(position));
+                                clearAllData();
                                 getData(pageNum);
                             }
                         }
@@ -289,6 +327,9 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     break;
                 case 3:
                     if (visitorsself.getRows().size() == 0) {//如果没数据就提示
+                        line_page.setVisibility(View.VISIBLE);
+                        smartRefreshLayout.finishRefresh(0);//停止刷新
+                        smartRefreshLayout.finishLoadmore(0);//停止加载
                         ToastUtils.showShort(getActivity(), "无数据");
                     } else {
                         for (int i = 0; i < visitorsself.getRows().size(); i++) {
@@ -299,17 +340,18 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                             hm_visitors.put("content3", visitorsself.getRows().get(i).getModel());
                             list_model.add(visitorsself.getRows().get(i).getModel());
                             hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
-                            hm_visitors.put("content5", visitorsself.getRows().get(i).getGender());
-                            hm_visitors.put("mac", visitorsself.getRows().get(i).getMac());//这个值与适配器无关
+                            hm_visitors.put("mac", visitorsself.getRows().get(i).getMac());
                             list_visitors.add(hm_visitors);
                         }
                         pageNum++;
+                        line_page.setVisibility(View.GONE);
                     }
                     smartRefreshLayout.finishRefresh(0);//停止刷新
                     smartRefreshLayout.finishLoadmore(0);//停止加载
                     adapter.notifyDataSetChanged();
                     break;
                 case 4:
+                    line_page.setVisibility(View.VISIBLE);
                     smartRefreshLayout.finishRefresh(0);//停止刷新
                     smartRefreshLayout.finishLoadmore(0);//停止加载
                     ToastUtils.showShort(getActivity(), "无数据");
@@ -335,7 +377,9 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     jsonObject.put("sort", "visittime");
                     jsonObject.put("order", "desc");
                     if (storeId != 0) {//如果storeId为0就不用传参数macs了
-                        jsonObject.put("macs", "[" + microprobeId + "]");
+                        JSONArray jsonArray = new JSONArray();
+                        jsonArray.put(microprobeId);
+                        jsonObject.put("macs", jsonArray);
                     }
                     OkHttpClient okHttpClient = new OkHttpClient();
                     String url = null;
@@ -402,9 +446,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     public void onTimeSelect(Date date, View v) {
                         beginTime = getTime(date);
                         endTime = beginTime;
-
-                        list_visitors.clear();
-                        pageNum = 1;
+                        clearAllData();
                         getData(pageNum);
                     }
                 })
@@ -416,6 +458,17 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         .build();
 
                 pvTime.show();
+                break;
+            case R.id.line_page:
+                try {
+                    if (ClickUtils.isFastClick()) {
+                        clearAllData();
+                        getData(pageNum);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 

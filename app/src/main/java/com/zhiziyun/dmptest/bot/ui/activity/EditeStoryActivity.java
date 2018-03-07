@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -44,6 +43,7 @@ import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.NoDoubleClickListener;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
@@ -87,6 +87,7 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
     private Intent intent;
     GeoCoder mSearch = null; // 搜索模块，也可去掉地图模块独立使用
     private EditText et_text;
+    private MyDialog dialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -115,9 +116,7 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
         String name = intent.getStringExtra("name");
         String area = intent.getStringExtra("area");
         et_storeId.setText(name);
-        et_storeId.setSelection(name.length());
-        et_floorArea.setText(area);
-        et_floorArea.setSelection(area.length());
+        et_floorArea.setText("" + area);
         iv_back = (ImageView) findViewById(R.id.iv_back);
         iv_back.setOnClickListener(this);
         requestLocButton = (ImageView) findViewById(R.id.iv_localize);
@@ -240,8 +239,10 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
     public void complete() {
         if (lat != 0 && lon != 0 && !TextUtils.isEmpty(et_floorArea.getText().toString())
                 && !TextUtils.isEmpty(et_storeId.getText().toString())) {
-            //面积必须大于100小于三万
-            if ((double) Float.parseFloat(et_floorArea.getText().toString()) >= 100 && (double) Float.parseFloat(et_floorArea.getText().toString()) <= 30000) {
+            //半径必须大于3米小于100米
+            if ((double) Float.parseFloat(et_floorArea.getText().toString()) >= 3 && (double) Float.parseFloat(et_floorArea.getText().toString()) <= 100) {
+                dialog = MyDialog.showDialog(this);
+                dialog.show();
                 //修改门店接口
                 new Thread(new Runnable() {
                     @Override
@@ -251,10 +252,11 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
                             json.put("siteId", share.getString("siteid", ""));
                             json.put("id", intent.getStringExtra("id"));
                             json.put("name", et_storeId.getText().toString());
-                            json.put("area", (int) Float.parseFloat(et_floorArea.getText().toString()));
-                            json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
-                            json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
-                            Log.i("jsons", json.toString());
+                            //先根据半径计算出面积
+                            double area = Math.PI * Double.parseDouble(et_floorArea.getText().toString()) * Double.parseDouble(et_floorArea.getText().toString());
+                            json.put("area", (int) Math.round(area));//将面积四舍五入取整
+                            json.put("longitude", Float.parseFloat(new DecimalFormat(".00").format(lon)));
+                            json.put("latitude", Float.parseFloat(new DecimalFormat(".00").format(lat)));
                             OkHttpClient client = new OkHttpClient();
                             String url = null;
                             try {
@@ -300,7 +302,7 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
                     }
                 }).start();
             } else {
-                ToastUtils.showShort(this, "面积必须在1百到3万之间");
+                ToastUtils.showShort(this, "半径必须在3米到100米之间");
             }
         } else {
             ToastUtils.showShort(this, "请将数据填写完整");
@@ -314,9 +316,11 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
             switch (msg.what) {
                 case 1:
                     ToastUtils.showShort(EditeStoryActivity.this, "编辑成功");
+                    dialog.dismiss();
                     break;
                 case 2:
                     ToastUtils.showShort(EditeStoryActivity.this, "编辑失败");
+                    dialog.dismiss();
                     break;
             }
         }
@@ -415,6 +419,12 @@ public class EditeStoryActivity extends BaseActivity implements View.OnClickList
         super.onPause();
         // 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
         mMapView.onPause();
+    }
+
+    @Override
+    public void onBackPressed() {
+        toFinish();
+        finish();
     }
 
     //清空内存

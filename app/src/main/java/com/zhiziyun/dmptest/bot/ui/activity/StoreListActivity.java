@@ -25,6 +25,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.StoreListAdapter;
 import com.zhiziyun.dmptest.bot.entity.StoreList;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.SlideListView;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
@@ -64,6 +65,7 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     private SmartRefreshLayout smartRefreshLayout;
     private int pageNum = 1;
     private MyDialog dialog;
+    private LinearLayout line_page;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -76,8 +78,12 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         if (hm_store == null) {//根据这个值来判断是第一次进来还是第二次进来
+            //加载动画
+            dialog = MyDialog.showDialog(this);
+            dialog.show();
             getstoreList(1, "");//第二个参数为空就是查所有
         } else {//第二次
+            dialog.show();
             hm_store.clear();
             clearAllData();
             getstoreList(pageNum, "");
@@ -98,6 +104,8 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         storeListActivity = this;
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
+        line_page = findViewById(R.id.line_page).findViewById(R.id.line_page);
+        line_page.setOnClickListener(this);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.iv_addstory).setOnClickListener(this);
         lv_store = (SlideListView) findViewById(R.id.lv_store);
@@ -143,11 +151,15 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
             @Override
             public void onLoadmore(RefreshLayout refreshlayout) {
-                if (pageNum < ((storeList.getTotal() / 10) + 3)) {
-                    getstoreList(pageNum, "");
-                } else {
-                    ToastUtils.showShort(StoreListActivity.this, "最后一页了");
-                    smartRefreshLayout.finishLoadmore(0);//停止刷新
+                try {
+                    if ((storeList.getTotal() - (pageNum - 1) * 10) > 0) {
+                        getstoreList(pageNum, "");
+                    } else {
+                        ToastUtils.showShort(StoreListActivity.this, "最后一页了");
+                        smartRefreshLayout.finishLoadmore(0);//停止刷新
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -169,14 +181,22 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
                 break;
+            case R.id.line_page:
+                try {
+                    if (ClickUtils.isFastClick()) {
+                        hm_store.clear();
+                        clearAllData();
+                        getstoreList(pageNum, "");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 
     //第二个参数为空就是查所有
     public void getstoreList(final int page, final String name) {
-        //加载动画
-        dialog = MyDialog.showDialog(this);
-        dialog.SHOW();
         //获取门店列表
         new Thread(new Runnable() {
             @Override
@@ -210,9 +230,13 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson = new Gson();
-                            storeList = gson.fromJson(response.body().string(), StoreList.class);
-                            handler.sendEmptyMessage(1);
+                            try {
+                                Gson gson = new Gson();
+                                storeList = gson.fromJson(response.body().string(), StoreList.class);
+                                handler.sendEmptyMessage(1);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
 
@@ -231,22 +255,40 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
                 case 1:
                     try {
                         if (storeList != null) {
-                            for (int i = 0; i < storeList.getRows().size(); i++) {
-                                hm_store = new HashMap<>();
-                                hm_store.put("content1", storeList.getRows().get(i).getName());
-                                hm_store.put("content2", storeList.getRows().get(i).getArea());
-                                hm_store.put("content3", storeList.getRows().get(i).getProbeCount());
-                                hm_store.put("lat", storeList.getRows().get(i).getLatitude());
-                                hm_store.put("lon", storeList.getRows().get(i).getLongitude());
-                                hm_store.put("id", String.valueOf(storeList.getRows().get(i).getId()));
-                                hm_store.put("area", storeList.getRows().get(i).getArea());
-                                list_store.add(hm_store);
+                            if (storeList.getRows().size() == 0) {
+                                line_page.setVisibility(View.VISIBLE);
+                                ToastUtils.showShort(StoreListActivity.this, "无数据");
+                                smartRefreshLayout.finishRefresh(0);//停止刷新
+                                smartRefreshLayout.finishLoadmore(0);//停止加载
+                                dialog.dismiss();
+                            } else {
+                                for (int i = 0; i < storeList.getRows().size(); i++) {
+                                    hm_store = new HashMap<>();
+                                    hm_store.put("content1", storeList.getRows().get(i).getName());
+                                    String area = storeList.getRows().get(i).getArea();
+                                    double r = Double.parseDouble(area) / Math.PI;//根据面积计算出半径的平方
+                                    double radius = Math.round(Math.sqrt(r));//根据半径的平方计算半径（平方根）
+                                    hm_store.put("content2", "" + radius);//以前显示面积，现在显示半径
+                                    hm_store.put("content3", storeList.getRows().get(i).getProbeCount());
+                                    hm_store.put("lat", storeList.getRows().get(i).getLatitude());
+                                    hm_store.put("lon", storeList.getRows().get(i).getLongitude());
+                                    hm_store.put("id", String.valueOf(storeList.getRows().get(i).getId()));
+                                    hm_store.put("area", storeList.getRows().get(i).getArea());
+                                    list_store.add(hm_store);
+                                }
+                                pageNum++;
+                                line_page.setVisibility(View.GONE);
                             }
+                            adapter.notifyDataSetChanged();
                             smartRefreshLayout.finishRefresh(0);//停止刷新
                             smartRefreshLayout.finishLoadmore(0);//停止加载
-                            pageNum++;
                             dialog.dismiss();
-                            adapter.notifyDataSetChanged();
+                        } else {
+                            line_page.setVisibility(View.VISIBLE);
+                            ToastUtils.showShort(StoreListActivity.this, "无数据");
+                            smartRefreshLayout.finishRefresh(0);//停止刷新
+                            smartRefreshLayout.finishLoadmore(0);//停止加载
+                            dialog.dismiss();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -255,6 +297,7 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
                 case 2:
                     hm_store.clear();
                     clearAllData();
+                    dialog.show();
                     getstoreList(pageNum, "");
                     ToastUtils.showShort(StoreListActivity.this, String.valueOf(msg.obj));
                     break;
@@ -331,6 +374,12 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         it.putExtra("lon", lon);
         it.putExtra("area", area);
         startActivity(it);
+    }
+
+    @Override
+    public void onBackPressed() {
+        toFinish();
+        finish();
     }
 
     //清空内存

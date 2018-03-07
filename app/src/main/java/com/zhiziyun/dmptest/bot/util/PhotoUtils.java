@@ -1,7 +1,6 @@
 package com.zhiziyun.dmptest.bot.util;
 
 import android.annotation.SuppressLint;
-import android.support.v4.app.Fragment;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -12,10 +11,12 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.app.Fragment;
 
 /**
  * @author zhengzhong on 2016/8/6 16:16
  * Email zheng_zhong@163.com
+ * 这个用于fragment
  */
 public class PhotoUtils {
     private static final String TAG = "PhotoUtils";

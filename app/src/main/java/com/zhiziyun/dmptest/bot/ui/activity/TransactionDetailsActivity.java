@@ -22,6 +22,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TransactionDetailsAdapter;
 import com.zhiziyun.dmptest.bot.entity.TransactionDetails;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
@@ -63,6 +64,7 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
     private int pageNum = 1;
     private SmartRefreshLayout smartRefreshLayout;
     private MyDialog dialog;
+    private LinearLayout line_page;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,6 +81,8 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
 
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
+        line_page = this.findViewById(R.id.line_page).findViewById(R.id.line_page);
+        line_page.setOnClickListener(this);
         TextView tv_date = (TextView) findViewById(R.id.tv_date);
         tv_date.setOnClickListener(this);
         ImageView tv_back = (ImageView) findViewById(R.id.tv_back);
@@ -108,7 +112,7 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
         smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
             @Override
             public void onLoadmore(RefreshLayout refreshlayout) {
-                if (pageNum < ((td.getResponse().getTotal() / 10) + 3)) {
+                if ((td.getResponse().getTotal() - (pageNum - 1) * 10) > 0) {
                     getData(pageNum);
                 } else {
                     smartRefreshLayout.finishLoadmore(0);
@@ -116,7 +120,9 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
                 }
             }
         });
-
+        //加载动画
+        dialog = MyDialog.showDialog(TransactionDetailsActivity.this);
+        dialog.SHOW();
         getData(1);
     }
 
@@ -135,11 +141,12 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
                         String textString = String.format("%d-%d-%d %d-%d-%d", startYear,
                                 startMonthOfYear + 1, startDayOfMonth, endYear, endMonthOfYear + 1, endDayOfMonth);
                         int index = textString.indexOf(" ");
-                        beginTime = textString.substring(0, index);
-                        endTime = textString.substring(index + 1, textString.length());
+                        beginTime = date(textString.substring(0, index));
+                        endTime = date(textString.substring(index + 1, textString.length()));
 
                         pageNum = 1;
                         list_td.clear();
+                        dialog.SHOW();
                         getData(pageNum);
                     }
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
@@ -148,13 +155,36 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
                 toFinish();
                 finish();
                 break;
+            case R.id.line_page:
+                try {
+                    if (ClickUtils.isFastClick()) {
+                        clearAllData();
+                        getData(pageNum);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 
+    public String date(String date) {
+        int index1 = date.indexOf("-");
+        int index2 = index1 + date.substring(date.indexOf("-") + 1).indexOf("-") + 1;
+        String year = date.substring(0, index1);
+        String month = date.substring(index1 + 1, index2).length() == 1 ? "0" + date.substring(index1 + 1, index2) : date.substring(index1 + 1, index2);
+        String day = date.substring(index2 + 1).length() == 1 ? "0" + date.substring(index2 + 1) : date.substring(index2 + 1);
+        return year + "-" + month + "-" + day;
+    }
+
+    @Override
+    public void onBackPressed() {
+        toFinish();
+        finish();
+    }
+
     public void getData(final int page) {
-        //加载动画
-        dialog = MyDialog.showDialog(TransactionDetailsActivity.this);
-        dialog.SHOW();
+        //结算账户消费详情
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -211,23 +241,34 @@ public class TransactionDetailsActivity extends BaseActivity implements View.OnC
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    if (td.getResponse().getData() != null) {
-                        if (td.getResponse().getData().size() == 0) {//如果没数据
-                            ToastUtils.showShort(TransactionDetailsActivity.this, "无数据");
-                        } else {
-                            for (int i = 0; i < td.getResponse().getData().size(); i++) {
-                                hm_td = new HashMap<>();
-                                hm_td.put("content1", td.getResponse().getData().get(i).getSettleType());
-                                hm_td.put("content2", td.getResponse().getData().get(i).getSettleDate());
-                                hm_td.put("content3", td.getResponse().getData().get(i).getFee());
-                                list_td.add(hm_td);
+                    try {
+                        if (td.getResponse().getData() != null) {
+                            if (td.getResponse().getData().size() == 0) {//如果没数据
+                                ToastUtils.showShort(TransactionDetailsActivity.this, "无数据");
+                                line_page.setVisibility(View.VISIBLE);
+                                dialog.dismiss();
+                                smartRefreshLayout.finishRefresh(0);//停止刷新
+                                smartRefreshLayout.finishLoadmore(0);//停止加载
+                            } else {
+                                for (int i = 0; i < td.getResponse().getData().size(); i++) {
+                                    hm_td = new HashMap<>();
+                                    hm_td.put("content1", td.getResponse().getData().get(i).getSettleType());
+                                    hm_td.put("content2", td.getResponse().getData().get(i).getSettleDate());
+                                    hm_td.put("content3", td.getResponse().getData().get(i).getFee());
+                                    list_td.add(hm_td);
+                                }
+                                pageNum++;
+                                adapter.notifyDataSetChanged();
+                                line_page.setVisibility(View.GONE);
                             }
-                            pageNum++;
-                            adapter.notifyDataSetChanged();
+                            dialog.dismiss();
+                            smartRefreshLayout.finishRefresh(0);//停止刷新
+                            smartRefreshLayout.finishLoadmore(0);//停止加载
                         }
+                    } catch (Exception e) {
+                        ToastUtils.showShort(TransactionDetailsActivity.this, td.getErrormsg());
                         dialog.dismiss();
-                        smartRefreshLayout.finishRefresh(0);//停止刷新
-                        smartRefreshLayout.finishLoadmore(0);//停止加载
+                        e.printStackTrace();
                     }
                     break;
             }

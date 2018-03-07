@@ -62,10 +62,11 @@ public class StoreListAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.text1.setText(list.get(position).get("content1"));
-        holder.text2.setText(list.get(position).get("content2") + "㎡");
+        holder.text2.setText(list.get(position).get("content2") + "米");
         holder.text3.setText(list.get(position).get("content3"));
         final SlideItemView itemView = (SlideItemView) convertView;
         itemView.showContent();//滑动listview就隐藏
+        //编辑
         holder.tv_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,6 +78,7 @@ public class StoreListAdapter extends BaseAdapter {
                         list.get(position).get("id"));
             }
         });
+        //查看
         holder.tv_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,6 +89,7 @@ public class StoreListAdapter extends BaseAdapter {
                         list.get(position).get("area"));
             }
         });
+        //删除
         holder.tv_delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

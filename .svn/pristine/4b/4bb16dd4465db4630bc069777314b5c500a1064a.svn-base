@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/padding_left_right2"
+        android:background="@color/light_grey"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/iv_date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/date" />
+
+        <EditText
+            android:id="@+id/et_text"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/padding_left_right3"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@color/white"
+            android:drawableLeft="@drawable/search"
+            android:hint="搜索你的相关内容"
+            android:imeOptions="actionSearch"
+            android:maxLength="20"
+            android:paddingLeft="@dimen/image_small"
+            android:singleLine="true"
+            android:textColorHint="@color/gray" />
+
+        <ImageView
+            android:id="@+id/iv_Advertising"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="3"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/add_blue" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/grey"
+        android:minHeight="40dip"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:text="名称"
+            android:textColor="@color/colorBlack" />
+
+        <com.zhiziyun.dmptest.bot.util.CHScrollView_fragment
+            android:id="@+id/item_scroll_title"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="曝光"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="点击"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="点击率"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="cpm"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="cpc"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="花费"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="日预算"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="出价方式"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="出价"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="状态"
+                    android:textColor="@color/colorBlack" />
+
+                <TextView
+                    android:layout_width="100dip"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="操作"
+                    android:textColor="@color/colorBlack" />
+            </LinearLayout>
+        </com.zhiziyun.dmptest.bot.util.CHScrollView_fragment>
+    </LinearLayout>
+
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/refreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.scwang.smartrefresh.layout.header.ClassicsHeader
+            srlClassicsSpinnerStyle="FixedBehind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ListView
+            android:id="@+id/scroll_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="@dimen/padding_left_right"
+            android:cacheColorHint="@android:color/transparent"/>
+
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+</LinearLayout>

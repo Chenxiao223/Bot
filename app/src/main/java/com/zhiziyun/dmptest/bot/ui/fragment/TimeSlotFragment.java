@@ -2,6 +2,7 @@ package com.zhiziyun.dmptest.bot.ui.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,6 +26,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.TimeSlot;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
@@ -49,7 +51,6 @@ import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PointValue;
-import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.LineChartView;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -61,7 +62,6 @@ import okhttp3.Response;
 
 
 /**
- * Created by Administrator on 2017/7/17 0017.
  * 时段
  */
 public class TimeSlotFragment extends Fragment implements View.OnClickListener {
@@ -119,6 +119,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
+        smartRefreshLayout.setEnableLoadmore(false);//屏蔽掉上拉加载的效果
         line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
         line_page.setOnClickListener(this);
         //初始化接口没有的数据
@@ -147,6 +148,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
             public void onRefresh(RefreshLayout refreshlayout) {
                 try {
                     hm_timeslot.clear();
+                    list_timeslot.clear();
                     getvisitHour();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -169,9 +171,9 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
             axisValues.add(new AxisValue(i).setLabel(timeSlot.getObj().get(i).getHour() + ""));
         }
         Line line = new Line(values);
-        line.setColor(ChartUtils.COLOR_GREEN).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);//false是折线，true是曲线
+        line.setColor(Color.parseColor("#ee5b42")).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);//false是折线，true是曲线
         Line line2 = new Line(values2);
-        line2.setColor(ChartUtils.COLOR_BLUE).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);
+        line2.setColor(Color.parseColor("#12a47d")).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);
         List<Line> lines = new ArrayList<Line>();
         lines.add(line);
         lines.add(line2);
@@ -313,6 +315,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
                                 shop = false;
                             } else {
                                 storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
+                                list_timeslot.clear();
                                 getvisitHour();
                             }
                         }
@@ -334,6 +337,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
                                 tanzhen = false;
                             } else {
                                 microprobeId = Integer.parseInt(hm_probe.get(list_tanzhen.get(position)));
+                                list_timeslot.clear();
                                 getvisitHour();
                             }
                         }
@@ -356,17 +360,21 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
                             hm_timeslot.put("content3", timeSlot.getObj().get(i).getUv());//到店客流
                             list_timeslot.add(hm_timeslot);
                         }
+                        line_page.setVisibility(View.GONE);
                     }
-                    line_page.setVisibility(View.GONE);
                     adapter.notifyDataSetChanged();
                     smartRefreshLayout.finishLoadmore(0);//停止刷新
                     //折线图
                     generateDefaultData(timeSlot);
                     break;
                 case 4:
-                    line_page.setVisibility(View.VISIBLE);
-                    smartRefreshLayout.finishLoadmore(0);//停止刷新
-                    ToastUtils.showShort(getActivity(), "无数据");
+                    try {
+                        line_page.setVisibility(View.VISIBLE);
+                        smartRefreshLayout.finishLoadmore(0);//停止刷新
+                        ToastUtils.showShort(getActivity(), "无数据");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
             super.handleMessage(msg);
@@ -388,16 +396,33 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
                         String textString = String.format("%d-%d-%d %d-%d-%d", startYear,
                                 startMonthOfYear + 1, startDayOfMonth, endYear, endMonthOfYear + 1, endDayOfMonth);
                         int index = textString.indexOf(" ");
-                        beginTime = textString.substring(0, index);
-                        endTime = textString.substring(index + 1, textString.length());
+                        beginTime = date(textString.substring(0, index));
+                        endTime = date(textString.substring(index + 1, textString.length()));
+                        list_timeslot.clear();
                         getvisitHour();
                     }
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
                 break;
             case R.id.line_page:
-                getvisitHour();
+                try {
+                    if (ClickUtils.isFastClick()) {
+                        list_timeslot.clear();
+                        getvisitHour();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
         }
+    }
+
+    public String date(String date) {
+        int index1 = date.indexOf("-");
+        int index2 = index1 + date.substring(date.indexOf("-") + 1).indexOf("-") + 1;
+        String year = date.substring(0, index1);
+        String month = date.substring(index1 + 1, index2).length() == 1 ? "0" + date.substring(index1 + 1, index2) : date.substring(index1 + 1, index2);
+        String day = date.substring(index2 + 1).length() == 1 ? "0" + date.substring(index2 + 1) : date.substring(index2 + 1);
+        return year + "-" + month + "-" + day;
     }
 
     public String gettodayDate() {

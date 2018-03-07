@@ -13,7 +13,6 @@ import android.view.View;
 
 import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
 import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsViewFragment;
-import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsselfFragment;
 import com.zhiziyun.dmptest.bot.util.CalculateUtil;
 
 import java.util.Arrays;
@@ -156,16 +155,6 @@ public class PieChart_mpm extends View {
         for (int i = 0; i < mDataList.size(); i++) {
             float sweepAngle = mDataList.get(i).getValue() / mTotalValue * 360 - 1;//每个扇形的角度
             mPaint.setColor(mDataList.get(i).getColor());
-            //*******下面的两种方法选其一就可以 一个是通过画路径来实现 一个是直接绘制扇形***********
-//            mPath.moveTo(0,0);
-//            if(position-1==i){
-//                mPath.arcTo(mRectFTouch,startAngle,sweepAngle);
-//            }else {
-//                mPath.arcTo(mRectF,startAngle,sweepAngle);
-//            }
-//            canvas.drawPath(mPath,mPaint);
-//            mPath.reset();
-//            canvas.drawArc(mRectF,startAngle,sweepAngle,true,mPaint);
             if (position - 1 == i) {
                 canvas.drawArc(mRectFTouch, startAngle, sweepAngle, true, mPaint);
             } else {
@@ -186,15 +175,23 @@ public class PieChart_mpm extends View {
             double resToRound = CalculateUtil.round(res, 2);
             float v = startAngle % 360;
             if (startAngle % 360.0 >= 90.0 && startAngle % 360.0 <= 270.0) {//2 3 象限
-                canvas.drawLine(pxt, pyt, pxt - 30, pyt, mLinePaint);
+                try {
+                    canvas.drawLine(pxt, pyt, pxt - 30, pyt, mLinePaint);
 //                canvas.drawText(resToRound + "%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
 //                check(canvas,true,i,resToRound,pxt,pyt);
-                canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_model.get(i), pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                    canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_model.get(i), pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {//1 4象限
-                canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
+                try {
+                    canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
 //                canvas.drawText(resToRound+"%",pxt+30,pyt,mTextPaint);
 //                check(canvas,false,i,resToRound,pxt,pyt);
-                canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_model.get(i), pxt + 30, pyt, mTextPaint);
+                    canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_model.get(i), pxt + 30, pyt, mTextPaint);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -286,10 +283,14 @@ public class PieChart_mpm extends View {
                 }
                 float touchRadius = (float) Math.sqrt(y * y + x * x);
                 if (touchRadius < mRadius) {
-                    position = -Arrays.binarySearch(angles, (touchAngle)) - 1;
-                    invalidate();
-                    if (mOnItemPieClickListener != null) {
-                        mOnItemPieClickListener.onClick(position - 1);
+                    try {
+                        position = -Arrays.binarySearch(angles, (touchAngle)) - 1;
+                        invalidate();
+                        if (mOnItemPieClickListener != null) {
+                            mOnItemPieClickListener.onClick(position - 1);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
                 break;

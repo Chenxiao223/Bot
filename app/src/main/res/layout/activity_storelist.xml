@@ -77,24 +77,31 @@
 
     </LinearLayout>
 
-    <com.scwang.smartrefresh.layout.SmartRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/refreshLayout"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.scwang.smartrefresh.layout.header.ClassicsHeader
-            srlClassicsSpinnerStyle="FixedBehind"
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/refreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent">
 
-        <com.zhiziyun.dmptest.bot.util.SlideListView
-            android:id="@+id/lv_store"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:cacheColorHint="@android:color/transparent"
-            android:dividerHeight="1dp"
-            android:listSelector="@android:color/transparent" />
-    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                srlClassicsSpinnerStyle="FixedBehind"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
+            <com.zhiziyun.dmptest.bot.util.SlideListView
+                android:id="@+id/lv_store"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:cacheColorHint="@android:color/transparent"
+                android:dividerHeight="1dp"
+                android:listSelector="@android:color/transparent" />
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+        <include
+            android:id="@+id/line_page"
+            layout="@layout/layout_hides" />
+    </RelativeLayout>
 </LinearLayout>

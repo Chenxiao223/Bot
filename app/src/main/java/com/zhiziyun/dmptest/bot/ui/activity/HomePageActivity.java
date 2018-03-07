@@ -2,12 +2,19 @@ package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,6 +26,7 @@ import com.zhiziyun.dmptest.bot.adapter.HomePageAdapter;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 
 public class HomePageActivity extends BaseActivity implements View.OnClickListener {
+    private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 0x04;
     private LinearLayout lv_homepage, lv_generalize, lv_visitors, lv_my;
     private ImageView iv_homepage, iv_visitors, iv_generalize, iv_my;
     private TextView tv_homepage, tv_visitors, tv_generalize, tv_my;
@@ -26,6 +34,9 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
     public ViewPager pager = null;
     //退出时的时间
     private long mExitTime;
+    private SharedPreferences share;
+    private NetworkChangeReceiver networkChangeReceiver;
+    private IntentFilter intentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +53,12 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
         params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
+        intentFilter=new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        networkChangeReceiver=new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, intentFilter);//注册监听网络变化的广播
+
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         iv_homepage = (ImageView) findViewById(R.id.iv_homepage);
         iv_visitors = (ImageView) findViewById(R.id.iv_visitors);
         iv_generalize = (ImageView) findViewById(R.id.iv_generalize);
@@ -153,9 +170,7 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
     //对返回键进行监听
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-
             exit();
             return true;
         }
@@ -172,56 +187,76 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            //申请WRITE_EXTERNAL_STORAGE权限
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
-//        }
-//        //判断是否为android6.0系统版本，如果是，需要动态添加权限
-//        if (Build.VERSION.SDK_INT>=23){
-//            showContacts();
-//        }
-//    }
-//
-//    public void showContacts(){
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED
-//                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED
-//                || ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            ToastUtils.showShort(this,"没有权限,请手动开启定位权限");
-//            // 申请一个（或多个）权限，并提供用于回调返回的获取码（用户定义）
-//            ActivityCompat.requestPermissions(HomePageActivity.this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_PHONE_STATE}, 2);
-//        }
-//    }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        doNext(requestCode, grantResults);
-//    }
-//
-//    private void doNext(int requestCode, int[] grantResults) {
-//        switch (requestCode){
-//            case 1:
-//                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//
-//                } else {
-//                    ToastUtils.showShort(this,"请在应用管理中打开“相机”访问权限！");
-//                }
-//                break;
-//            case 2:
-//                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    // 获取到权限，作相应处理（调用定位SDK应当确保相关权限均被授权，否则可能引起定位失败）
-//                } else {
-//                    // 没有获取到权限，做特殊处理
-//                    ToastUtils.showShort(this,"获取位置权限失败，请手动开启");
-//                }
-//                break;
-//        }
-//    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        //判断是否为android6.0系统版本，如果是，需要动态添加权限
+        if (Build.VERSION.SDK_INT>=23){
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ToastUtils.showShort(this,"没有权限,请手动开启定位权限");
+                // 申请一个（或多个）权限，并提供用于回调返回的获取码（用户定义）
+                ActivityCompat.requestPermissions(HomePageActivity.this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_PHONE_STATE}, 2);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSIONS_REQUEST_CODE);
+                }
+            }
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        doNext(requestCode, grantResults);
+    }
+
+    private void doNext(int requestCode, int[] grantResults) {
+        switch (requestCode){
+            //调用系统相册申请Sdcard权限回调
+            case STORAGE_PERMISSIONS_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+                    ToastUtils.showShort(this, "请允许操作SDCard！！");
+                }
+                break;
+            case 2:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // 获取到权限，作相应处理（调用定位SDK应当确保相关权限均被授权，否则可能引起定位失败）
+                } else {
+                    // 没有获取到权限，做特殊处理
+                    ToastUtils.showShort(this,"获取位置权限失败，请手动开启");
+                }
+                break;
+        }
+    }
+
+    //监听网络变化类
+    class NetworkChangeReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connectivityManager= (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo=connectivityManager.getActiveNetworkInfo();
+            if (networkInfo!=null && networkInfo.isAvailable()){
+//                Toast.makeText(context, "网络可用", Toast.LENGTH_SHORT).show();
+            }else {
+                ToastUtils.showShort(HomePageActivity.this,"网络不可用");
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(networkChangeReceiver);//注销广播
+    }
+
 }

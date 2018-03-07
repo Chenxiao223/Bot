@@ -49,21 +49,29 @@
             android:textSize="@dimen/textsizi" />
     </RelativeLayout>
 
-    <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/refreshLayout"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.scwang.smartrefresh.layout.header.ClassicsHeader
-            srlClassicsSpinnerStyle="FixedBehind"
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/refreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent">
 
-        <ListView
-            android:id="@+id/xlistview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                srlClassicsSpinnerStyle="FixedBehind"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+            <ListView
+                android:id="@+id/xlistview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+        <include
+            android:id="@+id/line_page"
+            layout="@layout/layout_hides"/>
+    </RelativeLayout>
 </LinearLayout>

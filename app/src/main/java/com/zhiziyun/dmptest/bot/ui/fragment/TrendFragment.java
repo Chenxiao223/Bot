@@ -2,12 +2,12 @@ package com.zhiziyun.dmptest.bot.ui.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +21,12 @@ import android.widget.Spinner;
 import com.google.gson.Gson;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
-import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.Trend;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
@@ -52,7 +52,6 @@ import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.Viewport;
-import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.LineChartView;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -64,7 +63,6 @@ import okhttp3.Response;
 
 
 /**
- * Created by Administrator on 2017/7/17 0017.
  * 趋势
  */
 public class TrendFragment extends Fragment implements View.OnClickListener {
@@ -85,7 +83,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
     private HashMap<String, String> hm_trend;
     private ArrayList<HashMap<String, String>> list_trend = new ArrayList<>();
     private TimeSlotAdapter adapter;
-    private int pageNum = 1;
     //折线图
     private LineChartView chartView;
     private LineChartData lineData;
@@ -111,7 +108,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
 
     //清空数据
     public void clearAllData() {
-        pageNum = 1;
         list_trend.clear();
     }
 
@@ -124,6 +120,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
+        smartRefreshLayout.setEnableLoadmore(false);//屏蔽掉上拉加载的效果
         line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
         line_page.setOnClickListener(this);
         //初始化接口没有的数据
@@ -152,27 +149,15 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
             public void onRefresh(RefreshLayout refreshlayout) {
                 try {
                     hm_trend.clear();
-                    pageNum = 1;
-                    getTrend(pageNum);
+                    clearAllData();
+                    getTrend();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-        //上拉加载
-        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
-            @Override
-            public void onLoadmore(RefreshLayout refreshlayout) {
-                if (pageNum < ((trend.getTotal() / 10) + 3)) {
-                    getTrend(pageNum);
-                } else {
-                    smartRefreshLayout.finishLoadmore(0);//停止加载
-                    ToastUtils.showShort(getActivity(), "最后一页了");
-                }
-            }
-        });
         //初始化时查询第一页
-        getTrend(1);
+        getTrend();
     }
 
     public void getSiteOption() {
@@ -257,9 +242,8 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
                                 shop = false;
                             } else {
                                 storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
-                                pageNum = 1;
                                 list_trend.clear();
-                                getTrend(pageNum);
+                                getTrend();
                             }
                         }
 
@@ -280,9 +264,8 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
                                 tanzhen = false;
                             } else {
                                 microprobeId = Integer.parseInt(hm_probe.get(list_tanzhen.get(position)));
-                                pageNum = 1;
                                 list_trend.clear();
-                                getTrend(pageNum);
+                                getTrend();
                             }
                         }
 
@@ -293,36 +276,43 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
                     });
                     break;
                 case 3:
-                    if (trend.getRows().size() == 0) {//如果没数据就提示
-                        handler.sendEmptyMessage(4);
-                    } else {
-                        for (int i = 0; i < trend.getRows().size(); i++) {
-                            hm_trend = new HashMap<String, String>();
-                            hm_trend.put("content1", trend.getRows().get(i).getStatDate());
-                            hm_trend.put("content2", trend.getRows().get(i).getTotalUV());
-                            hm_trend.put("content3", trend.getRows().get(i).getUv());
-                            list_trend.add(hm_trend);
+                    try {
+                        if (trend.getRows().size() == 0) {//如果没数据就提示
+                            handler.sendEmptyMessage(4);
+                        } else {
+                            for (int i = 0; i < trend.getRows().size(); i++) {
+                                hm_trend = new HashMap<String, String>();
+                                hm_trend.put("content1", trend.getRows().get(i).getStatDate());
+                                hm_trend.put("content2", trend.getRows().get(i).getTotalUV());
+                                hm_trend.put("content3", trend.getRows().get(i).getUv());
+                                list_trend.add(hm_trend);
+                            }
+                            line_page.setVisibility(View.GONE);
                         }
-                        pageNum++;
+                        adapter.notifyDataSetChanged();
+                        smartRefreshLayout.finishRefresh(0);//停止刷新
+                        //线性图
+                        generateInitialLineData(trend);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    line_page.setVisibility(View.GONE);
-                    adapter.notifyDataSetChanged();
-                    smartRefreshLayout.finishRefresh(0);//停止刷新
-                    //线性图
-                    generateInitialLineData(trend);
                     break;
                 case 4:
-                    line_page.setVisibility(View.VISIBLE);
-                    ToastUtils.showShort(getActivity(), "无数据");
-                    smartRefreshLayout.finishRefresh(0);//停止刷新
+                    try {
+                        line_page.setVisibility(View.VISIBLE);
+                        ToastUtils.showShort(getActivity(), "无数据");
+                        smartRefreshLayout.finishRefresh(0);//停止刷新
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
             super.handleMessage(msg);
         }
     };
 
-    public void getTrend(final int page) {
-        //获取站点选项
+    public void getTrend() {
+        //趋势接口
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -333,8 +323,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
                     json.put("endTime", endTime);
                     json.put("microprobeId", microprobeId);
                     json.put("storeId", storeId);
-                    json.put("page", page);
-                    json.put("rows", 10);//固定每次请求十行
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -358,8 +346,9 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
+                            String str = response.body().string();
                             Gson gson = new Gson();
-                            trend = gson.fromJson(response.body().string(), Trend.class);
+                            trend = gson.fromJson(str, Trend.class);
                             handler.sendEmptyMessage(3);//通知刷新适配器
                         }
                     });
@@ -386,21 +375,34 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
                         String textString = String.format("%d-%d-%d %d-%d-%d", startYear,
                                 startMonthOfYear + 1, startDayOfMonth, endYear, endMonthOfYear + 1, endDayOfMonth);
                         int index = textString.indexOf(" ");
-                        beginTime = textString.substring(0, index);
-                        endTime = textString.substring(index + 1, textString.length());
+                        beginTime = date(textString.substring(0, index));
+                        endTime = date(textString.substring(index + 1, textString.length()));
 
-                        pageNum = 1;
                         list_trend.clear();
-                        getTrend(pageNum);
+                        getTrend();
                     }
                 }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
                 break;
             case R.id.line_page:
-                pageNum = 1;
-                list_trend.clear();
-                getTrend(pageNum);
+                try {
+                    if (ClickUtils.isFastClick()) {
+                        list_trend.clear();
+                        getTrend();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
         }
+    }
+
+    public String date(String date) {
+        int index1 = date.indexOf("-");
+        int index2 = index1 + date.substring(date.indexOf("-") + 1).indexOf("-") + 1;
+        String year = date.substring(0, index1);
+        String month = date.substring(index1 + 1, index2).length() == 1 ? "0" + date.substring(index1 + 1, index2) : date.substring(index1 + 1, index2);
+        String day = date.substring(index2 + 1).length() == 1 ? "0" + date.substring(index2 + 1) : date.substring(index2 + 1);
+        return year + "-" + month + "-" + day;
     }
 
     //获取当天的日期
@@ -434,9 +436,9 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
             axisValues.add(new AxisValue(i).setLabel(trend.getRows().get(i).getStatDate().substring(2)));//为缩小长度，将2017改为17
         }
         Line line = new Line(values);
-        line.setColor(ChartUtils.COLOR_GREEN).setHasLabelsOnlyForSelected(true).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);//false是折线，true是曲线
+        line.setColor(Color.parseColor("#ee5b42")).setHasLabelsOnlyForSelected(true).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);//false是折线，true是曲线
         Line line2 = new Line(values2);
-        line2.setColor(ChartUtils.COLOR_BLUE).setHasLabelsOnlyForSelected(true).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);
+        line2.setColor(Color.parseColor("#12a47d")).setHasLabelsOnlyForSelected(true).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);
         List<Line> lines = new ArrayList<Line>();
         lines.add(line);
         lines.add(line2);
@@ -447,7 +449,7 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
         chartView.setViewportCalculationEnabled(true);//这个地方坑了我很久，每次数据更新Y轴都不变，把这里改成true就解决了
         chartView.setZoomType(ZoomType.HORIZONTAL);
         //X轴最多只能显示6个，多出来的滑动展示，防止X轴挤到一堆
-        Viewport viewport =new Viewport(0,  chartView.getMaximumViewport().height()*1.25f, numValues > 5 ? 5 : numValues, 0);
+        Viewport viewport = new Viewport(0, chartView.getMaximumViewport().height() * 1.25f, numValues > 5 ? 5 : numValues, 0);
         chartView.setCurrentViewport(viewport);
         chartView.moveTo(0, 0);
     }
@@ -472,7 +474,6 @@ public class TrendFragment extends Fragment implements View.OnClickListener {
             hm_trend.clear();
             list_trend.clear();
             adapter = null;
-            pageNum = 1;
             chartView = null;
             lineData = null;
             share = null;

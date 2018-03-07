@@ -7,11 +7,11 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.zhiziyun.dmptest.bot.entity.PieDataEntity;
+import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsViewFragment;
 import com.zhiziyun.dmptest.bot.util.CalculateUtil;
 
 import java.util.Arrays;
@@ -164,7 +164,6 @@ public class PieChart_age extends View {
             } else {
                 canvas.drawArc(mRectF, startAngle, sweepAngle, true, mPaint);
             }
-            Log.i("toRadians", (startAngle + sweepAngle / 2) + "****" + Math.toRadians(startAngle + sweepAngle / 2));
             //确定直线的起始和结束的点的位置
             float pxs = (float) (mRadius * Math.cos(Math.toRadians(startAngle + sweepAngle / 2)));
             float pys = (float) (mRadius * Math.sin(Math.toRadians(startAngle + sweepAngle / 2)));
@@ -179,52 +178,58 @@ public class PieChart_age extends View {
             double resToRound = CalculateUtil.round(res, 2);
             float v = startAngle % 360;
             if (startAngle % 360.0 >= 90.0 && startAngle % 360.0 <= 270.0) {//2 3 象限
-                canvas.drawLine(pxt, pyt, pxt - 30, pyt, mLinePaint);
-//                canvas.drawText(resToRound + "%", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                check(canvas,true,i,resToRound,pxt,pyt);
+                try {
+                    canvas.drawLine(pxt, pyt, pxt - 30, pyt, mLinePaint);
+                    canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_age.get(i), pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {//1 4象限
-                canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
-//                canvas.drawText(resToRound+"%",pxt+30,pyt,mTextPaint);
-                check(canvas,false,i,resToRound,pxt,pyt);
+                try {
+                    canvas.drawLine(pxt, pyt, pxt + 30, pyt, mLinePaint);
+                    canvas.drawText(VisitorsViewFragment.visitorsViewFragment.list_age.get(i), pxt + 30, pyt, mTextPaint);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
     }
 
-    private void check(Canvas canvas,boolean flag,int i,double resToRound,float pxt,float pyt){
-        switch (i){
+    private void check(Canvas canvas, boolean flag, int i, double resToRound, float pxt, float pyt) {
+        switch (i) {
             case 0:
-                if (flag==true) {
+                if (flag == true) {
                     canvas.drawText("36-45岁", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                }else{
+                } else {
                     canvas.drawText("36-45岁", pxt + 30, pyt, mTextPaint);
                 }
                 break;
             case 1:
-                if (flag==true) {
+                if (flag == true) {
                     canvas.drawText("26-35岁", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                }else{
+                } else {
                     canvas.drawText("26-35岁", pxt + 30, pyt, mTextPaint);
                 }
                 break;
             case 2:
-                if (flag==true) {
+                if (flag == true) {
                     canvas.drawText("46-55岁", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                }else{
+                } else {
                     canvas.drawText("46-55岁", pxt + 30, pyt, mTextPaint);
                 }
                 break;
             case 3:
-                if (flag==true) {
+                if (flag == true) {
                     canvas.drawText("55岁以上", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                }else{
+                } else {
                     canvas.drawText("55岁以上", pxt + 30, pyt, mTextPaint);
                 }
                 break;
             case 4:
-                if (flag==true) {
+                if (flag == true) {
                     canvas.drawText("19-25岁", pxt - mTextPaint.measureText(resToRound + "%") - 30, pyt, mTextPaint);
-                }else{
+                } else {
                     canvas.drawText("19-25岁", pxt + 30, pyt, mTextPaint);
                 }
                 break;
@@ -263,10 +268,14 @@ public class PieChart_age extends View {
                 }
                 float touchRadius = (float) Math.sqrt(y * y + x * x);
                 if (touchRadius < mRadius) {
-                    position = -Arrays.binarySearch(angles, (touchAngle)) - 1;
-                    invalidate();
-                    if (mOnItemPieClickListener != null) {
-                        mOnItemPieClickListener.onClick(position - 1);
+                    try {
+                        position = -Arrays.binarySearch(angles, (touchAngle)) - 1;
+                        invalidate();
+                        if (mOnItemPieClickListener != null) {
+                            mOnItemPieClickListener.onClick(position - 1);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
                 break;

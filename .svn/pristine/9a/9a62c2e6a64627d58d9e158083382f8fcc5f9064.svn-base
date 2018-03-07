@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pop_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@null"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:padding="@dimen/padding_left_right4"
+        android:background="@drawable/shape_graybg"
+        android:layout_marginLeft="@dimen/padding_left_right3"
+        android:layout_marginRight="@dimen/padding_left_right3"
+        android:layout_marginTop="@dimen/padding_left_right3"
+        android:layout_marginBottom="@dimen/padding_left_right3"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/rl_high_active"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height">
+
+            <CheckBox
+                android:id="@+id/cb_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/checkbox"
+                android:layout_marginRight="@dimen/padding_left_right"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_high_active"
+                android:layout_toStartOf="@+id/tv_high_active" />
+
+            <TextView
+                android:id="@+id/tv_high_active"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="高活跃"
+                android:textColor="@color/colorBlack"
+                android:textSize="@dimen/title_text_size" />
+        </RelativeLayout>
+
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/line_height"
+            android:scaleType="fitXY"
+            android:src="@drawable/grayline" />
+
+        <RelativeLayout
+            android:id="@+id/rl_moderate_active"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height">
+
+            <CheckBox
+                android:id="@+id/cb_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/checkbox"
+                android:layout_marginRight="@dimen/padding_left_right"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_moderate_active"
+                android:layout_toStartOf="@+id/tv_moderate_active" />
+
+            <TextView
+                android:id="@+id/tv_moderate_active"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="中活跃"
+                android:textColor="@color/colorBlack"
+                android:textSize="@dimen/title_text_size" />
+        </RelativeLayout>
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/line_height"
+            android:scaleType="fitXY"
+            android:src="@drawable/grayline" />
+
+        <RelativeLayout
+            android:id="@+id/rl_low_active"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height">
+
+            <CheckBox
+                android:id="@+id/cb_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/checkbox"
+                android:layout_marginRight="@dimen/padding_left_right"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_low_active"
+                android:layout_toStartOf="@+id/tv_low_active" />
+
+            <TextView
+                android:id="@+id/tv_low_active"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="低活跃"
+                android:textColor="@color/colorBlack"
+                android:textSize="@dimen/title_text_size" />
+        </RelativeLayout>
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/line_height"
+            android:scaleType="fitXY"
+            android:src="@drawable/grayline" />
+
+        <RelativeLayout
+            android:id="@+id/rl_sleep"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height">
+
+            <CheckBox
+                android:id="@+id/cb_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/checkbox"
+                android:layout_marginRight="18dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_sleep"
+                android:layout_toStartOf="@+id/tv_sleep" />
+
+            <TextView
+                android:id="@+id/tv_sleep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="沉睡"
+                android:textColor="@color/colorBlack"
+                android:textSize="@dimen/title_text_size" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/tv_determine"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:text="确 定"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/title_text_size" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -30,16 +30,16 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.entity.GetHead;
+import com.zhiziyun.dmptest.bot.ui.activity.MyOriginalityActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.QualificationActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.SmsListActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.StoreListActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.TransactionDetailsActivity;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
@@ -53,7 +53,6 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -71,7 +70,6 @@ import static android.app.Activity.RESULT_OK;
 
 
 /**
- * Created by Administrator on 2017/7/17 0017.
  * 账户
  */
 public class AccountFragment extends Fragment implements View.OnClickListener {
@@ -81,8 +79,8 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     private static final int CODE_RESULT_REQUEST = 0xa2;
     private static final int CAMERA_PERMISSIONS_REQUEST_CODE = 0x03;
     private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 0x04;
-    private File fileUri = new File(Environment.getExternalStorageDirectory().getPath() + "/photo.jpg");
-    private File fileCropUri = new File(Environment.getExternalStorageDirectory().getPath() + "/img_head.jpg");
+    private File fileUri = new File(Environment.getExternalStorageDirectory().getPath() + "/Bot/photo.jpg");
+    private File fileCropUri = new File(Environment.getExternalStorageDirectory().getPath() + "/Bot/img_head.jpg");
     private Uri imageUri;
     private Uri cropImageUri;
     private static final int OUTPUT_X = 480;
@@ -111,12 +109,11 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         tv_balance = getView().findViewById(R.id.tv_balance);
-        getHead();//获取头像
-        ConsumptionDetails();
         getView().findViewById(R.id.rl_account).setOnClickListener(this);
         getView().findViewById(R.id.rl_store).setOnClickListener(this);
         getView().findViewById(R.id.rl_originality).setOnClickListener(this);
-        getView().findViewById(R.id.rl_setting).setOnClickListener(this);
+        getView().findViewById(R.id.rl_sms).setOnClickListener(this);
+        getView().findViewById(R.id.rl_qualification).setOnClickListener(this);
         iv_head = getView().findViewById(R.id.iv_head);
         iv_head.setOnClickListener(this);
         TextView tv_companyname = getView().findViewById(R.id.tv_companyname);
@@ -130,8 +127,22 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.iv_head:
+                //让背景变暗
+                WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+                lp.alpha = 0.7f;
+                getActivity().getWindow().setAttributes(lp);
+                //弹出pop窗体
                 TakePhotoPopWin takePhotoPopWin = new TakePhotoPopWin(getActivity(), null, 0);
                 takePhotoPopWin.showAtLocation(getView().findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
+                //监听popwin是否关闭，关闭的话让背景恢复
+                takePhotoPopWin.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+                        lp.alpha = 1f;
+                        getActivity().getWindow().setAttributes(lp);
+                    }
+                });
                 break;
             case R.id.rl_account:
                 startActivity(new Intent(getActivity(), TransactionDetailsActivity.class));
@@ -140,10 +151,13 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 startActivity(new Intent(getActivity(), StoreListActivity.class));
                 break;
             case R.id.rl_originality:
-                ToastUtils.showShort(getActivity(), "暂未开放");
+                startActivity(new Intent(getActivity(), MyOriginalityActivity.class));
                 break;
-            case R.id.rl_setting:
-                ToastUtils.showShort(getActivity(), "暂未开放");
+            case R.id.rl_sms:
+                startActivity(new Intent(getActivity(), SmsListActivity.class));
+                break;
+            case R.id.rl_qualification:
+                startActivity(new Intent(getActivity(), QualificationActivity.class));
                 break;
         }
     }
@@ -239,7 +253,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     PhotoUtils.openPic(this, CODE_GALLERY_REQUEST);
                 } else {
-                    ToastUtils.showShort(getActivity(), "请允许打操作SDCard！！");
+                    ToastUtils.showShort(getActivity(), "请允许操作SDCard！！");
                 }
                 break;
             default:
@@ -262,7 +276,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 break;
             //相册返回
             case CODE_GALLERY_REQUEST:
-
                 if (hasSdcard()) {
                     cropImageUri = Uri.fromFile(fileCropUri);
                     Uri newUri = Uri.parse(PhotoUtils.getPath(getActivity(), data.getData()));
@@ -436,12 +449,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 case 1:
                     tv_balance.setText("余额：" + msg.obj.toString());
                     break;
-                case 2:
-                    setHead(String.valueOf(msg.obj));
-                    break;
-                case 3:
-                    ToastUtils.showShort(getActivity(), "头像为空，请上传头像");
-                    break;
                 case 4:
                     ToastUtils.showShort(getActivity(), "头像上传成功");
                     break;
@@ -452,127 +459,20 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
         }
     };
 
-    //获取头像接口
-    public void getHead() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final JSONObject json = new JSONObject();
-                    json.put("siteId", share.getString("siteid", ""));
-                    OkHttpClient client = new OkHttpClient();
-                    String url = null;
-                    try {
-                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                    RequestBody body = RequestBody.create(mediaType, url);
-                    final Request request = new Request.Builder()
-                            .url(BaseUrl.BaseZhang + "advertiserApp/getLogoImg")
-                            .post(body)
-                            .addHeader("content-type", "application/x-www-form-urlencoded")
-                            .build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson = new Gson();
-                            GetHead getHead = gson.fromJson(response.body().string(), GetHead.class);
-                            if (getHead != null) {
-                                if (getHead.getResponse().getLogoUrl() != null) {
-                                    Message msg = new Message();
-                                    msg.what = 2;
-                                    msg.obj = getHead.getResponse().getLogoUrl();
-                                    handler.sendMessage(msg);
-                                } else {
-                                    handler.sendEmptyMessage(3);
-                                }
-                            }
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
-
-    public void setHead(String url) {
-//        Glide.with(getActivity()).load(url).asBitmap().into(new SimpleTarget<Bitmap>() {
-//            @Override
-//            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-//                iv_head.setImageBitmap(createCircleImage(resource));
-//            }
-//        });
-        Glide.with(getActivity()).load(url).asBitmap().toBytes().into(new SimpleTarget<byte[]>() {
-            @Override
-            public void onResourceReady(byte[] bytes, GlideAnimation<? super byte[]> glideAnimation) {
-                try {
-                    savaBitmap("img_head.jpg", bytes);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    // 保存图片到手机指定目录
-    public void savaBitmap(String imgName, byte[] bytes) {
-        try {
-            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                String filePath = null;
-                FileOutputStream fos = null;
-                try {
-                    filePath = Environment.getExternalStorageDirectory().getPath();
-                    File imgDir = new File(filePath);
-                    if (!imgDir.exists()) {
-                        imgDir.mkdirs();
-                    }
-                    imgName = filePath + "/" + imgName;
-                    fos = new FileOutputStream(imgName);
-                    fos.write(bytes);
-                    Log.i("infos", "图片已保存到" + filePath);
-                    getPictrue();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } else {
-                ToastUtils.showShort(getActivity(), "请检查SD卡是否可用");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (getUserVisibleHint()) {
             //每次滑动当前碎片就刷新头像路径
             getPictrue();//获取头像
+            ConsumptionDetails();//结算账户消费详情接口
         }
     }
 
     //获得头像
     public void getPictrue() {
         try {
-            final String filepath = "/sdcard/img_head.jpg";
+            final String filepath = "/sdcard/Bot/img_head.jpg";
             File file = new File(filepath);
             if (hasSdcard()) {
                 if (file.exists()) {

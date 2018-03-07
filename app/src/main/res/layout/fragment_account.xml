@@ -60,7 +60,8 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/imagview_top"
             android:layout_marginTop="@dimen/control_padding"
-            android:background="@color/white">
+            android:background="@color/white"
+            android:paddingLeft="@dimen/image_small">
 
             <ImageView
                 android:id="@+id/imageView3"
@@ -104,7 +105,8 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/imagview_top"
             android:layout_marginTop="@dimen/line_height"
-            android:background="@color/white">
+            android:background="@color/white"
+            android:paddingLeft="@dimen/image_small">
 
             <ImageView
                 android:id="@+id/imageView4"
@@ -137,7 +139,8 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/imagview_top"
             android:layout_marginTop="@dimen/line_height"
-            android:background="@color/white">
+            android:background="@color/white"
+            android:paddingLeft="@dimen/image_small">
 
             <ImageView
                 android:id="@+id/imageView5"
@@ -177,18 +180,19 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/rl_setting"
+            android:id="@+id/rl_sms"
             android:layout_width="match_parent"
             android:layout_height="@dimen/imagview_top"
-            android:layout_marginTop="@dimen/control_padding"
-            android:background="@color/white">
+            android:layout_marginTop="@dimen/line_height"
+            android:background="@color/white"
+            android:paddingLeft="@dimen/image_small">
 
             <ImageView
                 android:id="@+id/imageView6"
                 android:layout_width="@dimen/imagview_top"
                 android:layout_height="match_parent"
                 android:padding="@dimen/control_padding"
-                android:src="@drawable/setting" />
+                android:src="@drawable/sms" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -196,7 +200,42 @@
                 android:layout_centerVertical="true"
                 android:layout_toEndOf="@+id/imageView6"
                 android:layout_toRightOf="@+id/imageView6"
-                android:text="设置"
+                android:text="短信"
+                android:textSize="@dimen/title_text_size" />
+
+            <ImageView
+                android:layout_width="@dimen/imagview_top"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:padding="@dimen/padding"
+                android:src="@drawable/click" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_qualification"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_marginTop="@dimen/line_height"
+            android:background="@color/white"
+            android:paddingLeft="@dimen/image_small">
+
+            <ImageView
+                android:id="@+id/imageView7"
+                android:layout_width="@dimen/imagview_top"
+                android:layout_height="match_parent"
+                android:padding="@dimen/control_padding"
+                android:src="@drawable/qualification" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@+id/imageView7"
+                android:layout_toRightOf="@+id/imageView7"
+                android:text="资质"
                 android:textSize="@dimen/title_text_size" />
 
             <ImageView

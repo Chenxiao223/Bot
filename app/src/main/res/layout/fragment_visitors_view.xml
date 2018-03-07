@@ -71,117 +71,136 @@
         android:scaleType="fitXY"
         android:src="@drawable/grayline" />
 
-    <ScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/refreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/tv_age"
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                srlClassicsSpinnerStyle="FixedBehind"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="到店客流年龄分布"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
+                android:layout_height="wrap_content" />
 
-            <com.zhiziyun.dmptest.bot.widget.PieChart_age
-                android:id="@+id/chart_age"
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp"/>
+                android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/tv_sex"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="到店客流性别分布"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-            <com.zhiziyun.dmptest.bot.widget.PieChart_sex
-                android:id="@+id/chart_sex"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp" />
+                    <TextView
+                        android:id="@+id/tv_age"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="到店客流年龄分布"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
 
-            <TextView
-                android:id="@+id/tv_mpb"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="到店客流手机品牌分布"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
+                    <com.zhiziyun.dmptest.bot.widget.PieChart_age
+                        android:id="@+id/chart_age"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="@dimen/padding_left_right"
+                        android:layout_marginTop="@dimen/padding_left_right" />
 
-            <com.zhiziyun.dmptest.bot.widget.PieChart_mpb
-                android:id="@+id/chart_mpb"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp" />
+                    <TextView
+                        android:id="@+id/tv_sex"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="到店客流性别分布"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
 
-            <TextView
-                android:id="@+id/tv_mpm"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="到店客流手机型号分布"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
+                    <com.zhiziyun.dmptest.bot.widget.PieChart_sex
+                        android:id="@+id/chart_sex"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="@dimen/padding_left_right"
+                        android:layout_marginTop="@dimen/padding_left_right" />
 
-            <com.zhiziyun.dmptest.bot.widget.PieChart_mpm
-                android:id="@+id/chart_mpm"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp" />
+                    <TextView
+                        android:id="@+id/tv_mpb"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="到店客流手机品牌分布"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
 
-            <TextView
-                android:id="@+id/tv_mpp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="到店客流手机价格分布"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
+                    <com.zhiziyun.dmptest.bot.widget.PieChart_mpb
+                        android:id="@+id/chart_mpb"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="@dimen/padding_left_right"
+                        android:layout_marginTop="@dimen/padding_left_right" />
 
-            <com.zhiziyun.dmptest.bot.widget.PieChart_mpp
-                android:id="@+id/chart_mpp"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp" />
+                    <TextView
+                        android:id="@+id/tv_mpm"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="到店客流手机型号分布"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
 
-            <TextView
-                android:id="@+id/tv_active"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="到店客流活跃度分布"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
+                    <com.zhiziyun.dmptest.bot.widget.PieChart_mpm
+                        android:id="@+id/chart_mpm"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="@dimen/padding_left_right"
+                        android:layout_marginTop="@dimen/padding_left_right" />
 
-            <com.zhiziyun.dmptest.bot.widget.PieChart_active
-                android:id="@+id/chart_active"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp" />
-        </LinearLayout>
-    </ScrollView>
+                    <TextView
+                        android:id="@+id/tv_mpp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="到店客流手机价格分布"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
 
+                    <com.zhiziyun.dmptest.bot.widget.PieChart_mpp
+                        android:id="@+id/chart_mpp"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="@dimen/padding_left_right"
+                        android:layout_marginTop="@dimen/padding_left_right" />
+
+                    <TextView
+                        android:id="@+id/tv_active"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="到店客流活跃度分布"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
+
+                    <com.zhiziyun.dmptest.bot.widget.PieChart_active
+                        android:id="@+id/chart_active"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="@dimen/padding_left_right"
+                        android:layout_marginTop="@dimen/padding_left_right" />
+                </LinearLayout>
+            </ScrollView>
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+        <include
+            android:id="@+id/line_page"
+            layout="@layout/layout_hides" />
+    </RelativeLayout>
 </LinearLayout>

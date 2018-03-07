@@ -1,12 +1,16 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -26,6 +30,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.TanzhenListAdapter;
 import com.zhiziyun.dmptest.bot.entity.TanzhenList;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.SlideListView;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
@@ -66,6 +71,7 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
     private int pageNum = 1;
     private Intent intent;
     private MyDialog dialog;
+    private LinearLayout line_page;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -86,6 +92,8 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
         params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
         tanzhenListActivity = this;
+        line_page = this.findViewById(R.id.line_page).findViewById(R.id.line_page);
+        line_page.setOnClickListener(this);
         intent = getIntent();
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
@@ -135,7 +143,7 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
         smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
             @Override
             public void onLoadmore(RefreshLayout refreshlayout) {
-                if (pageNum < ((tanzhenList.getTotal() / 10) + 3)) {
+                if ((tanzhenList.getTotal() - (pageNum - 1) * 10) > 0) {
                     gettanzhenList(pageNum, "");
                 } else {
                     ToastUtils.showShort(TanzhenListActivity.this, "最后一页了");
@@ -151,8 +159,12 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
     protected void onResume() {
         super.onResume();
         if (hm_tanzhen == null) {//第一次进来
+            //加载动画
+            dialog = MyDialog.showDialog(this);
+            dialog.show();
             gettanzhenList(1, "");//第二个参数为空就是查所有
         } else {//第二次进来
+            dialog.show();
             hm_tanzhen.clear();
             clearAllData();
             gettanzhenList(pageNum, "");
@@ -167,15 +179,49 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
                 finish();
                 break;
             case R.id.iv_addstory:
-                Intent it = new Intent();
-                it.setClass(TanzhenListActivity.this, CaptureActivity.class);
-                //返回一个二维码的信息
-                startActivityForResult(it, 98);
+                //申请相机权限
+                if (ContextCompat.checkSelfPermission(TanzhenListActivity.this, Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    //申请WRITE_EXTERNAL_STORAGE权限
+                    ActivityCompat.requestPermissions(TanzhenListActivity.this, new String[]{Manifest.permission.CAMERA}, 1);
+                } else {
+                    Intent it = new Intent();
+                    it.setClass(TanzhenListActivity.this, CaptureActivity.class);
+                    //返回一个二维码的信息
+                    startActivityForResult(it, 98);
+                }
                 break;
             case R.id.traceroute_rootview:
                 //让软键盘隐藏
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+                break;
+            case R.id.line_page:
+                try {
+                    if (ClickUtils.isFastClick()) {
+                        clearAllData();
+                        gettanzhenList(pageNum, "");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent it = new Intent();
+                    it.setClass(TanzhenListActivity.this, CaptureActivity.class);
+                    //返回一个二维码的信息
+                    startActivityForResult(it, 98);
+                } else {
+                    ToastUtils.showShort(this, "请在应用管理中打开“相机”访问权限！");
+                }
                 break;
         }
     }
@@ -199,9 +245,6 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
 
     //第二个参数为空就是查所有
     public void gettanzhenList(final int page, final String name) {
-        //加载动画
-        dialog = MyDialog.showDialog(this);
-        dialog.SHOW();
         //获取门店列表
         new Thread(new Runnable() {
             @Override
@@ -256,24 +299,34 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
             switch (msg.what) {
                 case 1:
                     if (tanzhenList != null) {
-                        for (int i = 0; i < tanzhenList.getRows().size(); i++) {
-                            hm_tanzhen = new HashMap<>();
-                            hm_tanzhen.put("content1", tanzhenList.getRows().get(i).getName());
-                            hm_tanzhen.put("content2", tanzhenList.getRows().get(i).getMac());
-                            hm_tanzhen.put("content3", tanzhenList.getRows().get(i).getFloorArea());
-                            hm_tanzhen.put("id", tanzhenList.getRows().get(i).getId());
-                            list_tanzhen.add(hm_tanzhen);
+                        if (tanzhenList.getTotal() == 0) {
+                            ToastUtils.showShort(TanzhenListActivity.this, "无探针");
+                            line_page.setVisibility(View.VISIBLE);
+                            smartRefreshLayout.finishRefresh(0);
+                            smartRefreshLayout.finishLoadmore(0);
+                            dialog.dismiss();
+                        } else {
+                            for (int i = 0; i < tanzhenList.getRows().size(); i++) {
+                                hm_tanzhen = new HashMap<>();
+                                hm_tanzhen.put("content1", tanzhenList.getRows().get(i).getName());
+                                hm_tanzhen.put("content2", tanzhenList.getRows().get(i).getMac());
+                                hm_tanzhen.put("content3", tanzhenList.getRows().get(i).getFloorArea());
+                                hm_tanzhen.put("id", tanzhenList.getRows().get(i).getId());
+                                list_tanzhen.add(hm_tanzhen);
+                            }
+                            pageNum++;
+                            adapter.notifyDataSetChanged();
+                            line_page.setVisibility(View.GONE);
                         }
                         smartRefreshLayout.finishRefresh(0);
                         smartRefreshLayout.finishLoadmore(0);
-                        pageNum++;
                         dialog.dismiss();
-                        adapter.notifyDataSetChanged();
                     }
                     break;
                 case 2:
                     list_tanzhen.clear();
                     pageNum = 1;
+                    dialog.show();
                     gettanzhenList(pageNum, "");//第二个参数为空就是查所有
                     ToastUtils.showShort(TanzhenListActivity.this, "删除成功");
                     break;
@@ -336,6 +389,12 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
                 }
             }
         }).start();
+    }
+
+    @Override
+    public void onBackPressed() {
+        toFinish();
+        finish();
     }
 
     //清空内存
