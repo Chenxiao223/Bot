@@ -208,19 +208,15 @@ public class QualificationActivity extends BaseActivity implements View.OnClickL
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    try {
-                        adapter.notifyDataSetChanged();
-                        tv_state.setText(qualification.getResponse().getSmsQualificationStatus());
-                        //如果失败原因有的话（smsQualificationFailReason）就显示出来
-                        if (!TextUtils.isEmpty(qualification.getResponse().getSmsQualificationFailReason())) {
-                            line.setVisibility(View.VISIBLE);
-                            tv_why.setText(qualification.getResponse().getSmsQualificationFailReason());
-                        }
-                        dialog.dismiss();
-                        smartRefreshLayout.finishLoadmore(0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    adapter.notifyDataSetChanged();
+                    tv_state.setText(qualification.getResponse().getSmsQualificationStatus());
+                    //如果失败原因有的话（smsQualificationFailReason）就显示出来
+                    if (!TextUtils.isEmpty(qualification.getResponse().getSmsQualificationFailReason())) {
+                        line.setVisibility(View.VISIBLE);
+                        tv_why.setText(qualification.getResponse().getSmsQualificationFailReason());
                     }
+                    dialog.dismiss();
+                    smartRefreshLayout.finishLoadmore(0);
                     break;
                 case 2:
                     ToastUtils.showShort(QualificationActivity.this, "无数据");

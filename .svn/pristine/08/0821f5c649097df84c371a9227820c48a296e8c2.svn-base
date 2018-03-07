@@ -256,6 +256,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                                 if (json.get("store").toString().equals("0")) {//如果没有门店就直接跳转添加门店
                                     startActivity(new Intent(getActivity(), AddStoryActivity.class));
                                     startApp(true);//首次打开应用
+                                    tagging();//打标签
                                 } else {
                                     startApp(false);//开启应用
                                 }
@@ -698,6 +699,34 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             }
         }
     };
+
+    public void tagging() {
+        //打标签
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    TelephonyManager telephonyManager = (TelephonyManager) getActivity().getSystemService(getActivity().TELEPHONY_SERVICE);
+                    String imei = telephonyManager.getDeviceId();
+                    String url = "http://trace.zhiziyun.com/open/oem/cm.gif?did=" + imei + "&dpid=" + "" + "&tagid=x2RIi0u7FKg";
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .build();
+                    Call call = okHttpClient.newCall(request);
+                    try {
+                        Response response = call.execute();
+                        Log.i("response", "打标签:" + response.body().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    Log.i("response", e.toString());
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 
     public void startApp(final boolean bol) {
         //记录打开APP
