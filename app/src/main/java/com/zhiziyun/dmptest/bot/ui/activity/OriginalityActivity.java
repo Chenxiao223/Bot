@@ -4,12 +4,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -70,6 +73,7 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
     private final int FLAG = 1527;
     private int flag = 0;
     private LinearLayout line_page;
+    private int screenWidth;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,6 +87,12 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
         ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
         params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        //获取屏幕宽度
+        WindowManager manager = this.getWindowManager();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        manager.getDefaultDisplay().getMetrics(outMetrics);
+        screenWidth = outMetrics.widthPixels;
 
         it = getIntent();
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
@@ -211,7 +221,6 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
-//                    json.put("siteId", "tuOiZ0TghUl");
                     try {//这里如果报错就继续往下执行，这个参数不是必填项
                         String str = AdvertisingActivity.advertisingActivity.tv_AD_types.getText().toString();
                         if (str.equals("静态广告")) {
@@ -309,7 +318,6 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
-//                    json.put("siteId", "tuOiZ0TghUl");
                     String activityId = it.getStringExtra("activityId");
                     if (!TextUtils.isEmpty(activityId)) {
                         json.put("activityId", activityId);//广告活动添加广告时必填
@@ -393,11 +401,22 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
 
     public Bitmap getBitmap(String url) {
         try {
-            return Glide.with(this).load(url)
+            Bitmap bitmap = Glide.with(this).load(url)
                     .asBitmap() //必须
                     .centerCrop()
                     .into(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)//图片大小
                     .get();
+            // 获得图片的宽高
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            // 计算缩放比例
+            float scaleWidth = ((float) screenWidth) / width;
+            float scaleHeight = ((float) screenWidth * bitmap.getHeight() / bitmap.getWidth()) / height;
+            // 取得想要缩放的matrix参数
+            Matrix matrix = new Matrix();
+            matrix.postScale(scaleWidth, scaleHeight);
+            //通过计算，重新设置bitmap的尺寸，一遍适配手机宽度
+            return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
         } catch (Exception e) {
             e.printStackTrace();
         }

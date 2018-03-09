@@ -12,42 +12,40 @@
         android:scaleType="fitXY"
         android:src="@drawable/homepagebg" />
 
-    <LinearLayout
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/homepagebg"
-        android:orientation="vertical">
+        android:layout_height="@dimen/activity_title"
+        android:background="@drawable/homepagebg">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/activity_title">
-
-            <ImageView
-                android:id="@+id/iv_back"
-                android:layout_width="@dimen/activity_title"
-                android:layout_height="match_parent"
-                android:padding="@dimen/activity_title_padding"
-                android:src="@drawable/back" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:text="我的创意"
-                android:textColor="@color/white"
-                android:textSize="@dimen/title_text_size" />
-        </RelativeLayout>
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/back" />
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/buttom_height"
-            app:tabTextAppearance="@style/TabLayoutTextStyle"
-            app:tabTextColor="@color/white"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@+id/iv_addoriginality"
+            android:layout_toRightOf="@+id/iv_back"
+            app:tabIndicatorColor="@color/white"
             app:tabSelectedTextColor="@color/white"
-            app:tabIndicatorColor="@color/white" />
-    </LinearLayout>
+            app:tabTextAppearance="@style/TabLayoutTextStyle"
+            app:tabTextColor="@color/white" />
+
+        <ImageView
+            android:id="@+id/iv_addoriginality"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/add_white" />
+    </RelativeLayout>
 
     <com.zhiziyun.dmptest.bot.util.NoScrollViewPager
         android:id="@+id/vp_view"

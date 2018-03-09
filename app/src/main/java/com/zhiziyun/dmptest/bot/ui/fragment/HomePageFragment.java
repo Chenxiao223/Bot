@@ -465,8 +465,16 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     tv_person.setText(bundle1.get("all").toString());
                     tv_newguest.setText(bundle1.get("new").toString());
                     tv_oldguest.setText(bundle1.get("old").toString());
-                    tv_new.setText(" " + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("new").toString())));
-                    tv_old.setText(" " + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("old").toString())));
+                    if (bundle1.get("new").toString().equals("0")) {
+                        tv_new.setText("0%");
+                    } else {
+                        tv_new.setText(" " + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("new").toString())));
+                    }
+                    if (bundle1.get("old").equals("0")) {
+                        tv_old.setText("0%");
+                    } else {
+                        tv_old.setText(" " + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("old").toString())));
+                    }
                     setPieChartData(Float.parseFloat(bundle1.get("new").toString()), Float.parseFloat(bundle1.get("old").toString()));
                     initPieChart(bundle1.get("all").toString());
                     srl.setRefreshing(false);//关闭加载动画
@@ -708,7 +716,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                 try {
                     TelephonyManager telephonyManager = (TelephonyManager) getActivity().getSystemService(getActivity().TELEPHONY_SERVICE);
                     String imei = telephonyManager.getDeviceId();
-                    String url = "http://trace.zhiziyun.com/open/oem/cm.gif?did=" + imei + "&dpid=" + "" + "&tagid=x2RIi0u7FKg";
+                    String url = "http://trace.zhiziyun.com/open/oem/cm.gif?did=" + imei + "&tagid=x2RIi0u7FKg";
                     OkHttpClient okHttpClient = new OkHttpClient();
                     Request request = new Request.Builder()
                             .url(url)

@@ -185,20 +185,6 @@ public class SMSFragment extends Fragment implements View.OnClickListener {
                         });
                         selfDialog.show();
                     }
-                    //点击弹出对话框
-//                new AlertDialog.Builder(getActivity()).setTitle("温馨提示").setMessage("是否要发送短信？")
-//                        .setPositiveButton("是", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                sendSms(activityid);
-//                            }
-//                        })
-//                        .setNegativeButton("否", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//
-//                            }
-//                        }).show();
                 }
             }
         });

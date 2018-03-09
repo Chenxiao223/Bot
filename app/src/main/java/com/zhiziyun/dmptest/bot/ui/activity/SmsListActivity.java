@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -21,9 +22,11 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.SmsListAdapter;
 import com.zhiziyun.dmptest.bot.entity.ChooseSms;
+import com.zhiziyun.dmptest.bot.entity.IsCreateSms;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.SelfDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
 
@@ -31,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -239,6 +243,23 @@ public class SmsListActivity extends BaseActivity implements View.OnClickListene
                     smartRefreshLayout.finishLoadmore(0);//停止刷新
                     dialog.dismiss();
                     break;
+                case 3:
+                    final SelfDialog selfDialog = new SelfDialog(SmsListActivity.this);
+                    selfDialog.setTitle("提示");
+                    selfDialog.setMessage("发短信需要法人代表身份证照片，请上传");
+                    selfDialog.setYesOnclickListener("知道了", new SelfDialog.onYesOnclickListener() {
+                        @Override
+                        public void onYesClick() {
+                            startActivity(new Intent(SmsListActivity.this, AddQualificationActivity.class));
+                            selfDialog.dismiss();
+                        }
+                    });
+                    selfDialog.show();
+                    selfDialog.setCancelable(false);//禁止点击回退键
+                    break;
+                case 4:
+                    startActivity(new Intent(SmsListActivity.this, EditSmsActivity.class));
+                    break;
             }
         }
     };
@@ -251,7 +272,7 @@ public class SmsListActivity extends BaseActivity implements View.OnClickListene
                 finish();
                 break;
             case R.id.iv_addsms:
-                startActivity(new Intent(SmsListActivity.this, EditSmsActivity.class));
+                isCreateSms();
                 break;
             case R.id.line_page:
                 if (ClickUtils.isFastClick()) {
@@ -264,6 +285,60 @@ public class SmsListActivity extends BaseActivity implements View.OnClickListene
                 }
                 break;
         }
+    }
+
+    public void isCreateSms() {
+        //是否可以创建短信
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject json = new JSONObject();
+                    json.put("siteId", share.getString("siteid", ""));
+
+                    OkHttpClient client = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url(BaseUrl.BaseZhang + "advertiserApp/canCreateSms")
+                            .post(body)
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                String str = response.body().string();
+                                Log.i("infos", str);
+                                Gson gson = new Gson();
+                                IsCreateSms isCreateSms = gson.fromJson(str, IsCreateSms.class);
+                                if (!isCreateSms.getResponse().isCanBeCreated()) {//判断是否可以创建短信
+                                    handler.sendEmptyMessage(3);
+                                } else {
+                                    handler.sendEmptyMessage(4);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     @Override

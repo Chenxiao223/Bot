@@ -1,5 +1,6 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,6 +36,7 @@ public class MyOriginalityActivity extends BaseActivity implements View.OnClickL
     private List<Fragment> list;
     private MyOriginalityActivity.MyAdapter adapter;
     private String[] titles = {"静态创意", "信息流"};
+    private String state = "静态创意";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,7 +46,7 @@ public class MyOriginalityActivity extends BaseActivity implements View.OnClickL
     }
 
     private void initView() {
-//设置系统栏颜色
+        //设置系统栏颜色
         ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
         params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
@@ -58,6 +61,7 @@ public class MyOriginalityActivity extends BaseActivity implements View.OnClickL
             }
         });
         iv_back.setOnClickListener(this);
+        findViewById(R.id.iv_addoriginality).setOnClickListener(this);
 
         //页面，数据源
         list = new ArrayList<>();
@@ -68,6 +72,22 @@ public class MyOriginalityActivity extends BaseActivity implements View.OnClickL
         viewPager.setAdapter(adapter);
         //绑定
         tabLayout.setupWithViewPager(viewPager);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                state = tab.getText().toString();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
     }
 
     class MyAdapter extends FragmentPagerAdapter {
@@ -99,6 +119,19 @@ public class MyOriginalityActivity extends BaseActivity implements View.OnClickL
             case R.id.iv_back:
                 toFinish();
                 finish();
+                break;
+            case R.id.iv_addoriginality:
+                if (state.equals("静态创意")) {
+                    Intent intent = new Intent(MyOriginalityActivity.this, AddOriginalityActivity.class);
+                    intent.putExtra("flag", 4323);
+                    intent.putExtra("type", "静态广告");
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(MyOriginalityActivity.this, AddOriginalityActivity.class);
+                    intent.putExtra("flag", 4323);
+                    intent.putExtra("type", "信息流");
+                    startActivity(intent);
+                }
                 break;
         }
     }

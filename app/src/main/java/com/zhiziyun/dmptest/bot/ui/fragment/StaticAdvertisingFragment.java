@@ -1,17 +1,19 @@
 package com.zhiziyun.dmptest.bot.ui.fragment;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
@@ -25,7 +27,6 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.OriginalityAdapter;
 import com.zhiziyun.dmptest.bot.entity.Originality;
-import com.zhiziyun.dmptest.bot.ui.activity.AddOriginalityActivity;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
@@ -61,6 +62,7 @@ public class StaticAdvertisingFragment extends Fragment implements View.OnClickL
     private ArrayList<HashMap<String, Object>> list_originality = new ArrayList<>();
     private HashMap<String, Object> hashMap;
     private LinearLayout line_page;
+    private int screenWidth;
 
     @Nullable
     @Override
@@ -77,7 +79,12 @@ public class StaticAdvertisingFragment extends Fragment implements View.OnClickL
     }
 
     public void initView() {
-        getView().findViewById(R.id.iv_addoriginality).setOnClickListener(this);
+        //获取屏幕宽度
+        WindowManager manager = getActivity().getWindowManager();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        manager.getDefaultDisplay().getMetrics(outMetrics);
+        screenWidth = outMetrics.widthPixels;
+
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
         line_page.setOnClickListener(this);
@@ -136,12 +143,6 @@ public class StaticAdvertisingFragment extends Fragment implements View.OnClickL
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.iv_addoriginality:
-                Intent intent = new Intent(getActivity(), AddOriginalityActivity.class);
-                intent.putExtra("flag", 4323);
-                intent.putExtra("type", "静态广告");
-                startActivity(intent);
-                break;
             case R.id.line_page:
                 try {
                     if (ClickUtils.isFastClick()) {
@@ -163,7 +164,6 @@ public class StaticAdvertisingFragment extends Fragment implements View.OnClickL
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
-//                    json.put("siteId", "tuOiZ0TghUl");
                     try {//这里如果报错就继续往下执行，这个参数不是必填项
                         json.put("activityType", "1");
                     } catch (Exception e) {
@@ -253,11 +253,22 @@ public class StaticAdvertisingFragment extends Fragment implements View.OnClickL
 
     public Bitmap getBitmap(String url) {
         try {
-            return Glide.with(this).load(url)
+            Bitmap bitmap = Glide.with(this).load(url)
                     .asBitmap() //必须
                     .centerCrop()
                     .into(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)//图片大小
                     .get();
+            // 获得图片的宽高
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            // 计算缩放比例
+            float scaleWidth = ((float) screenWidth) / width;
+            float scaleHeight = ((float) screenWidth * bitmap.getHeight() / bitmap.getWidth()) / height;
+            // 取得想要缩放的matrix参数
+            Matrix matrix = new Matrix();
+            matrix.postScale(scaleWidth, scaleHeight);
+            //通过计算，重新设置bitmap的尺寸，一遍适配手机宽度
+            return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
         } catch (Exception e) {
             e.printStackTrace();
         }

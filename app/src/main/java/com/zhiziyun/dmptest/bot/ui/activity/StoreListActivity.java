@@ -27,6 +27,7 @@ import com.zhiziyun.dmptest.bot.entity.StoreList;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.SelfDialog;
 import com.zhiziyun.dmptest.bot.util.SlideListView;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
@@ -66,6 +67,7 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     private int pageNum = 1;
     private MyDialog dialog;
     private LinearLayout line_page;
+    SharedPreferences.Editor editors;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -96,6 +98,21 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void initView() {
+        if (!getState()) {
+            //第一次进来
+            saveState();
+            final SelfDialog selfDialog = new SelfDialog(StoreListActivity.this);
+            selfDialog.setTitle("消息提示");
+            selfDialog.setMessage("向左滑动，显示操作菜单，可编辑门店，查看探针");
+            selfDialog.setYesOnclickListener("知道了", new SelfDialog.onYesOnclickListener() {
+                @Override
+                public void onYesClick() {
+                    selfDialog.dismiss();
+                }
+            });
+            selfDialog.show();
+        }
+
         //设置系统栏颜色
         ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
@@ -164,6 +181,18 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
             }
         });
         findViewById(R.id.traceroute_rootview).setOnClickListener(this);
+    }
+
+    public void saveState() {
+        SharedPreferences sharedPreferences = getSharedPreferences("state", Context.MODE_PRIVATE);
+        editors = sharedPreferences.edit();
+        editors.putBoolean("state", true);
+        editors.commit();//提交
+    }
+
+    public boolean getState() {
+        SharedPreferences shared = getSharedPreferences("state", Context.MODE_PRIVATE);
+        return shared.getBoolean("state", false);
     }
 
     @Override
