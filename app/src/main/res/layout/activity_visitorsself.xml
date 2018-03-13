@@ -158,14 +158,14 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="120dp"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingLeft="@dimen/padding_left_right">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/padding_left_right3"
-                        android:gravity="center_vertical"
+                        android:layout_marginTop="@dimen/padding_left_right"
                         android:orientation="horizontal">
 
                         <TextView
@@ -187,7 +187,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/padding_left_right3"
-                        android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <TextView
@@ -208,7 +207,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/padding_left_right3"
-                        android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <TextView
@@ -228,13 +226,12 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="@dimen/padding_left_right3"
-                            android:gravity="center_vertical"
                             android:text="设备号："
                             android:textColor="@color/colorBlack"
                             android:textSize="@dimen/textsizi2" />

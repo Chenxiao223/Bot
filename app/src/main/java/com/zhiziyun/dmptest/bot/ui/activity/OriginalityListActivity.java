@@ -27,6 +27,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.OriginalityList;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
@@ -86,6 +87,11 @@ public class OriginalityListActivity extends BaseActivity implements View.OnClic
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_originality_list);
         initView();
+    }
+
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     private void initView() {
@@ -157,6 +163,7 @@ public class OriginalityListActivity extends BaseActivity implements View.OnClic
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
         if (data == null) {//第一次进来
             //加载动画
             dialog.show();

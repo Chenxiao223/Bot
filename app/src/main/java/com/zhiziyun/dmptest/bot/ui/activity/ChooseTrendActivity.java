@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 
 import org.json.JSONArray;
@@ -56,6 +57,15 @@ public class ChooseTrendActivity extends BaseActivity implements View.OnClickLis
                 e.printStackTrace();
             }
         }
+    }
+
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     public void showTrend() {

@@ -18,6 +18,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.ChooseSmsAdapter;
 import com.zhiziyun.dmptest.bot.entity.ChooseSms;
@@ -71,9 +72,15 @@ public class ChooseSmsActivity extends BaseActivity implements View.OnClickListe
         initView();
     }
 
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
         if (hash_sms == null) {//根据这个值来判断是第一次进来还是第二次进来
             //加载动画
             dialog = MyDialog.showDialog(this);

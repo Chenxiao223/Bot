@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.util.AdvertisingSize;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
@@ -74,10 +75,10 @@ public class HairdressingActivity extends BaseActivity implements View.OnClickLi
     private Handler mHandler = new Handler();
     private String SIZE;//模板尺寸
 
-    private RelativeLayout layout_1;
-    private LinearLayout line1;
+    private RelativeLayout layout_1, layout_2, layout_3, layout_4;
+    private LinearLayout line1, line2, line3, line4;
     private ImageView iv_picture;
-    private EditText et_title1, et_text1, edit_url1;
+    private EditText et_title1, et_text1, edit_url1, edit_url2, edit_url3, edit_url4;
     private Button btn_left1;
     private MyDialog dialog;
     private SharedPreferences share;
@@ -89,6 +90,15 @@ public class HairdressingActivity extends BaseActivity implements View.OnClickLi
         initView();
     }
 
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+    }
+
     private void initView() {
         //设置系统栏颜色
         ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
@@ -98,12 +108,21 @@ public class HairdressingActivity extends BaseActivity implements View.OnClickLi
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         dialog = MyDialog.showDialog(this);
         layout_1 = (RelativeLayout) findViewById(R.id.layout_1);
+        layout_2 = (RelativeLayout) findViewById(R.id.layout_2);
+        layout_3 = (RelativeLayout) findViewById(R.id.layout_3);
+        layout_4 = (RelativeLayout) findViewById(R.id.layout_4);
         iv_picture = (ImageView) findViewById(R.id.iv_picture);
         et_title1 = (EditText) findViewById(R.id.et_title1);
         et_text1 = (EditText) findViewById(R.id.et_text1);
         edit_url1 = (EditText) findViewById(R.id.edit_url1);
+        edit_url2 = (EditText) findViewById(R.id.edit_url2);
+        edit_url3 = (EditText) findViewById(R.id.edit_url3);
+        edit_url4 = (EditText) findViewById(R.id.edit_url4);
         btn_left1 = (Button) findViewById(R.id.btn_left1);
         line1 = (LinearLayout) findViewById(R.id.line1);
+        line2 = (LinearLayout) findViewById(R.id.line2);
+        line3 = (LinearLayout) findViewById(R.id.line3);
+        line4 = (LinearLayout) findViewById(R.id.line4);
         btn_left1.setOnClickListener(this);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.btn_commit).setOnClickListener(this);
@@ -113,7 +132,17 @@ public class HairdressingActivity extends BaseActivity implements View.OnClickLi
         layout_1 = (RelativeLayout) findViewById(R.id.layout_1);
         layout_1.setDrawingCacheEnabled(true);
         layout_1.buildDrawingCache();
+        layout_2 = (RelativeLayout) findViewById(R.id.layout_2);
+        layout_2.setDrawingCacheEnabled(true);
+        layout_2.buildDrawingCache();
+        layout_3 = (RelativeLayout) findViewById(R.id.layout_3);
+        layout_3.setDrawingCacheEnabled(true);
+        layout_3.buildDrawingCache();
+        layout_4 = (RelativeLayout) findViewById(R.id.layout_4);
+        layout_4.setDrawingCacheEnabled(true);
+        layout_4.buildDrawingCache();
         DisplayMetrics dm = getResources().getDisplayMetrics();
+
         flag = getIntent().getIntExtra("flag", 0);
         SIZE = getIntent().getStringExtra("size");
         if (flag == 1) {//那边点击了那个模板，这边就显示这个模板
@@ -129,6 +158,24 @@ public class HairdressingActivity extends BaseActivity implements View.OnClickLi
             RelativeLayout.LayoutParams params2 = (RelativeLayout.LayoutParams) btn_left1.getLayoutParams();
             params2.setMargins(dm.widthPixels * 135 / 720, 0, 0, 0);
             btn_left1.setLayoutParams(params2);
+        } else if (flag == 2) {
+            line2.setVisibility(View.VISIBLE);
+            //设置布局的长高
+            LinearLayout.LayoutParams paramss = (LinearLayout.LayoutParams) layout_2.getLayoutParams();
+            paramss.height = dm.widthPixels * 10 / 64;//设置布局的高度
+            layout_2.setLayoutParams(paramss);//将设置好的布局参数应用到控件中
+        } else if (flag == 3) {
+            line3.setVisibility(View.VISIBLE);
+            //设置布局的长高
+            LinearLayout.LayoutParams paramss = (LinearLayout.LayoutParams) layout_3.getLayoutParams();
+            paramss.height = dm.widthPixels * 10 / 64;//设置布局的高度
+            layout_3.setLayoutParams(paramss);//将设置好的布局参数应用到控件中
+        } else if (flag == 4) {
+            line4.setVisibility(View.VISIBLE);
+            //设置布局的长高
+            LinearLayout.LayoutParams paramss = (LinearLayout.LayoutParams) layout_4.getLayoutParams();
+            paramss.height = dm.widthPixels * 10 / 64;//设置布局的高度
+            layout_4.setLayoutParams(paramss);//将设置好的布局参数应用到控件中
         }
     }
 
@@ -165,6 +212,42 @@ public class HairdressingActivity extends BaseActivity implements View.OnClickLi
                                     advertisingCreate(bitmapToBase64(bmp));//上传图片
                                     savePicture(bmp, "layout.jpg");// 保存图片
                                     layout_1.destroyDrawingCache(); // 保存过后释放资源
+                                }
+                            } else if (flag == 2) {
+                                if (TextUtils.isEmpty(edit_url2.getText().toString())) {
+                                    ToastUtils.showShort(HairdressingActivity.this, "请将URL填写完整");
+                                } else {
+                                    //加载动画
+                                    dialog.show();
+                                    final Bitmap bitmap = layout_2.getDrawingCache(); // 获取图片
+                                    Bitmap bmp = zoomImg(bitmap, 640, 100);
+                                    advertisingCreate(bitmapToBase64(bmp));//上传图片
+                                    savePicture(bmp, "layout.jpg");// 保存图片
+                                    layout_2.destroyDrawingCache(); // 保存过后释放资源
+                                }
+                            } else if (flag == 3) {
+                                if (TextUtils.isEmpty(edit_url3.getText().toString())) {
+                                    ToastUtils.showShort(HairdressingActivity.this, "请将URL填写完整");
+                                } else {
+                                    //加载动画
+                                    dialog.show();
+                                    final Bitmap bitmap = layout_3.getDrawingCache(); // 获取图片
+                                    Bitmap bmp = zoomImg(bitmap, 640, 100);
+                                    advertisingCreate(bitmapToBase64(bmp));//上传图片
+                                    savePicture(bmp, "layout.jpg");// 保存图片
+                                    layout_3.destroyDrawingCache(); // 保存过后释放资源
+                                }
+                            } else if (flag == 4) {
+                                if (TextUtils.isEmpty(edit_url4.getText().toString())) {
+                                    ToastUtils.showShort(HairdressingActivity.this, "请将URL填写完整");
+                                } else {
+                                    //加载动画
+                                    dialog.show();
+                                    final Bitmap bitmap = layout_4.getDrawingCache(); // 获取图片
+                                    Bitmap bmp = zoomImg(bitmap, 640, 100);
+                                    advertisingCreate(bitmapToBase64(bmp));//上传图片
+                                    savePicture(bmp, "layout.jpg");// 保存图片
+                                    layout_4.destroyDrawingCache(); // 保存过后释放资源
                                 }
                             }
                         }
@@ -317,11 +400,16 @@ public class HairdressingActivity extends BaseActivity implements View.OnClickLi
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
-//                    json.put("siteId", "tuOiZ0TghUl");
                     json.put("creativeImage", str);//广告图片内容
                     json.put("creativeImageSuffix", ".jpg");//广告图片后缀
                     if (flag == 1) {//根据选择的模板来选择改模板的链接
                         json.put("targetUrl", edit_url1.getText().toString());//点击链接
+                    } else if (flag == 2) {
+                        json.put("targetUrl", edit_url2.getText().toString());//点击链接
+                    } else if (flag == 3) {
+                        json.put("targetUrl", edit_url3.getText().toString());//点击链接
+                    } else if (flag == 4) {
+                        json.put("targetUrl", edit_url4.getText().toString());//点击链接
                     }
                     String str = AddOriginalityActivity.addOriginalityActivity.type;
                     //判断是什么类型，根据类型填参数

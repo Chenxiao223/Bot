@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.AppImage;
 import com.zhiziyun.dmptest.bot.entity.Visitorsselfparticulars;
@@ -61,6 +62,15 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
         setContentView(R.layout.activity_visitorsself);
 
         initView();
+    }
+
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     @Override

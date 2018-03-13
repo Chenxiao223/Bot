@@ -21,6 +21,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.StoreListAdapter;
 import com.zhiziyun.dmptest.bot.entity.StoreList;
@@ -67,7 +68,7 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     private int pageNum = 1;
     private MyDialog dialog;
     private LinearLayout line_page;
-    SharedPreferences.Editor editors;
+    private SharedPreferences.Editor editors;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -76,9 +77,15 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         initView();
     }
 
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
         if (hm_store == null) {//根据这个值来判断是第一次进来还是第二次进来
             //加载动画
             dialog = MyDialog.showDialog(this);

@@ -45,6 +45,7 @@ import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
+import com.umeng.analytics.MobclickAgent;
 import com.xys.libzxing.zxing.activity.CaptureActivity;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
@@ -431,6 +432,7 @@ public class AddStoryActivity extends BaseActivity implements View.OnClickListen
         super.onResume();
         // 在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
         mMapView.onResume();
+        MobclickAgent.onResume(this);
     }
 
     @Override
@@ -438,6 +440,7 @@ public class AddStoryActivity extends BaseActivity implements View.OnClickListen
         super.onPause();
         // 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
         mMapView.onPause();
+        MobclickAgent.onPause(this);
     }
 
     @Override

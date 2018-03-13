@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,6 +25,13 @@ import android.widget.TextView;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.HomePageAdapter;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class HomePageActivity extends BaseActivity implements View.OnClickListener {
     private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 0x04;
@@ -208,6 +216,29 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
                 }
             }
         }
+        tagging();//打标签
+    }
+
+    public void tagging() {
+        //打标签
+        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(this.TELEPHONY_SERVICE);
+        final String imei = telephonyManager.getDeviceId();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().get().url("http://trace.zhiziyun.com/open/oem/cm.gif?tagid=x2RIi0u7FKg&dpid=" + imei).build();
+                Call newCall = client.newCall(request);
+                try {
+                    Response execute = newCall.execute();
+                    if (execute.isSuccessful()) {
+                        String string = execute.body().string();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
 

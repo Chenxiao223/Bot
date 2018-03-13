@@ -174,19 +174,22 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
 
         @Override
         public void afterTextChanged(Editable s) {
-            //编辑框内容变化之后会调用该方法，s为编辑框内容变化后的内容
-            int num = MAXLENGTH - et_content.length() - s.length();
-            tv_word.setText(num + "字");
-            InputFilter[] filters = {new InputFilter.LengthFilter(MAXLENGTH - et_signature.length())};
-            et_content.setFilters(filters); //最大输入长度
-            if (num > 8) {
-                InputFilter[] filters2 = {new InputFilter.LengthFilter(8)};
-                et_signature.setFilters(filters2); //最大输入长度
-            } else {
-                InputFilter[] filters2 = {new InputFilter.LengthFilter(MAXLENGTH - et_content.length())};
-                et_signature.setFilters(filters2); //最大输入长度
+            try {
+                //编辑框内容变化之后会调用该方法，s为编辑框内容变化后的内容
+                int num = MAXLENGTH - et_content.length() - s.length();
+                tv_word.setText(num + "字");
+                InputFilter[] filters = {new InputFilter.LengthFilter(MAXLENGTH - et_signature.length())};
+                et_content.setFilters(filters); //最大输入长度
+                if (num > 8) {
+                    InputFilter[] filters2 = {new InputFilter.LengthFilter(8)};
+                    et_signature.setFilters(filters2); //最大输入长度
+                } else {
+                    InputFilter[] filters2 = {new InputFilter.LengthFilter(MAXLENGTH - et_content.length())};
+                    et_signature.setFilters(filters2); //最大输入长度
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
         }
     };
 
@@ -497,12 +500,16 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
                     dialog.dismiss();
                     break;
                 case 5:
-                    signature = smsSignature.getResponse().getSmsSignature();
-                    if (!TextUtils.isEmpty(signature)) {//如果存在签名，就禁止输入
-                        et_signature.setText(signature);
-                        et_signature.setFocusable(false);
-                        et_signature.setFocusableInTouchMode(false);
-                        et_signature.setClickable(false);
+                    try {
+                        signature = smsSignature.getResponse().getSmsSignature();
+                        if (!TextUtils.isEmpty(signature)) {//如果存在签名，就禁止输入
+                            et_signature.setText(signature);
+                            et_signature.setFocusable(false);
+                            et_signature.setFocusableInTouchMode(false);
+                            et_signature.setClickable(false);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
                 case 6:

@@ -38,6 +38,13 @@
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="3MXrIAPZu7qDPUhjnjVlXxC1fAplhA2P" />
+        <meta-data
+            android:name="UMENG_APPKEY"
+            android:value="5aa78b0da40fa3592c000218" />
+        <meta-data
+            android:name="UMENG_CHANNEL"
+            android:value="bot" />
+
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"

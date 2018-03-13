@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.util.AdvertisingSize;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
@@ -73,9 +74,9 @@ public class ChildrenActivity extends BaseActivity implements View.OnClickListen
     private int flag_iv = 0;//区分改变哪张图
     private Uri cropImageUri;
     private Handler mHandler = new Handler();
-    private RelativeLayout layout_1, layout_2, layout_3;
-    private EditText et_title, et_text, edit_url, et_text2, et_text3, edit_url2, edit_url3;
-    private LinearLayout line1, line2, line3;
+    private RelativeLayout layout_1, layout_2, layout_3, layout_4, layout_5;
+    private EditText et_title, et_text, edit_url, et_text2, et_text3, edit_url2, edit_url3, edit_url4, edit_url5;
+    private LinearLayout line1, line2, line3, line4, line5;
     private Button btn_left, btn_center;
     private SharedPreferences share;
     private String SIZE;//模板尺寸
@@ -86,6 +87,15 @@ public class ChildrenActivity extends BaseActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_children);
         initView();
+    }
+
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     private void initView() {
@@ -105,9 +115,13 @@ public class ChildrenActivity extends BaseActivity implements View.OnClickListen
         line1 = (LinearLayout) findViewById(R.id.line1);
         line2 = (LinearLayout) findViewById(R.id.line2);
         line3 = (LinearLayout) findViewById(R.id.line3);
+        line4 = (LinearLayout) findViewById(R.id.line4);
+        line5 = (LinearLayout) findViewById(R.id.line5);
         edit_url = (EditText) findViewById(R.id.edit_url);
         edit_url2 = (EditText) findViewById(R.id.edit_url2);
         edit_url3 = (EditText) findViewById(R.id.edit_url3);
+        edit_url4 = (EditText) findViewById(R.id.edit_url4);
+        edit_url5 = (EditText) findViewById(R.id.edit_url5);
         btn_left = (Button) findViewById(R.id.btn_left);
         btn_center = (Button) findViewById(R.id.btn_center);
 
@@ -123,6 +137,14 @@ public class ChildrenActivity extends BaseActivity implements View.OnClickListen
         layout_3 = (RelativeLayout) findViewById(R.id.layout_3);
         layout_3.setDrawingCacheEnabled(true);
         layout_3.buildDrawingCache();
+        //设置布局可以截图
+        layout_4 = (RelativeLayout) findViewById(R.id.layout_4);
+        layout_4.setDrawingCacheEnabled(true);
+        layout_4.buildDrawingCache();
+        //设置布局可以截图
+        layout_5 = (RelativeLayout) findViewById(R.id.layout_5);
+        layout_5.setDrawingCacheEnabled(true);
+        layout_5.buildDrawingCache();
         DisplayMetrics dm = getResources().getDisplayMetrics();
 
         findViewById(R.id.btn_left).setOnClickListener(this);
@@ -158,6 +180,18 @@ public class ChildrenActivity extends BaseActivity implements View.OnClickListen
             LinearLayout.LayoutParams paramss = (LinearLayout.LayoutParams) layout_3.getLayoutParams();
             paramss.height = dm.widthPixels * 10 / 64;//设置布局的高度
             layout_3.setLayoutParams(paramss);//将设置好的布局参数应用到控件中
+        } else if (flag == 4) {
+            line4.setVisibility(View.VISIBLE);
+            //设置布局的长高
+            LinearLayout.LayoutParams paramss = (LinearLayout.LayoutParams) layout_4.getLayoutParams();
+            paramss.height = dm.widthPixels * 10 / 64;//设置布局的高度
+            layout_4.setLayoutParams(paramss);//将设置好的布局参数应用到控件中
+        } else if (flag == 5) {
+            line5.setVisibility(View.VISIBLE);
+            //设置布局的长高
+            LinearLayout.LayoutParams paramss = (LinearLayout.LayoutParams) layout_5.getLayoutParams();
+            paramss.height = dm.widthPixels * 10 / 64;//设置布局的高度
+            layout_5.setLayoutParams(paramss);//将设置好的布局参数应用到控件中
         }
     }
 
@@ -222,6 +256,30 @@ public class ChildrenActivity extends BaseActivity implements View.OnClickListen
                                     advertisingCreate(bitmapToBase64(bmp));//上传图片
                                     savePicture(bmp, "layout.jpg");// 保存图片
                                     layout_3.destroyDrawingCache(); // 保存过后释放资源
+                                }
+                            } else if (flag == 4) {
+                                if (TextUtils.isEmpty(edit_url4.getText().toString())) {
+                                    ToastUtils.showShort(ChildrenActivity.this, "请将URL填写完整");
+                                } else {
+                                    //加载动画
+                                    dialog.show();
+                                    final Bitmap bitmap = layout_4.getDrawingCache(); // 获取图片
+                                    Bitmap bmp = zoomImg(bitmap, 640, 100);
+                                    advertisingCreate(bitmapToBase64(bmp));//上传图片
+                                    savePicture(bmp, "layout.jpg");// 保存图片
+                                    layout_4.destroyDrawingCache(); // 保存过后释放资源
+                                }
+                            } else if (flag == 5) {
+                                if (TextUtils.isEmpty(edit_url5.getText().toString())) {
+                                    ToastUtils.showShort(ChildrenActivity.this, "请将URL填写完整");
+                                } else {
+                                    //加载动画
+                                    dialog.show();
+                                    final Bitmap bitmap = layout_5.getDrawingCache(); // 获取图片
+                                    Bitmap bmp = zoomImg(bitmap, 640, 100);
+                                    advertisingCreate(bitmapToBase64(bmp));//上传图片
+                                    savePicture(bmp, "layout.jpg");// 保存图片
+                                    layout_5.destroyDrawingCache(); // 保存过后释放资源
                                 }
                             }
                         }
@@ -388,6 +446,10 @@ public class ChildrenActivity extends BaseActivity implements View.OnClickListen
                         json.put("targetUrl", edit_url2.getText().toString());//点击链接
                     } else if (flag == 3) {
                         json.put("targetUrl", edit_url3.getText().toString());//点击链接
+                    } else if (flag == 4) {
+                        json.put("targetUrl", edit_url4.getText().toString());//点击链接
+                    } else if (flag == 5) {
+                        json.put("targetUrl", edit_url5.getText().toString());//点击链接
                     }
                     String str = AddOriginalityActivity.addOriginalityActivity.type;
                     //判断是什么类型，根据类型填参数

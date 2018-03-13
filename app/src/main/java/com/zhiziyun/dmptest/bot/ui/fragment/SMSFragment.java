@@ -297,6 +297,7 @@ public class SMSFragment extends Fragment implements View.OnClickListener {
     }
 
     public void getData(final int page, final String name) {
+        lv_sms.setEnabled(false);
         //短信活动查询接口
         new Thread(new Runnable() {
             @Override
@@ -435,6 +436,7 @@ public class SMSFragment extends Fragment implements View.OnClickListener {
                             addSmsAdapter.notifyDataSetChanged();
                             smartRefreshLayout.finishLoadmore(0);//停止刷新
                             line_page.setVisibility(View.GONE);
+                            lv_sms.setEnabled(true);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -444,6 +446,7 @@ public class SMSFragment extends Fragment implements View.OnClickListener {
                     ToastUtils.showShort(getActivity(), "无数据");
                     line_page.setVisibility(View.VISIBLE);
                     smartRefreshLayout.finishLoadmore(0);//停止刷新
+                    lv_sms.setEnabled(true);
                     break;
                 case 3:
                     //点击弹出对话框

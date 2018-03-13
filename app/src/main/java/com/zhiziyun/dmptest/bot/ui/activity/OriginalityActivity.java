@@ -25,6 +25,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.OriginalityAdapter;
 import com.zhiziyun.dmptest.bot.adapter.OriginalityAdapter.ViewHold;
@@ -80,6 +81,11 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_originality);
         initView();
+    }
+
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     private void initView() {
@@ -155,6 +161,7 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
         if (hashMap == null) {//第一次进来
             //加载动画
             dialog.show();
@@ -214,6 +221,7 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
     }
 
     public void getCreative(final int page) {
+        lv_creative.setEnabled(false);//加载数据时让listview无法点击
         //广告查询
         new Thread(new Runnable() {
             @Override
@@ -376,6 +384,7 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
                         adapter.notifyDataSetChanged();
                         smartRefreshLayout.finishLoadmore(0);//停止刷新
                         dialog.dismiss();
+                        lv_creative.setEnabled(true);//加载完后才可以点击listview
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -385,6 +394,7 @@ public class OriginalityActivity extends BaseActivity implements View.OnClickLis
                     smartRefreshLayout.finishLoadmore(0);//停止刷新
                     ToastUtils.showShort(OriginalityActivity.this, "无数据");
                     dialog.dismiss();
+                    lv_creative.setEnabled(true);//加载完后才可以点击listview
                     break;
                 case 3:
                     ToastUtils.showShort(OriginalityActivity.this, "添加成功");

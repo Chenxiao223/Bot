@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.umeng.commonsdk.UMConfigure;
+
 /**
  * Created by Administrator on 2017/12/8.
  */
@@ -23,6 +25,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         //设置状态栏颜色
         //window.setStatusBarColor(Color.BLACK);
+        //友盟日志
+        UMConfigure.init(this, UMConfigure.DEVICE_TYPE_PHONE, null);
+        UMConfigure.setLogEnabled(true);
+        UMConfigure.setEncryptEnabled(true);
     }
 
     //获取系统栏高度

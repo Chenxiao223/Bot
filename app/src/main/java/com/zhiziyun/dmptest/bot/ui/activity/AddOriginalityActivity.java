@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.Find_tab_Adapter;
 import com.zhiziyun.dmptest.bot.ui.fragment.fragmentaddoriginality.AppliancesFragment;
@@ -63,6 +64,15 @@ public class AddOriginalityActivity extends BaseActivity implements View.OnClick
         setContentView(R.layout.activity_add_originality);
         addOriginalityActivity = this;
         initView();
+    }
+
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     private void initView() {

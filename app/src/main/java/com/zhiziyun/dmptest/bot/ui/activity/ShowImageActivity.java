@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 
 /**
@@ -37,6 +38,15 @@ public class ShowImageActivity extends BaseActivity implements View.OnClickListe
         Bundle bundle = intent.getExtras();
         Bitmap bmp = (Bitmap) bundle.getParcelable("bitmap");
         image.setImageBitmap(bmp);
+    }
+
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     @Override

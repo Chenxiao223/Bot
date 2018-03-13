@@ -8,8 +8,8 @@ android {
         applicationId "com.zhiziyun.dmptest.bot"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 3
-        versionName "1.2.1"
+        versionCode 4
+        versionName "1.2.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     sourceSets {
@@ -55,4 +55,7 @@ dependencies {
     compile 'com.nineoldandroids:library:2.4.0'
     //TabLayout
     compile 'homhomlin.lib:sldinglayout:0.9.0'
+    //友盟日志集成
+    compile 'com.umeng.sdk:common:latest.integration'
+    compile 'com.umeng.sdk:analytics:latest.integration'
 }
