@@ -218,7 +218,7 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
                 }
             }
         }
-
+        tagging();//打标签
     }
 
     public void tagging() {
@@ -292,6 +292,4 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         startService(new Intent(this, MyService.class));//启动服务
         unregisterReceiver(networkChangeReceiver);//注销广播
     }
-
-
 }

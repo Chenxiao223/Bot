@@ -60,10 +60,10 @@ public class AccountActivity extends BaseActivity implements View.OnClickListene
                 startActivity(new Intent(AccountActivity.this, TransactionDetailsActivity.class));
                 break;
             case R.id.btn_commit:
-//                ToastUtils.showShort(this, "暂未开放");
-                Intent intent = new Intent(AccountActivity.this, TopupCenterActivity.class);
-                intent.putExtra("amount", tv_balance.getText().toString().replaceAll("￥", ""));
-                startActivity(intent);
+                ToastUtils.showShort(this, "暂未开放");
+//                Intent intent = new Intent(AccountActivity.this, TopupCenterActivity.class);
+//                intent.putExtra("amount", tv_balance.getText().toString().replaceAll("￥", ""));
+//                startActivity(intent);
                 break;
         }
     }

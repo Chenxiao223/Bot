@@ -76,7 +76,6 @@ public class LoginActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        getPermissions();//先获取权限
         initView();
     }
 
@@ -85,6 +84,8 @@ public class LoginActivity extends BaseActivity {
             //第一次进来
             saveState();
             startApp(true);//首次打开应用
+        } else {
+            startApp(false);
         }
         versionUpdate();//版本更新
         //设置系统栏颜色
@@ -346,7 +347,7 @@ public class LoginActivity extends BaseActivity {
                     json.put("idfy", "");
                     json.put("channelid", "");//渠道id
                     json.put("os", 0);//系统安桌是0
-                    json.put("appzzid", "0zoTLi29XRgq");
+                    json.put("appzzid","0zoTLi29XRgq");
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -448,6 +449,28 @@ public class LoginActivity extends BaseActivity {
         return shared.getBoolean("state", false);
     }
 
+    public void tagging() {
+        //打标签
+        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(this.TELEPHONY_SERVICE);
+        final String imei = telephonyManager.getDeviceId();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().get().url("http://trace.zhiziyun.com/open/oem/cm.gif?tagid=x2RIi0u7FKg&dpid=" + imei).build();
+                Call newCall = client.newCall(request);
+                try {
+                    Response execute = newCall.execute();
+                    if (execute.isSuccessful()) {
+                        String string = execute.body().string();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     public void startApp(final boolean bol) {
         //记录打开APP
         new Thread(new Runnable() {
@@ -533,7 +556,10 @@ public class LoginActivity extends BaseActivity {
         return "未知";
     }
 
-    public void getPermissions() {
+    @Override
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
         //判断是否为android6.0系统版本，如果是，需要动态添加权限
         if (Build.VERSION.SDK_INT >= 23) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -552,7 +578,9 @@ public class LoginActivity extends BaseActivity {
                 }
             }
         }
+        tagging();//打标签
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

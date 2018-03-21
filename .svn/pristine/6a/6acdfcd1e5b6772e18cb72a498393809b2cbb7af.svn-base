@@ -184,6 +184,7 @@ public class AppliancesActivity extends BaseActivity implements View.OnClickList
             paramss.height = dm.widthPixels * 5 / 6;//设置布局的高度
             layout_4.setLayoutParams(paramss);//将设置好的布局参数应用到控件中
         }
+
     }
 
     @Override
