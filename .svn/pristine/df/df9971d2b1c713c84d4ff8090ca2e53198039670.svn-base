@@ -68,6 +68,7 @@ import okhttp3.Response;
  */
 public class AdvertisingFragment extends Fragment implements View.OnClickListener {
     private ListView mListView;
+    //方便测试，直接写的public
     public HorizontalScrollView mTouchView;
     //装入所有的HScrollView
     protected List<CHScrollView_fragment> mHScrollViews = new ArrayList<>();
