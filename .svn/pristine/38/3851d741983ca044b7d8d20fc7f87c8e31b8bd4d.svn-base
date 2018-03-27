@@ -392,13 +392,9 @@ public class VisitorsViewFragment extends Fragment implements View.OnClickListen
                     line_page.setVisibility(View.GONE);
                     break;
                 case 9:
-                    try {
-                        line_page.setVisibility(View.VISIBLE);
-                        ToastUtils.showShort(getActivity(), "查询无效");
-                        smartRefreshLayout.finishLoadmore(0);//停止刷新
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    line_page.setVisibility(View.VISIBLE);
+                    ToastUtils.showShort(getActivity(), "查询无效");
+                    smartRefreshLayout.finishLoadmore(0);//停止刷新
                     break;
             }
             super.handleMessage(msg);
