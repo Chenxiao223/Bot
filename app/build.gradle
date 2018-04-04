@@ -60,4 +60,6 @@ dependencies {
     compile 'com.umeng.sdk:analytics:latest.integration'
     //支付宝支付
     compile files('libs/alipaySdk-20170922.jar')
+    //仿iOS开关
+    compile 'ch.ielse:switchbutton:1.0.1'
 }

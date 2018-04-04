@@ -186,13 +186,12 @@
             </LinearLayout>
         </LinearLayout>
 
-        <ImageView
+        <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/image_small"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:scaleType="fitXY"
-            android:src="@drawable/grayline" />
+            android:background="@color/grey" />
 
         <ImageView
             android:id="@+id/iv_call"

@@ -4,7 +4,6 @@
     <string name="homeActivity_homepage">首页</string>
     <string name="homeActivity_visitors">访客</string>
     <string name="homeActivity_generalize">推广</string>
-    <string name="homeActivity_crowd">人群</string>
     <string name="homeActivity_my">账户</string>
     <string name="commit">提 交</string>
     <string name="complete">完 成</string>

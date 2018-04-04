@@ -72,7 +72,8 @@
                 android:imeOptions="actionSearch"
                 android:maxLength="20"
                 android:singleLine="true"
-                android:textColorHint="@color/gray" />
+                android:textColorHint="@color/gray"
+                android:textSize="@dimen/textsizi" />
         </LinearLayout>
 
     </LinearLayout>

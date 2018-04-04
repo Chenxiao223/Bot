@@ -47,9 +47,9 @@ import okhttp3.Response;
 public class HomePageActivity extends BaseActivity implements View.OnClickListener {
     public static HomePageActivity activity;
     private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 0x04;
-    private LinearLayout lv_homepage, lv_generalize, lv_visitors, lv_crowd, lv_my;
-    private ImageView iv_homepage, iv_visitors, iv_generalize, iv_crowd, iv_my;
-    private TextView tv_homepage, tv_visitors, tv_generalize, tv_crowd, tv_my;
+    private LinearLayout lv_homepage, lv_generalize, lv_visitors, lv_my;
+    private ImageView iv_homepage, iv_visitors, iv_generalize, iv_my;
+    private TextView tv_homepage, tv_visitors, tv_generalize, tv_my;
     private HomePageAdapter homePageAdapter = null;
     public ViewPager pager = null;
     //退出时的时间
@@ -83,24 +83,20 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         iv_homepage = (ImageView) findViewById(R.id.iv_homepage);
         iv_visitors = (ImageView) findViewById(R.id.iv_visitors);
         iv_generalize = (ImageView) findViewById(R.id.iv_generalize);
-        iv_crowd = (ImageView) findViewById(R.id.iv_crowd);
         iv_my = (ImageView) findViewById(R.id.iv_my);
 
         tv_homepage = (TextView) findViewById(R.id.tv_homepage);
         tv_visitors = (TextView) findViewById(R.id.tv_visitors);
         tv_generalize = (TextView) findViewById(R.id.tv_generalize);
-        tv_crowd = (TextView) findViewById(R.id.tv_crowd);
         tv_my = (TextView) findViewById(R.id.tv_my);
 
         lv_homepage = (LinearLayout) findViewById(R.id.lv_homepage);
         lv_visitors = (LinearLayout) findViewById(R.id.lv_visitors);
         lv_generalize = (LinearLayout) findViewById(R.id.lv_generalize);
-        lv_crowd = (LinearLayout) findViewById(R.id.lv_crowd);
         lv_my = (LinearLayout) findViewById(R.id.lv_my);
         lv_homepage.setOnClickListener(this);
         lv_visitors.setOnClickListener(this);
         lv_generalize.setOnClickListener(this);
-        lv_crowd.setOnClickListener(this);
         lv_my.setOnClickListener(this);
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setOffscreenPageLimit(4);//
@@ -116,15 +112,13 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
             @Override
             public void onPageSelected(int position) {
                 if (position == 0) {
-                    changeColor(true, false, false, false, false);
+                    changeColor(true, false, false, false);
                 } else if (position == 1) {
-                    changeColor(false, true, false, false, false);
+                    changeColor(false, true, false, false);
                 } else if (position == 2) {
-                    changeColor(false, false, true, false, false);
-                } else if (position == 3) {
-                    changeColor(false, false, false, true, false);
+                    changeColor(false, false, true, false);
                 } else {
-                    changeColor(false, false, false, false, true);
+                    changeColor(false, false, false, true);
                 }
             }
 
@@ -135,7 +129,7 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         });
         //一进来就显示首页的fragment
         pager.setCurrentItem(0);
-        changeColor(true, false, false, false, false);
+        changeColor(true, false, false, false);
     }
 
     @Override
@@ -143,28 +137,24 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         switch (v.getId()) {
             case R.id.lv_homepage:
                 pager.setCurrentItem(0);
-                changeColor(true, false, false, false, false);
+                changeColor(true, false, false, false);
                 break;
             case R.id.lv_visitors:
                 pager.setCurrentItem(1);
-                changeColor(false, true, false, false, false);
+                changeColor(false, true, false, false);
                 break;
             case R.id.lv_generalize:
                 pager.setCurrentItem(2);
-                changeColor(false, false, true, false, false);
-                break;
-            case R.id.lv_crowd:
-                pager.setCurrentItem(3);
-                changeColor(false, false, false, true, false);
+                changeColor(false, false, true, false);
                 break;
             case R.id.lv_my:
-                pager.setCurrentItem(4);
-                changeColor(false, false, false, false, true);
+                pager.setCurrentItem(3);
+                changeColor(false, false, false, true);
                 break;
         }
     }
 
-    public void changeColor(boolean homepage, boolean visitors, boolean generalize, boolean crowd, boolean my) {
+    public void changeColor(boolean homepage, boolean visitors, boolean generalize, boolean my) {
         if (homepage) {
             iv_homepage.setImageResource(R.drawable.home_b);
             tv_homepage.setTextColor(this.getResources().getColor(R.color.blue));
@@ -187,14 +177,6 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         } else {
             iv_generalize.setImageResource(R.drawable.generalize);
             tv_generalize.setTextColor(this.getResources().getColor(R.color.gray));
-        }
-
-        if (crowd) {
-            iv_crowd.setImageResource(R.drawable.crowd_b);
-            tv_crowd.setTextColor(this.getResources().getColor(R.color.blue));
-        } else {
-            iv_crowd.setImageResource(R.drawable.crowd2);
-            tv_crowd.setTextColor(this.getResources().getColor(R.color.gray));
         }
 
         if (my) {

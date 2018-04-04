@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.fragment.fragmentaddoriginality.CrowdFragment;
 import com.zhiziyun.dmptest.bot.util.ClickUtils;
 
 import java.util.ArrayList;

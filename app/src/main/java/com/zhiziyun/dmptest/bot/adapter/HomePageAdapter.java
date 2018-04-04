@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import com.zhiziyun.dmptest.bot.ui.fragment.AccountFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.GeneralizeFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.HomePageFragment;
+import com.zhiziyun.dmptest.bot.ui.fragment.MainCrowdFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsFragment;
 
 /**
@@ -25,6 +26,8 @@ public class HomePageAdapter extends FragmentPagerAdapter {
             return new VisitorsFragment();
         }else if(position==2){
             return new GeneralizeFragment();
+        }else if(position==3){
+            return new MainCrowdFragment();
         }else{
             return new AccountFragment();
         }
@@ -32,6 +35,6 @@ public class HomePageAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 4;
+        return 5;
     }
 }
