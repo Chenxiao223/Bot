@@ -14,11 +14,11 @@ import java.util.ArrayList;
  * Created by Administrator on 2018/3/12.
  */
 
-public class TestArrayAdapter extends ArrayAdapter<String> {
+public class SpinnerArrayAdapter extends ArrayAdapter<String> {
     private Context mContext;
     private ArrayList<String> list;
 
-    public TestArrayAdapter(Context context, ArrayList<String> list) {
+    public SpinnerArrayAdapter(Context context, ArrayList<String> list) {
         super(context, android.R.layout.simple_spinner_item, list);
         mContext = context;
         this.list = list;
