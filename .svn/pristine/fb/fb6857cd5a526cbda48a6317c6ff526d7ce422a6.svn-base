@@ -1,0 +1,220 @@
+package com.zhiziyun.dmptest.bot.ui.activity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
+import com.zhiziyun.dmptest.bot.util.Token;
+
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+/**
+ * Created by Administrator on 2018/4/11.
+ */
+
+public class ChooseActivity extends BaseActivity implements View.OnClickListener {
+    private TextView tv_title;
+    private RelativeLayout rl_a, rl_b, rl_c, rl_d;
+    private TextView tv_a, tv_b, tv_c, tv_d;
+    private Intent intent;
+    private MyDialog dialog;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_choose);
+        initView();
+    }
+
+    private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        intent = getIntent();
+        tv_title = (TextView) findViewById(R.id.tv_title);
+        tv_title.setText(intent.getStringExtra("title"));
+        rl_a = (RelativeLayout) findViewById(R.id.rl_a);
+        rl_b = (RelativeLayout) findViewById(R.id.rl_b);
+        rl_c = (RelativeLayout) findViewById(R.id.rl_c);
+        rl_d = (RelativeLayout) findViewById(R.id.rl_d);
+        tv_a = (TextView) findViewById(R.id.tv_a);
+        tv_b = (TextView) findViewById(R.id.tv_b);
+        tv_c = (TextView) findViewById(R.id.tv_c);
+        tv_d = (TextView) findViewById(R.id.tv_d);
+        setContent(intent.getIntExtra("flag", 3));
+        rl_a.setOnClickListener(this);
+        rl_b.setOnClickListener(this);
+        rl_c.setOnClickListener(this);
+        rl_d.setOnClickListener(this);
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.tv_save).setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_back:
+                finish();
+                break;
+            case R.id.tv_save:
+                break;
+            case R.id.rl_a:
+                Intent it_a = new Intent();
+                it_a.putExtra("content", tv_a.getText().toString());
+                setResult(intent.getIntExtra("flag", 3), it_a);
+                saveData(intent.getIntExtra("flag", 3), 0);
+                break;
+            case R.id.rl_b:
+                Intent it_b = new Intent();
+                it_b.putExtra("content", tv_b.getText().toString());
+                setResult(intent.getIntExtra("flag", 3), it_b);
+                saveData(intent.getIntExtra("flag", 3), 1);
+                break;
+            case R.id.rl_c:
+                Intent it_c = new Intent();
+                it_c.putExtra("content", tv_c.getText().toString());
+                setResult(intent.getIntExtra("flag", 3), it_c);
+                saveData(intent.getIntExtra("flag", 3), 2);
+                break;
+            case R.id.rl_d:
+                Intent it_d = new Intent();
+                it_d.putExtra("content", tv_d.getText().toString());
+                setResult(intent.getIntExtra("flag", 3), it_d);
+                saveData(intent.getIntExtra("flag", 3), 3);
+                break;
+        }
+    }
+
+    public void setContent(int flag) {
+        switch (flag) {
+            case 1:
+                tv_a.setText("普通客户");
+                tv_b.setText("低价值客户");
+                tv_c.setText("积极客户");
+                tv_d.setText("高价值客户");
+                break;
+            case 2:
+                tv_a.setText("新转入");
+                tv_b.setText("暂无意向");
+                tv_c.setText("持续跟进");
+                tv_d.setText("已成交");
+                break;
+        }
+    }
+
+    public void saveData(final int flags, final int flag) {
+        dialog = MyDialog.showDialog(ChooseActivity.this);
+        dialog.show();
+        //编辑
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject json = new JSONObject();
+                    json.put("id", intent.getStringExtra("id"));
+                    if (flags == 1) {
+                        if (flag == 0) {
+                            json.put("type", 0);
+                        } else if (flag == 1) {
+                            json.put("type", 1);
+                        } else if (flag == 2) {
+                            json.put("type", 2);
+                        } else if (flag == 2) {
+                            json.put("type", 3);
+                        }
+                    } else if (flags == 2) {
+                        if (flag == 0) {
+                            json.put("mark", 0);
+                        } else if (flag == 1) {
+                            json.put("mark", 1);
+                        } else if (flag == 2) {
+                            json.put("mark", 2);
+                        } else if (flag == 2) {
+                            json.put("mark", 3);
+                        }
+                    }
+                    OkHttpClient client = new OkHttpClient();
+                    String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    final MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    Request request = new Request.Builder()
+                            .url(BaseUrl.BaseWang + "guestFromProbe/edit.action")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                JSONObject jsonObject = new JSONObject(response.body().string());
+                                if (jsonObject.get("success").toString().equals("true")) {
+                                    Message message = new Message();
+                                    message.what = 1;
+                                    message.obj = jsonObject.get("msg");
+                                    handler.sendMessage(message);
+                                } else {
+                                    Message message = new Message();
+                                    message.what = 2;
+                                    message.obj = jsonObject.get("msg");
+                                    handler.sendMessage(message);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    ToastUtils.showShort(ChooseActivity.this, msg.obj.toString());
+                    dialog.dismiss();
+                    finish();
+                    break;
+                case 2:
+                    ToastUtils.showShort(ChooseActivity.this, msg.obj.toString());
+                    dialog.dismiss();
+                    break;
+            }
+        }
+    };
+}

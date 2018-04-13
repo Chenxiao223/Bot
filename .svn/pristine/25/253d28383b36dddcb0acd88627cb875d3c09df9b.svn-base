@@ -1,0 +1,293 @@
+package com.zhiziyun.dmptest.bot.ui.activity;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.entity.Customer;
+import com.zhiziyun.dmptest.bot.ui.fragment.CustomerFragment;
+import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.Token;
+
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import co.lujun.androidtagview.TagContainerLayout;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+/**
+ * Created by Administrator on 2018/4/4.
+ * 客户详情
+ */
+
+public class DetailsActivity extends BaseActivity implements View.OnClickListener {
+    private TextView tv_desc, tv_charger, tv_user, tv_type, tv_mark;
+    private Intent intent;
+    private SharedPreferences share;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_details);
+        initView();
+    }
+
+    private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        intent = getIntent();
+        tv_type = (TextView) findViewById(R.id.tv_type);
+        tv_type.setText(intent.getStringExtra("type"));
+        tv_mark = (TextView) findViewById(R.id.tv_mark);
+        tv_mark.setText(intent.getStringExtra("mark"));
+
+        findViewById(R.id.rl_desc).setOnClickListener(this);
+        findViewById(R.id.rl_charger).setOnClickListener(this);
+        findViewById(R.id.rl_user).setOnClickListener(this);
+        findViewById(R.id.rl_type).setOnClickListener(this);
+        findViewById(R.id.rl_mark).setOnClickListener(this);
+        findViewById(R.id.rl_record).setOnClickListener(this);
+
+        tv_desc = (TextView) findViewById(R.id.tv_desc);
+        tv_desc.setText(intent.getStringExtra("desc"));
+        tv_charger = (TextView) findViewById(R.id.tv_charger);
+        tv_charger.setText(intent.getStringExtra("charger"));
+        tv_user = (TextView) findViewById(R.id.tv_user);
+        tv_user.setText(intent.getStringExtra("name"));
+
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.line_page).setOnClickListener(this);
+
+        getCustomerSource();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.rl_user:
+                Intent it_user = new Intent(DetailsActivity.this, EditContentActivity.class);
+                it_user.putExtra("title", "编辑客户");
+                it_user.putExtra("flag", 0);
+                it_user.putExtra("msg", "客户");
+                it_user.putExtra("id", intent.getStringExtra("id"));
+                it_user.putExtra("content", tv_user.getText().toString());
+                startActivityForResult(it_user, 0);
+                break;
+            case R.id.rl_charger:
+                Intent it_charger = new Intent(DetailsActivity.this, EditContentActivity.class);
+                it_charger.putExtra("title", "编辑负责人");
+                it_charger.putExtra("flag", 1);
+                it_charger.putExtra("msg", "负责人");
+                it_charger.putExtra("id", intent.getStringExtra("id"));
+                it_charger.putExtra("content", tv_charger.getText().toString());
+                startActivityForResult(it_charger, 1);
+                break;
+            case R.id.rl_desc:
+                Intent it_desc = new Intent(DetailsActivity.this, EditContentActivity.class);
+                it_desc.putExtra("title", "编辑备注");
+                it_desc.putExtra("flag", 2);
+                it_desc.putExtra("msg", "备注");
+                it_desc.putExtra("id", intent.getStringExtra("id"));
+                it_desc.putExtra("content", tv_desc.getText().toString());
+                startActivityForResult(it_desc, 2);
+                break;
+            case R.id.rl_type:
+                Intent it_type = new Intent(DetailsActivity.this, ChooseActivity.class);
+                it_type.putExtra("title", "客户类型");
+                it_type.putExtra("flag", 1);
+                it_type.putExtra("id", intent.getStringExtra("id"));
+                startActivityForResult(it_type, 3);
+                break;
+            case R.id.rl_mark:
+                Intent it_mark = new Intent(DetailsActivity.this, ChooseActivity.class);
+                it_mark.putExtra("title", "跟进状态");
+                it_mark.putExtra("flag", 2);
+                it_mark.putExtra("id", intent.getStringExtra("id"));
+                startActivityForResult(it_mark, 4);
+                break;
+            case R.id.rl_record:
+                Intent it_record = new Intent(DetailsActivity.this, CommunicationRecordActivity.class);
+                it_record.putExtra("id", intent.getStringExtra("id"));
+                startActivity(it_record);
+                break;
+            case R.id.iv_back:
+                //重新加载页面
+                CustomerFragment.fragment.clearAllData();
+                CustomerFragment.fragment.getData(1, "");
+                finish();
+                toFinish();
+                break;
+            case R.id.line_page:
+                //让软键盘隐藏
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                break;
+        }
+    }
+
+    public void getCustomerSource() {
+        //获取客户来源
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject json = new JSONObject();
+                    json.put("guestId", intent.getStringExtra("id"));
+                    json.put("siteId", share.getString("siteid", ""));
+                    OkHttpClient client = new OkHttpClient();
+                    String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    final MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    Request request = new Request.Builder()
+                            .url(BaseUrl.BaseWang + "guestFromProbe/listOriginal.action")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                String str = response.body().string();
+                                Log.i("infos", str);
+                                Gson gson = new Gson();
+                                Message msg = new Message();
+                                msg.what = 1;
+                                msg.obj = gson.fromJson(str, Customer.class);
+                                handler.sendMessage(msg);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    Customer customer = (Customer) msg.obj;
+                    List<String> list = new ArrayList<>();
+                    for (int i = 0; i < customer.getRows().size(); i++) {
+                        list.add(customer.getRows().get(i).getSegmentName());
+                    }
+                    setCustomerSource(list);
+                    break;
+            }
+        }
+    };
+
+    public void setCustomerSource(List list) {
+        TagContainerLayout mTagContainerLayout = (TagContainerLayout) findViewById(R.id.tcl_customer_source);
+        mTagContainerLayout.setTags(list);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 0:
+                try {
+                    tv_user.setText(data.getStringExtra("content"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case 1:
+                try {
+                    tv_charger.setText(data.getStringExtra("content"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case 2:
+                try {
+                    tv_desc.setText(data.getStringExtra("content"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case 3:
+                try {
+                    tv_type.setText(data.getStringExtra("content"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case 4:
+                try {
+                    tv_mark.setText(data.getStringExtra("content"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        //重新加载页面
+        CustomerFragment.fragment.clearAllData();
+        CustomerFragment.fragment.getData(1, "");
+        toFinish();
+        finish();
+    }
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    tv_desc = null;
+                    tv_charger = null;
+                    tv_user = null;
+                    tv_type = null;
+                    tv_mark = null;
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
+    }
+
+}
