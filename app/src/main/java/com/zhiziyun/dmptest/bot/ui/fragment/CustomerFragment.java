@@ -42,6 +42,7 @@ import com.zhiziyun.dmptest.bot.adapter.CustomerAdapter;
 import com.zhiziyun.dmptest.bot.adapter.SpinnerArrayAdapter;
 import com.zhiziyun.dmptest.bot.entity.CallInfo;
 import com.zhiziyun.dmptest.bot.entity.CrowdInfo;
+import com.zhiziyun.dmptest.bot.ui.activity.AddCustomerActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.DetailsActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.EditContentActivity;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
@@ -121,6 +122,7 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
         et_text = getView().findViewById(R.id.et_text);
         line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
         line_page.setOnClickListener(this);
+        getView().findViewById(R.id.iv_customer).setOnClickListener(this);
         adapter = new CustomerAdapter(getActivity(), list_crowd);
         lv_crowd.setAdapter(adapter);
         smartRefreshLayout = (SmartRefreshLayout) getView().findViewById(R.id.refreshLayout);
@@ -147,12 +149,12 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                 if (ClickUtils.isFastClick()) {//防止多次点击
                     phone(guestId);
                     //打完电话跳转到写跟进页面
-                    Intent intent = new Intent(getActivity(), EditContentActivity.class);
-                    intent.putExtra("title", "写跟进");
-                    intent.putExtra("flag", 9527);
-                    intent.putExtra("id", list_crowd.get(position).get("guestId"));
-                    intent.putExtra("msg", "跟进内容");
-                    startActivity(intent);
+//                    Intent intent = new Intent(getActivity(), EditContentActivity.class);
+//                    intent.putExtra("title", "写跟进");
+//                    intent.putExtra("flag", 9527);
+//                    intent.putExtra("id", list_crowd.get(position).get("guestId"));
+//                    intent.putExtra("msg", "跟进内容");
+//                    startActivity(intent);
                 }
             }
         });
@@ -266,9 +268,8 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
-                                String str = response.body().string();
                                 Gson gson = new Gson();
-                                crowdInfo = gson.fromJson(str, CrowdInfo.class);
+                                crowdInfo = gson.fromJson(response.body().string(), CrowdInfo.class);
                                 Message message = new Message();
                                 message.what = 1;
                                 message.obj = crowdInfo;
@@ -309,7 +310,7 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                             hm_crowd.put("content3", ci.getRows().get(i).getName());
                             hm_crowd.put("content4", ci.getRows().get(i).getCharger());
                             hm_crowd.put("content5", ci.getRows().get(i).getDesc());
-                            hm_crowd.put("content6", ci.getRows().get(i).getHidePhoneNumber());
+                            hm_crowd.put("content6", "*******" + ci.getRows().get(i).getTailPhone());
                             hm_crowd.put("phoneNumber", String.valueOf(ci.getRows().get(i).getPhoneNumber()));
                             hm_crowd.put("guestId", ci.getRows().get(i).getId());
                             list_crowd.add(hm_crowd);
@@ -610,6 +611,10 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                     clearAllData();
                     getData(pageNum, et_text.getText().toString());
                 }
+                break;
+            case R.id.iv_customer:
+                //点击新建客户
+                startActivity(new Intent(getActivity(), AddCustomerActivity.class));
                 break;
         }
     }

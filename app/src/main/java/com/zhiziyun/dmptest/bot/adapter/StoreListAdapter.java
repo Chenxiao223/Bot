@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.ui.activity.StoreListActivity;
+import com.zhiziyun.dmptest.bot.util.CustomDialog;
 import com.zhiziyun.dmptest.bot.util.SlideItemView;
 import com.zhiziyun.dmptest.bot.util.SlideListView;
 
@@ -94,7 +95,24 @@ public class StoreListAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 itemView.showContent();
-                StoreListActivity.storeListActivity.deleteStore(list.get(position).get("id"));
+                //点击弹出对话框
+                final CustomDialog customDialog = new CustomDialog(context);
+                customDialog.setTitle("消息提示");
+                customDialog.setMessage("是否要删除门店");
+                customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                    @Override
+                    public void onYesClick() {
+                        StoreListActivity.storeListActivity.deleteStore(list.get(position).get("id"));
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                    @Override
+                    public void onNoClick() {
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.show();
             }
         });
         return convertView;

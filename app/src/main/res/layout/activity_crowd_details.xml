@@ -33,139 +33,135 @@
             android:textSize="@dimen/title_text_size" />
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_left_right">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="@dimen/padding_left_right">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="名称："
-                android:textColor="@color/colorBlack"
-                android:textSize="@dimen/textsizi3" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/padding_left_right2"
+                android:padding="@dimen/padding_left_right">
 
-            <TextView
-                android:id="@+id/tv_crowd"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="到店人群"
-                android:textColor="@color/colorAccent"
-                android:textSize="@dimen/textsizi3" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="名称"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="@dimen/textsizi3" />
+
+                <TextView
+                    android:id="@+id/tv_crowd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="未知"
+                    android:textSize="@dimen/textsizi" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height2"
+                android:background="@color/gray" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/padding_left_right2"
+                android:padding="@dimen/padding_left_right">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="日期"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="@dimen/textsizi3" />
+
+                <TextView
+                    android:id="@+id/tv_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="未知"
+                    android:textSize="@dimen/textsizi" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height2"
+                android:background="@color/gray" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/padding_left_right2"
+                android:padding="@dimen/padding_left_right">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="任务状态"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="@dimen/textsizi3" />
+
+                <TextView
+                    android:id="@+id/tv_state"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="未知"
+                    android:textSize="@dimen/textsizi" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height2"
+                android:background="@color/gray" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/padding_left_right2"
+                android:padding="@dimen/padding_left_right">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="已转换"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="@dimen/textsizi3" />
+
+                <TextView
+                    android:id="@+id/tv_equipment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="0个"
+                    android:textSize="@dimen/textsizi" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_height2"
+                android:background="@color/gray" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_date"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:text="日期"
-            android:textSize="@dimen/textsizi" />
-
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:padding="@dimen/padding_left_right">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="预算"
-            android:textColor="@color/colorBlack"
-            android:textSize="@dimen/textsizi3" />
-
-        <TextView
-            android:id="@+id/tv_budget"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:gravity="center"
-            android:text="100元"
-            android:textColor="@color/colorAccent"
-            android:textSize="@dimen/textsizi3" />
+        <include
+            android:id="@+id/line_page"
+            layout="@layout/layout_hides" />
     </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:padding="@dimen/padding_left_right">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="包含设备"
-            android:textColor="@color/colorBlack"
-            android:textSize="@dimen/textsizi3" />
-
-        <TextView
-            android:id="@+id/tv_equipment"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:gravity="center"
-            android:text="100个"
-            android:textColor="@color/colorAccent"
-            android:textSize="@dimen/textsizi3" />
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:padding="@dimen/padding_left_right">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="费用"
-            android:textColor="@color/colorBlack"
-            android:textSize="@dimen/textsizi3" />
-
-        <TextView
-            android:id="@+id/tv_cost"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:gravity="center"
-            android:text="100元"
-            android:textColor="@color/colorAccent"
-            android:textSize="@dimen/textsizi3" />
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray" />
 </LinearLayout>

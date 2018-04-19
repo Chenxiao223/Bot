@@ -30,7 +30,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.ExpenditureStatistics;
 import com.zhiziyun.dmptest.bot.entity.GetHead;
@@ -104,7 +103,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //
         initView();
     }
 

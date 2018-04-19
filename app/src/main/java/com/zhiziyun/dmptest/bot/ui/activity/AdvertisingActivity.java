@@ -88,6 +88,7 @@ public class AdvertisingActivity extends BaseActivity implements View.OnClickLis
         super.onResume();
         MobclickAgent.onResume(this);
     }
+
     public void onPause() {
         super.onPause();
         MobclickAgent.onPause(this);
@@ -279,7 +280,8 @@ public class AdvertisingActivity extends BaseActivity implements View.OnClickLis
                 if (TextUtils.isEmpty(intent.getStringExtra("creativeId"))) {
                     //通过判断list_corwd有没有值来确定要不要将值传入进入显示选中状态
                     if (list_corwd.isEmpty()) {//无值
-                        startActivityForResult(new Intent(AdvertisingActivity.this, CrowdActivity.class), Flag_corwd);
+                        Intent it = new Intent(AdvertisingActivity.this, CrowdActivity.class);
+                        startActivityForResult(it, Flag_corwd);
                     } else {//有值的话将值传过去显示选中状态
                         Intent it = new Intent(AdvertisingActivity.this, CrowdActivity.class);
                         it.putExtra("flag", 123);
@@ -287,10 +289,10 @@ public class AdvertisingActivity extends BaseActivity implements View.OnClickLis
                         startActivityForResult(it, Flag_corwd);
                     }
                 } else {
-                    //这里从广告页进来
+                    //这里从广告页(投广告)进来
                     Intent it = new Intent(AdvertisingActivity.this, CrowdActivity.class);
                     it.putExtra("flag", 123);
-                    it.putStringArrayListExtra("list", (ArrayList<String>) activityInfo.getResponse().getTagIds());
+                    it.putStringArrayListExtra("list", (ArrayList<String>) list_corwd);
                     startActivityForResult(it, Flag_corwd);
                 }
                 break;
@@ -676,6 +678,7 @@ public class AdvertisingActivity extends BaseActivity implements View.OnClickLis
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        list_corwd = activityInfo.getResponse().getTagIds();//保持一致性
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

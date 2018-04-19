@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
@@ -47,7 +48,7 @@ import okhttp3.Response;
 
 /**
  * Created by Administrator on 2017/12/29.
- * 选择人群
+ * 选择人群,广告活动专用
  */
 
 public class CrowdActivity extends BaseActivity implements View.OnClickListener {
@@ -87,12 +88,16 @@ public class CrowdActivity extends BaseActivity implements View.OnClickListener 
             dialog.show();
             requestCrowd(1);//第二个参数为空就是查所有
         } else {//第二次
-            dialog.show();
-            map.clear();
-            list.clear();
-            listStr.clear();
-            page = 1;
-            requestCrowd(page);
+            try {
+                dialog.show();
+                map.clear();
+                list.clear();
+                listStr.clear();
+                page = 1;
+                requestCrowd(page);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -151,6 +156,7 @@ public class CrowdActivity extends BaseActivity implements View.OnClickListener 
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
+                    json.put("activityType", 1);
                     json.put("page", page);
                     json.put("row", 10);
                     OkHttpClient client = new OkHttpClient();
@@ -176,12 +182,18 @@ public class CrowdActivity extends BaseActivity implements View.OnClickListener 
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson = new Gson();
-                            crowd = gson.fromJson(response.body().string(), Crowd.class);
-                            if (crowd != null) {
-                                handler.sendEmptyMessage(1);
-                            } else {
-                                handler.sendEmptyMessage(2);//无数据
+                            try {
+                                Gson gson = new Gson();
+                                crowd = gson.fromJson(response.body().string(), Crowd.class);
+                                if (crowd != null) {
+                                    handler.sendEmptyMessage(1);
+                                } else {
+                                    handler.sendEmptyMessage(2);//无数据
+                                }
+                            } catch (JsonSyntaxException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
                         }
                     });
@@ -272,15 +284,10 @@ public class CrowdActivity extends BaseActivity implements View.OnClickListener 
                 if (listStr.size() == 0) {
                     ToastUtils.showShort(CrowdActivity.this, "请选择人群");
                 } else {
-                    if (getIntent().getIntExtra("flag_sms", 0) == 139) {
-                        Intent intent = new Intent();
-                        intent.putStringArrayListExtra("list", (ArrayList<String>) listStr);
-                        setResult(FLAG, intent);
-                    } else {
-                        Intent intent = new Intent();
-                        intent.putStringArrayListExtra("list", (ArrayList<String>) listStr);
-                        setResult(FLAG, intent);
-                    }
+                    //从添加广告活动进来
+                    Intent intent = new Intent();
+                    intent.putStringArrayListExtra("list", (ArrayList<String>) listStr);
+                    setResult(FLAG, intent);
                     finish();
                 }
                 break;

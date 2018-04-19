@@ -408,13 +408,17 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Gson gson = new Gson();
-                            v = gson.fromJson(response.body().string(), Visitorsself.class);
-                            if (v != null) {
-                                Message message = Message.obtain();
-                                message.what = 3;
-                                message.obj = v;
-                                handler.sendMessage(message);//通知刷新适配器
+                            try {
+                                Gson gson = new Gson();
+                                v = gson.fromJson(response.body().string(), Visitorsself.class);
+                                if (v != null) {
+                                    Message message = Message.obtain();
+                                    message.what = 3;
+                                    message.obj = v;
+                                    handler.sendMessage(message);//通知刷新适配器
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                     });

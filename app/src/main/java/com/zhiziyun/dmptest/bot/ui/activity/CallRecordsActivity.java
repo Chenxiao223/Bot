@@ -1,24 +1,32 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.widget.AdapterView;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ListView;
 
 import com.google.gson.Gson;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.entity.CrowdInfo;
+import com.zhiziyun.dmptest.bot.adapter.CallRecordsGAdapter;
+import com.zhiziyun.dmptest.bot.entity.CallRecords;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
 
 import org.json.JSONObject;
@@ -26,6 +34,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,18 +54,42 @@ import okhttp3.Response;
  */
 
 public class CallRecordsActivity extends BaseActivity implements View.OnClickListener {
-    private ExpandableListView expandableListView;
+    private ListView lv_call;
     private SharedPreferences share;
-    //Model：定义的数据
-    private String[] groups = {"数据一", "数据二", "数据三"};
-    private String[][] childs = {{"数据一", "数据二", "数据三", "数据四"}, {"数据一", "数据二", "数据三", "数据四"}, {"数据一", "数据二", "数据三", "数据四"}};
+    private int pageNum = 1;
+    private CallRecords callRecords;
+    private HashMap<String, String> hm_groups;
+    private ArrayList<HashMap<String, String>> list_groups = new ArrayList<>();
+    private CallRecordsGAdapter adapter;
+    private SmartRefreshLayout smartRefreshLayout;
+    private LinearLayout line_page;
+    private String beginTime;
+    private String endTime;
+    private MyDialog dialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call_records);
         initView();
-        getCallRecords();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+        if (hm_groups == null) {//根据这个值来判断是第一次进来还是第二次进来
+            //加载动画
+            dialog = MyDialog.showDialog(this);
+            dialog.show();
+            getCallRecords(pageNum);
+            //第二个参数为空就是查所有
+        } else {//第二次
+            dialog.show();
+            hm_groups.clear();
+            clearAllData();
+            getCallRecords(pageNum);
+        }
     }
 
     private void initView() {
@@ -62,35 +99,83 @@ public class CallRecordsActivity extends BaseActivity implements View.OnClickLis
         params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
 
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
-        expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
-        expandableListView.setGroupIndicator(null);//将控件默认的左边箭头去掉，
-        expandableListView.setAdapter(new MyExpandableListView());
+        smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
+        line_page = findViewById(R.id.line_page).findViewById(R.id.line_page);
+        line_page.setOnClickListener(this);
+        lv_call = (ListView) findViewById(R.id.lv_call);
+        adapter = new CallRecordsGAdapter(CallRecordsActivity.this, list_groups);
+        lv_call.setAdapter(adapter);
         findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.tv_date).setOnClickListener(this);
+        beginTime = getDateMon();
+        endTime = gettodayDate();
+        lv_call.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    Intent intent = new Intent(CallRecordsActivity.this, CallRecordsCActivity.class);
+                    intent.putExtra("date", callRecords.getRows().get(position).getSettleDate());
+                    startActivity(intent);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        //下拉刷新
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                try {
+                    clearAllData();
+                    getCallRecords(pageNum);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        //上拉加载
+        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
+            @Override
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                try {
+                    if ((callRecords.getTotal() - (pageNum - 1) * 10) > 0) {
+                        getCallRecords(pageNum);
+                    } else {
+                        ToastUtils.showShort(CallRecordsActivity.this, "最后一页了");
+                        smartRefreshLayout.finishLoadmore(0);//停止刷新
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.iv_back:
-                finish();
-                break;
+    private void clearAllData() {
+        try {
+            hm_groups.clear();
+            list_groups.clear();
+            pageNum = 1;
+            callRecords = null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public void getCallRecords() {
-        //获取通话记录
+    public void getCallRecords(final int pageNum) {
+        //获取通话记录（汇总值）
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
-                    json.put("userid", share.getString("accountid", ""));
-//                    json.put("phoneA","");
-//                    json.put("phoneB","");
-//                    json.put("guestId","");
-//                    json.put("binded","");
-                    Log.i("infos", json.toString());
+                    json.put("startSettleDate", beginTime);
+                    json.put("endSettleDate", endTime);
+                    json.put("page", pageNum);
+                    json.put("rows", 10);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -115,14 +200,12 @@ public class CallRecordsActivity extends BaseActivity implements View.OnClickLis
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
-                                String str = response.body().string();
-                                Log.i("infos", str);
-//                                Gson gson = new Gson();
-//                                crowdInfo = gson.fromJson(response.body().string(), CrowdInfo.class);
-//                                Message message = new Message();
-//                                message.what = 1;
-//                                message.obj = crowdInfo;
-//                                handler.sendMessage(message);
+                                Gson gson = new Gson();
+                                callRecords = gson.fromJson(response.body().string(), CallRecords.class);
+                                Message message = new Message();
+                                message.what = 1;
+                                message.obj = callRecords;
+                                handler.sendMessage(message);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -136,122 +219,108 @@ public class CallRecordsActivity extends BaseActivity implements View.OnClickLis
         }).start();
     }
 
-    //为ExpandableListView自定义适配器
-    class MyExpandableListView extends BaseExpandableListAdapter {
-
-        //返回一级列表的个数
+    Handler handler = new Handler() {
         @Override
-        public int getGroupCount() {
-            return groups.length;
-        }
-
-        //返回每个二级列表的个数
-        @Override
-        public int getChildrenCount(int groupPosition) { //参数groupPosition表示第几个一级列表
-            return childs[groupPosition].length;
-        }
-
-        //返回一级列表的单个item（返回的是对象）
-        @Override
-        public Object getGroup(int groupPosition) {
-            return groups[groupPosition];
-        }
-
-        //返回二级列表中的单个item（返回的是对象）
-        @Override
-        public Object getChild(int groupPosition, int childPosition) {
-            return childs[groupPosition][childPosition];  //不要误写成groups[groupPosition][childPosition]
-        }
-
-        @Override
-        public long getGroupId(int groupPosition) {
-            return groupPosition;
-        }
-
-        @Override
-        public long getChildId(int groupPosition, int childPosition) {
-            return childPosition;
-        }
-
-        //每个item的id是否是固定？一般为true
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
-        //【重要】填充一级列表
-        @Override
-        public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-            ViewHolder holder = null;
-            if (convertView == null) {
-                holder = new ViewHolder();
-                convertView = getLayoutInflater().inflate(R.layout.item_group_title, null);
-                holder.tv_date = (TextView) convertView.findViewById(R.id.tv_date);
-                holder.tv_num = (TextView) convertView.findViewById(R.id.tv_num);
-                holder.tv_amount = (TextView) convertView.findViewById(R.id.tv_amount);
-                holder.iv_jiantou = convertView.findViewById(R.id.iv_jiantou);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    try {
+                        CallRecords cr = (CallRecords) msg.obj;
+                        if (cr.getRows().size() == 0) {
+                            ToastUtils.showShort(CallRecordsActivity.this, "无数据");
+                            line_page.setVisibility(View.VISIBLE);
+                            dialog.dismiss();
+                            smartRefreshLayout.finishRefresh(0);//停止刷新
+                            smartRefreshLayout.finishLoadmore(0);//停止加载
+                        } else {
+                            for (int i = 0; i < cr.getRows().size(); i++) {
+                                hm_groups = new HashMap<>();
+                                hm_groups.put("content1", cr.getRows().get(i).getSettleDate().toString());
+                                hm_groups.put("content2", "花费:" + cr.getRows().get(i).getFee() + "元");
+                                list_groups.add(hm_groups);
+                            }
+                            pageNum++;
+                            line_page.setVisibility(View.GONE);
+                            adapter.notifyDataSetChanged();
+                            dialog.dismiss();
+                            smartRefreshLayout.finishRefresh(0);//停止刷新
+                            smartRefreshLayout.finishLoadmore(0);//停止加载
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
             }
-            holder.tv_date.setText(groups[groupPosition]);
-            holder.tv_num.setText(groups[groupPosition]);
-            holder.tv_amount.setText(groups[groupPosition]);
-            //判断isExpanded就可以控制是按下还是关闭，同时更换图片
-            if (isExpanded) {
-                holder.iv_jiantou.setBackgroundResource(R.drawable.down);
-            } else {
-                holder.iv_jiantou.setBackgroundResource(R.drawable.up);
-            }
-
-            //让listview交替变色
-            if (groupPosition % 2 == 0) {
-                //偶数
-                convertView.setBackgroundColor(Color.parseColor("#ffffff"));
-            } else {
-                //奇数
-                convertView.setBackgroundColor(Color.parseColor("#e7e9ea"));
-            }
-
-            return convertView;
         }
+    };
 
-        //【重要】填充二级列表
-        @Override
-        public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-            ViewHolder holder = null;
-            if (convertView == null) {
-                holder = new ViewHolder();
-                convertView = getLayoutInflater().inflate(R.layout.item_child_content, null);
-                holder.tv_child = (TextView) convertView.findViewById(R.id.tv_child);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            //iv_child.setImageResource(resId);
-            holder.tv_child.setText(childs[groupPosition][childPosition]);
+    public String getDateMon() {
+        //过去一月
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.MONTH, -1);
+        Date m = c.getTime();
+        String mon = format.format(m);
+        return mon;
+    }
 
-            //让listview交替变色
-            if (groupPosition % 2 == 0) {
-                //偶数
-                convertView.setBackgroundColor(Color.parseColor("#ffffff"));
-            } else {
-                //奇数
-                convertView.setBackgroundColor(Color.parseColor("#e7e9ea"));
-            }
+    //获取当天的日期
+    public String gettodayDate() {
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(d);
+    }
 
-            return convertView;
-        }
+    public String date(String date) {
+        int index1 = date.indexOf("-");
+        int index2 = index1 + date.substring(date.indexOf("-") + 1).indexOf("-") + 1;
+        String year = date.substring(0, index1);
+        String month = date.substring(index1 + 1, index2).length() == 1 ? "0" + date.substring(index1 + 1, index2) : date.substring(index1 + 1, index2);
+        String day = date.substring(index2 + 1).length() == 1 ? "0" + date.substring(index2 + 1) : date.substring(index2 + 1);
+        return year + "-" + month + "-" + day;
+    }
 
-        //二级列表中的item是否能够被选中？可以改为true
-        @Override
-        public boolean isChildSelectable(int groupPosition, int childPosition) {
-            return true;
-        }
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_back:
+                finish();
+                break;
+            case R.id.line_page:
+                try {
+                    clearAllData();
+                    getCallRecords(pageNum);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case R.id.tv_date:
+                Calendar c = Calendar.getInstance();
+                // 最后一个false表示不显示日期，如果要显示日期，最后参数可以是true或者不用输入
+                new DoubleDatePickerDialog(this, 0, new DoubleDatePickerDialog.OnDateSetListener() {
 
-        public class ViewHolder {
-            TextView tv_date, tv_num, tv_amount, tv_child;
-            ImageView iv_jiantou;
+                    @Override
+                    public void onDateSet(DatePicker startDatePicker, int startYear, int startMonthOfYear,
+                                          int startDayOfMonth, DatePicker endDatePicker, int endYear, int endMonthOfYear,
+                                          int endDayOfMonth) {
+                        String textString = String.format("%d-%d-%d %d-%d-%d", startYear,
+                                startMonthOfYear + 1, startDayOfMonth, endYear, endMonthOfYear + 1, endDayOfMonth);
+                        int index = textString.indexOf(" ");
+                        beginTime = date(textString.substring(0, index));
+                        endTime = date(textString.substring(index + 1, textString.length()));
+
+                        try {
+                            clearAllData();
+                            getCallRecords(pageNum);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
+                break;
         }
     }
+
 }

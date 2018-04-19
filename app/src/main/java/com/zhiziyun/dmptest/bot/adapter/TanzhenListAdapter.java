@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.ui.activity.TanzhenListActivity;
+import com.zhiziyun.dmptest.bot.util.CustomDialog;
 import com.zhiziyun.dmptest.bot.util.SlideItemView;
 import com.zhiziyun.dmptest.bot.util.SlideListView;
 
@@ -66,11 +67,29 @@ public class TanzhenListAdapter extends BaseAdapter {
         holder.text3.setText(list.get(position).get("content3"));
         final SlideItemView itemView = (SlideItemView) convertView;
         itemView.showContent();//滑动listview就隐藏
+        //点击解绑
         holder.tv_unbind.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 itemView.showContent();
-                TanzhenListActivity.tanzhenListActivity.unbindTanzhen(list.get(position).get("id"));
+                //点击弹出对话框
+                final CustomDialog customDialog = new CustomDialog(context);
+                customDialog.setTitle("消息提示");
+                customDialog.setMessage("是否要解绑该探针");
+                customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                    @Override
+                    public void onYesClick() {
+                        TanzhenListActivity.tanzhenListActivity.unbindTanzhen(list.get(position).get("id"));
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                    @Override
+                    public void onNoClick() {
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.show();
             }
         });
         return convertView;

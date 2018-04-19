@@ -138,63 +138,67 @@ public class LoginActivity extends BaseActivity {
     }
 
     public void Login() {
-        //加载动画
-        dialog = MyDialog.showDialog(this);
-        dialog.show();
-        //登录
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    OkHttpClient client = new OkHttpClient();
-                    RequestBody body = new FormBody.Builder()
-                            .add("email", tv_username.getText().toString())
-                            .add("password", tv_password.getText().toString()).build();
-                    final Request request = new Request.Builder()
-                            .url(BaseUrl.BaseLogin)
-                            .post(body)
-                            .build();
+        try {
+            //加载动画
+            dialog = MyDialog.showDialog(this);
+            dialog.show();
+            //登录
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        OkHttpClient client = new OkHttpClient();
+                        RequestBody body = new FormBody.Builder()
+                                .add("email", tv_username.getText().toString())
+                                .add("password", tv_password.getText().toString()).build();
+                        final Request request = new Request.Builder()
+                                .url(BaseUrl.BaseLogin)
+                                .post(body)
+                                .build();
 
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
 
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            String str = response.body().string();
-                            Log.i("infos", str);
-                            try {
-                                JSONObject json = new JSONObject(str);
-                                if (json.get("success").toString().equals("true")) {//返回为true表示登录成功
-                                    editors.putString("accountid", json.get("accountid").toString());
-                                    editors.putString("siteid", json.get("siteid").toString());
-                                    editors.putString("company", json.get("company").toString());
-                                    editors.putString("logourl", json.get("logourl").toString());
-                                    editors.putBoolean("isAllowOnlinePay", (Boolean) json.get("isAllowOnlinePay"));
-                                    editors.commit();//提交
-                                    startActivity(new Intent(LoginActivity.this, HomePageActivity.class));
-                                    finish();
-                                    dialog.dismiss();
-                                } else {
-                                    Message msg = new Message();
-                                    msg.what = 1;
-                                    msg.obj = json.get("msg").toString();
-                                    handler.sendMessage(msg);
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
                             }
 
-                        }
-                    });
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                String str = response.body().string();
+                                Log.i("infos", str);
+                                try {
+                                    JSONObject json = new JSONObject(str);
+                                    if (json.get("success").toString().equals("true")) {//返回为true表示登录成功
+                                        editors.putString("accountid", json.get("accountid").toString());
+                                        editors.putString("siteid", json.get("siteid").toString());
+                                        editors.putString("company", json.get("company").toString());
+                                        editors.putString("logourl", json.get("logourl").toString());
+                                        editors.putBoolean("isAllowOnlinePay", (Boolean) json.get("isAllowOnlinePay"));
+                                        editors.commit();//提交
+                                        startActivity(new Intent(LoginActivity.this, HomePageActivity.class));
+                                        finish();
+                                        dialog.dismiss();
+                                    } else {
+                                        Message msg = new Message();
+                                        msg.what = 1;
+                                        msg.obj = json.get("msg").toString();
+                                        handler.sendMessage(msg);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        }).start();
+            }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     Handler handler = new Handler() {
@@ -207,48 +211,52 @@ public class LoginActivity extends BaseActivity {
                     ToastUtils.showShort(LoginActivity.this, msg.obj.toString());
                     break;
                 case 2:
-                    if (versionUpdate.getResponse().isNeedForcedUpdate()) {//是否需要强制更新
-                        try {
-                            //强制更新没有取消选项
-                            final SelfDialog selfDialog = new SelfDialog(LoginActivity.this);
-                            selfDialog.setTitle(versionUpdate.getResponse().getTitle());
-                            selfDialog.setMessage(versionUpdate.getResponse().getMessage());
-                            selfDialog.setYesOnclickListener("确定", new SelfDialog.onYesOnclickListener() {
-                                @Override
-                                public void onYesClick() {
-                                    loadNewVersionProgress(versionUpdate.getResponse().getDownloadUrl());//下载最新的版本程序
-                                    selfDialog.dismiss();
-                                }
-                            });
-                            selfDialog.show();
-                            selfDialog.setCancelable(false);//禁止点击回退键
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    try {
+                        if (versionUpdate.getResponse().isNeedForcedUpdate()) {//是否需要强制更新
+                            try {
+                                //强制更新没有取消选项
+                                final SelfDialog selfDialog = new SelfDialog(LoginActivity.this);
+                                selfDialog.setTitle(versionUpdate.getResponse().getTitle());
+                                selfDialog.setMessage(versionUpdate.getResponse().getMessage());
+                                selfDialog.setYesOnclickListener("确定", new SelfDialog.onYesOnclickListener() {
+                                    @Override
+                                    public void onYesClick() {
+                                        loadNewVersionProgress(versionUpdate.getResponse().getDownloadUrl());//下载最新的版本程序
+                                        selfDialog.dismiss();
+                                    }
+                                });
+                                selfDialog.show();
+                                selfDialog.setCancelable(false);//禁止点击回退键
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            try {
+                                //点击弹出对话框
+                                final CustomDialog customDialog = new CustomDialog(LoginActivity.this);
+                                customDialog.setTitle(versionUpdate.getResponse().getTitle());
+                                customDialog.setMessage(versionUpdate.getResponse().getMessage());
+                                customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                                    @Override
+                                    public void onYesClick() {
+                                        loadNewVersionProgress(versionUpdate.getResponse().getDownloadUrl());//下载最新的版本程序
+                                        customDialog.dismiss();
+                                    }
+                                });
+                                customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                                    @Override
+                                    public void onNoClick() {
+                                        customDialog.dismiss();
+                                    }
+                                });
+                                customDialog.show();
+                                customDialog.setCancelable(false);//禁止点击回退键
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
-                    } else {
-                        try {
-                            //点击弹出对话框
-                            final CustomDialog customDialog = new CustomDialog(LoginActivity.this);
-                            customDialog.setTitle(versionUpdate.getResponse().getTitle());
-                            customDialog.setMessage(versionUpdate.getResponse().getMessage());
-                            customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
-                                @Override
-                                public void onYesClick() {
-                                    loadNewVersionProgress(versionUpdate.getResponse().getDownloadUrl());//下载最新的版本程序
-                                    customDialog.dismiss();
-                                }
-                            });
-                            customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
-                                @Override
-                                public void onNoClick() {
-                                    customDialog.dismiss();
-                                }
-                            });
-                            customDialog.show();
-                            customDialog.setCancelable(false);//禁止点击回退键
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
                 case 3:
@@ -345,59 +353,63 @@ public class LoginActivity extends BaseActivity {
     }
 
     public void recordLogin() {
-        //记录用户登录
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final JSONObject json = new JSONObject();
-                    json.put("siteid", "0zoTLi29XRgq");
-                    json.put("zzid", "0zoTLha93ySI");//广告活动编号
-                    json.put("appid", "com.zhiziyun.dmptest.bot");//应用编号
-                    TelephonyManager telephonyManager = (TelephonyManager) LoginActivity.this.getSystemService(LoginActivity.this.TELEPHONY_SERVICE);
-                    String imei = telephonyManager.getDeviceId();
-                    json.put("imei", imei);
-                    json.put("who", "");//注册用户编号
-                    json.put("idfa", "");
-                    json.put("idfy", "");
-                    json.put("channelid", "");//渠道id
-                    json.put("os", 0);//系统安桌是0
-                    json.put("appzzid", "0zoTLi29XRgq");
-                    OkHttpClient client = new OkHttpClient();
-                    String url = null;
+        try {
+            //记录用户登录
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
                     try {
-                        url = json.toString();
+                        final JSONObject json = new JSONObject();
+                        json.put("siteid", "0zoTLi29XRgq");
+                        json.put("zzid", "0zoTLha93ySI");//广告活动编号
+                        json.put("appid", "com.zhiziyun.dmptest.bot");//应用编号
+                        TelephonyManager telephonyManager = (TelephonyManager) LoginActivity.this.getSystemService(LoginActivity.this.TELEPHONY_SERVICE);
+                        String imei = telephonyManager.getDeviceId();
+                        json.put("imei", imei);
+                        json.put("who", "");//注册用户编号
+                        json.put("idfa", "");
+                        json.put("idfy", "");
+                        json.put("channelid", "");//渠道id
+                        json.put("os", 0);//系统安桌是0
+                        json.put("appzzid", "0zoTLi29XRgq");
+                        OkHttpClient client = new OkHttpClient();
+                        String url = null;
+                        try {
+                            url = json.toString();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                        RequestBody body = RequestBody.create(mediaType, url);
+                        final Request request = new Request.Builder()
+                                .url(BaseUrl.BaseJiang + "logup")
+                                .addHeader("apiid", "0zoTLi29XRgq")
+                                .addHeader("token", URLEncoder.encode(Token.gettoken2(), "utf-8"))
+                                .addHeader("content-type", "application/x-www-form-urlencoded")
+                                .post(body)
+                                .build();
+
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                Log.i("response", "登录返回：" + e.toString());
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                Log.i("response", "登录返回：" + response.body().string());
+                            }
+                        });
+
                     } catch (Exception e) {
+                        Log.i("response", e.toString());
                         e.printStackTrace();
                     }
-                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                    RequestBody body = RequestBody.create(mediaType, url);
-                    final Request request = new Request.Builder()
-                            .url(BaseUrl.BaseJiang + "logup")
-                            .addHeader("apiid", "0zoTLi29XRgq")
-                            .addHeader("token", URLEncoder.encode(Token.gettoken2(), "utf-8"))
-                            .addHeader("content-type", "application/x-www-form-urlencoded")
-                            .post(body)
-                            .build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                            Log.i("response", "登录返回：" + e.toString());
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            Log.i("response", "登录返回：" + response.body().string());
-                        }
-                    });
-
-                } catch (Exception e) {
-                    Log.i("response", e.toString());
-                    e.printStackTrace();
                 }
-            }
-        }).start();
+            }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void versionUpdate() {
@@ -465,65 +477,69 @@ public class LoginActivity extends BaseActivity {
     }
 
     public void startApp(final boolean bol) {
-        //记录打开APP
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final JSONObject json = new JSONObject();
-                    json.put("siteid", "0zoTLi29XRgq");
-                    json.put("zzid", "0zoTLha93ySI");//广告活动编号
-                    json.put("appid", "com.zhiziyun.dmptest.bot");//应用编号
-                    TelephonyManager telephonyManager = (TelephonyManager) getSystemService(LoginActivity.this.TELEPHONY_SERVICE);
-                    String imei = telephonyManager.getDeviceId();
-                    json.put("deviceid", imei);//设备编号
-                    json.put("imei", imei);
-                    json.put("idfa", "");
-                    json.put("idfy", "");
-                    json.put("channelid", "");//渠道id
-                    json.put("install", bol);
-                    TimeZone tz = TimeZone.getDefault();
-                    String strTz = tz.getDisplayName(false, TimeZone.SHORT);
-                    json.put("tx", strTz);//时区
-                    json.put("devicetype", android.os.Build.MODEL);//设备类型
-                    json.put("op", getSimOperatorInfo());//运营商
-                    json.put("netword", NetWorkUtil.getNetworkType(LoginActivity.this));//联网方式
-                    json.put("os", 0);
-                    json.put("appzzid", "0zoTLi29XRgq");
-                    OkHttpClient client = new OkHttpClient();
-                    String url = null;
+        try {
+            //记录打开APP
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
                     try {
-                        url = json.toString();
+                        final JSONObject json = new JSONObject();
+                        json.put("siteid", "0zoTLi29XRgq");
+                        json.put("zzid", "0zoTLha93ySI");//广告活动编号
+                        json.put("appid", "com.zhiziyun.dmptest.bot");//应用编号
+                        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(LoginActivity.this.TELEPHONY_SERVICE);
+                        String imei = telephonyManager.getDeviceId();
+                        json.put("deviceid", imei);//设备编号
+                        json.put("imei", imei);
+                        json.put("idfa", "");
+                        json.put("idfy", "");
+                        json.put("channelid", "");//渠道id
+                        json.put("install", bol);
+                        TimeZone tz = TimeZone.getDefault();
+                        String strTz = tz.getDisplayName(false, TimeZone.SHORT);
+                        json.put("tx", strTz);//时区
+                        json.put("devicetype", Build.MODEL);//设备类型
+                        json.put("op", getSimOperatorInfo());//运营商
+                        json.put("netword", NetWorkUtil.getNetworkType(LoginActivity.this));//联网方式
+                        json.put("os", 0);
+                        json.put("appzzid", "0zoTLi29XRgq");
+                        OkHttpClient client = new OkHttpClient();
+                        String url = null;
+                        try {
+                            url = json.toString();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                        RequestBody body = RequestBody.create(mediaType, url);
+                        final Request request = new Request.Builder()
+                                .url(BaseUrl.BaseJiang + "startup")
+                                .addHeader("apiid", "0zoTLi29XRgq")
+                                .addHeader("token", URLEncoder.encode(Token.gettoken2(), "utf-8"))
+                                .addHeader("content-type", "application/x-www-form-urlencoded")
+                                .post(body)
+                                .build();
+
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                Log.i("response", "打开APP返回：" + e.toString());
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                Log.i("response", "打开APP返回：" + response.body().string());
+                            }
+                        });
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                    RequestBody body = RequestBody.create(mediaType, url);
-                    final Request request = new Request.Builder()
-                            .url(BaseUrl.BaseJiang + "startup")
-                            .addHeader("apiid", "0zoTLi29XRgq")
-                            .addHeader("token", URLEncoder.encode(Token.gettoken2(), "utf-8"))
-                            .addHeader("content-type", "application/x-www-form-urlencoded")
-                            .post(body)
-                            .build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                            Log.i("response", "打开APP返回：" + e.toString());
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            Log.i("response", "打开APP返回：" + response.body().string());
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            }
-        }).start();
+            }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //获取运营商

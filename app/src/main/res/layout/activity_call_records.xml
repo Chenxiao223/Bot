@@ -24,6 +24,7 @@
             android:src="@drawable/back" />
 
         <TextView
+            android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
@@ -32,12 +33,43 @@
             android:textColor="@color/white"
             android:textSize="@dimen/title_text_size" />
 
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:paddingRight="@dimen/image_small"
+            android:gravity="center"
+            android:text="日期"
+            android:textColor="@color/white"
+            android:textSize="@dimen/textsizi" />
     </RelativeLayout>
 
-    <ExpandableListView
-        android:id="@+id/expandableListView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:divider="@null" />
+        android:layout_height="match_parent">
+
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/refreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                srlClassicsSpinnerStyle="FixedBehind"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <ListView
+                android:id="@+id/lv_call"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+        <include
+            android:id="@+id/line_page"
+            layout="@layout/layout_hides" />
+    </RelativeLayout>
 
 </LinearLayout>
