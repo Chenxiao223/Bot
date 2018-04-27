@@ -321,6 +321,7 @@
                 </HorizontalScrollView>
 
                 <LinearLayout
+                    android:id="@+id/line_date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/padding_left_right4"
@@ -342,6 +343,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/line_num"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/padding_left_right4"
@@ -364,6 +366,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/line_time"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/padding_left_right4"

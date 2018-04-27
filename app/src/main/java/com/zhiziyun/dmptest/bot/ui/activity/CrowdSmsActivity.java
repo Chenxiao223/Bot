@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
-import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
@@ -82,22 +81,26 @@ public class CrowdSmsActivity extends BaseActivity implements View.OnClickListen
     protected void onResume() {
         super.onResume();
         MobclickAgent.onResume(this);
-        if (map == null) {//根据这个值来判断是第一次进来还是第二次进来
-            //加载动画
-            dialog = MyDialog.showDialog(this);
-            dialog.show();
-            requestCrowd(1);//第二个参数为空就是查所有
-        } else {//第二次
-            try {
+        try {
+            if (map == null) {//根据这个值来判断是第一次进来还是第二次进来
+                //加载动画
+                dialog = MyDialog.showDialog(this);
                 dialog.show();
-                map.clear();
-                list.clear();
-                listStr.clear();
-                page = 1;
-                requestCrowd(page);
-            } catch (Exception e) {
-                e.printStackTrace();
+                requestCrowd(1);//第二个参数为空就是查所有
+            } else {//第二次
+                try {
+                    dialog.show();
+                    map.clear();
+                    list.clear();
+                    listStr.clear();
+                    page = 1;
+                    requestCrowd(page);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -112,6 +115,7 @@ public class CrowdSmsActivity extends BaseActivity implements View.OnClickListen
         findViewById(R.id.tv_back).setOnClickListener(this);
         findViewById(R.id.tv_add_crowd).setOnClickListener(this);
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
+        smartRefreshLayout.setEnableLoadmore(false);//屏蔽掉上拉加载的效果
         share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         findViewById(R.id.tv_back).setOnClickListener(this);
         findViewById(R.id.tv_commit).setOnClickListener(this);
@@ -134,18 +138,6 @@ public class CrowdSmsActivity extends BaseActivity implements View.OnClickListen
             }
         });
 
-        //上拉加载
-        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
-            @Override
-            public void onLoadmore(RefreshLayout refreshlayout) {
-                if ((crowd.getResponse().getTotal() - (page - 1) * 10) > 0) {
-                    requestCrowd(page);
-                } else {
-                    ToastUtils.showShort(CrowdSmsActivity.this, "最后一页了");
-                    smartRefreshLayout.finishLoadmore(0);//停止刷新
-                }
-            }
-        });
     }
 
     public void requestCrowd(final int page) {
@@ -211,54 +203,58 @@ public class CrowdSmsActivity extends BaseActivity implements View.OnClickListen
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    if (crowd.getResponse().getData().size() == 0) {
-                        line_page.setVisibility(View.VISIBLE);
+                    try {
+                        if (crowd.getResponse().getData().size() == 0) {
+                            line_page.setVisibility(View.VISIBLE);
+                            dialog.dismiss();
+                            smartRefreshLayout.finishLoadmore(0);//停止刷新
+                            ToastUtils.showShort(CrowdSmsActivity.this, "无数据");
+                        } else {
+                            for (int i = 0; i < crowd.getResponse().getData().size(); i++) {
+                                map = new HashMap<>();
+                                map.put("name", crowd.getResponse().getData().get(i).getCustomMobileGroupName());
+                                map.put("tagIds", crowd.getResponse().getData().get(i).getCustomMobileGroupId());
+                                if (flag != 0) {//如果不是携带数据进来的就不执行
+                                    for (int j = 0; j < getIntent().getStringArrayListExtra("list").size(); j++) {
+                                        if (crowd.getResponse().getData().get(i).getCustomMobileGroupId().
+                                                equals(getIntent().getStringArrayListExtra("list").get(j))) {
+                                            map.put("boolean", true);
+                                            //为保持一致性，将数据存入集合
+                                            listStr.add(getIntent().getStringArrayListExtra("list").get(j));
+                                            break;//如果为true就跳出当前循环，否则true会被覆盖
+                                        } else {
+                                            map.put("boolean", false);
+                                        }
+                                    }
+                                } else {
+                                    map.put("boolean", false);
+                                }
+                                list.add(map);
+                            }
+                            page++;
+                            line_page.setVisibility(View.GONE);
+                        }
+                        cbAdapter = new CheckBoxAdapter(CrowdSmsActivity.this, list);
+                        lv_crowd.setAdapter(cbAdapter);
                         dialog.dismiss();
                         smartRefreshLayout.finishLoadmore(0);//停止刷新
-                        ToastUtils.showShort(CrowdSmsActivity.this, "无数据");
-                    } else {
-                        for (int i = 0; i < crowd.getResponse().getData().size(); i++) {
-                            map = new HashMap<>();
-                            map.put("name", crowd.getResponse().getData().get(i).getCustomMobileGroupName());
-                            map.put("tagIds", crowd.getResponse().getData().get(i).getCustomMobileGroupId());
-                            if (flag != 0) {//如果不是携带数据进来的就不执行
-                                for (int j = 0; j < getIntent().getStringArrayListExtra("list").size(); j++) {
-                                    if (crowd.getResponse().getData().get(i).getCustomMobileGroupId().
-                                            equals(getIntent().getStringArrayListExtra("list").get(j))) {
-                                        map.put("boolean", true);
-                                        //为保持一致性，将数据存入集合
-                                        listStr.add(getIntent().getStringArrayListExtra("list").get(j));
-                                        break;//如果为true就跳出当前循环，否则true会被覆盖
-                                    } else {
-                                        map.put("boolean", false);
-                                    }
+                        lv_crowd.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                CheckBoxAdapter.ViewCache viewCache = (CheckBoxAdapter.ViewCache) view.getTag();
+                                viewCache.cb.toggle();
+                                list.get(position).put("boolean", viewCache.cb.isChecked());
+                                cbAdapter.notifyDataSetChanged();
+                                if (viewCache.cb.isChecked()) {//被选中状态
+                                    listStr.add(list.get(position).get("tagIds").toString());
+                                } else {//从选中状态转化为未选中
+                                    listStr.remove(list.get(position).get("tagIds").toString());
                                 }
-                            } else {
-                                map.put("boolean", false);
                             }
-                            list.add(map);
-                        }
-                        page++;
-                        line_page.setVisibility(View.GONE);
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    cbAdapter = new CheckBoxAdapter(CrowdSmsActivity.this, list);
-                    lv_crowd.setAdapter(cbAdapter);
-                    dialog.dismiss();
-                    smartRefreshLayout.finishLoadmore(0);//停止刷新
-                    lv_crowd.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            CheckBoxAdapter.ViewCache viewCache = (CheckBoxAdapter.ViewCache) view.getTag();
-                            viewCache.cb.toggle();
-                            list.get(position).put("boolean", viewCache.cb.isChecked());
-                            cbAdapter.notifyDataSetChanged();
-                            if (viewCache.cb.isChecked()) {//被选中状态
-                                listStr.add(list.get(position).get("tagIds").toString());
-                            } else {//从选中状态转化为未选中
-                                listStr.remove(list.get(position).get("tagIds").toString());
-                            }
-                        }
-                    });
                     break;
                 case 2:
                     line_page.setVisibility(View.VISIBLE);
@@ -281,13 +277,17 @@ public class CrowdSmsActivity extends BaseActivity implements View.OnClickListen
                 startActivity(new Intent(CrowdSmsActivity.this, AddCorwdActivity.class));
                 break;
             case R.id.tv_commit:
-                if (listStr.size() == 0) {
-                    ToastUtils.showShort(CrowdSmsActivity.this, "请选择人群");
-                } else {
-                    Intent intent = new Intent();
-                    intent.putStringArrayListExtra("list", (ArrayList<String>) listStr);
-                    setResult(FLAG, intent);
-                    finish();
+                try {
+                    if (listStr.size() == 0) {
+                        ToastUtils.showShort(CrowdSmsActivity.this, "请选择人群");
+                    } else {
+                        Intent intent = new Intent();
+                        intent.putStringArrayListExtra("list", (ArrayList<String>) listStr);
+                        setResult(FLAG, intent);
+                        finish();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 break;
             case R.id.line_page:

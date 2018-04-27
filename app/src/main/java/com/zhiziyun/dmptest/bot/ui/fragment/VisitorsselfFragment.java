@@ -86,6 +86,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private boolean tanzhen = true;
     private LinearLayout line_page;
     private Visitorsself v;
+    private int m_Position = 0;
 
 
     @Nullable
@@ -128,16 +129,20 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     }
 
     public void requestNT() {
-        list_shop.clear();
-        list_tanzhen.clear();
-        hm_store.clear();
-        hm_probe.clear();
-        //初始化接口没有的数据
-        list_shop.add("全部门店");
-        list_tanzhen.add("全部探针");
-        hm_store.put("全部门店", "0");
-        hm_probe.put("全部探针", "0");
-        getSiteOption();
+        try {
+            list_shop.clear();
+            list_tanzhen.clear();
+            hm_store.clear();
+            hm_probe.clear();
+            //初始化接口没有的数据
+            list_shop.add("全部门店");
+            list_tanzhen.add("全部探针");
+            hm_store.put("全部门店", "0");
+            hm_probe.put("全部探针", "0");
+            getSiteOption();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void initView() {
@@ -168,6 +173,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 intent.putExtra("mac", list_visitors.get(position).get("mac"));
                 intent.putExtra("brands", list_brands.get(position));
                 intent.putExtra("model", list_model.get(position));
+                intent.putExtra("probemac", list_visitors.get(position).get("probemac"));
+                intent.putExtra("is_new", list_visitors.get(position).get("is_new"));
                 startActivity(intent);
             }
         });
@@ -218,6 +225,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 try {
                     final JSONObject json = new JSONObject();
                     json.put("siteId", share.getString("siteid", ""));
+                    json.put("id", storeId);
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
@@ -228,7 +236,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url(BaseUrl.BaseWang + "option/siteOption.action")
+                            .url(BaseUrl.BaseWang + "option/probeOption.action")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -280,46 +288,68 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1:
-                    adp_shop = new SpinnerArrayAdapter(getActivity(), list_shop);
-                    spn_shop.setAdapter(adp_shop);
-                    spn_shop.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                            if (shop) {//spinner初始化的时候不执行点击事件
-                                shop = false;
-                            } else {
-                                storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
-                                clearAllData();
-                                getData(pageNum);
+                    try {
+                        adp_shop = new SpinnerArrayAdapter(getActivity(), list_shop);
+                        spn_shop.setAdapter(adp_shop);
+                        spn_shop.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                if (shop) {//spinner初始化的时候不执行点击事件
+                                    shop = false;
+                                } else {
+                                    storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
+                                    clearAllData();
+                                    getData(pageNum);
+                                    //为了防止无限循环
+                                    requestNT();
+                                    shop = true;
+                                    m_Position = position;
+                                }
                             }
-                        }
 
-                        @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
 
-                        }
-                    });
+                            }
+                        });
+                        spn_shop.setSelection(m_Position);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case 2:
-                    adp_tanzhen = new SpinnerArrayAdapter(getActivity(), list_tanzhen);
-                    spn_tanzhen.setAdapter(adp_tanzhen);
-                    spn_tanzhen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                            if (tanzhen) {//spinner初始化的时候不执行点击事件
-                                tanzhen = false;
-                            } else {
-                                microprobeId = hm_probe.get(list_tanzhen.get(position));
-                                clearAllData();
-                                getData(pageNum);
+                    try {
+                        adp_tanzhen = new SpinnerArrayAdapter(getActivity(), list_tanzhen);
+                        spn_tanzhen.setAdapter(adp_tanzhen);
+                        spn_tanzhen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                if (tanzhen) {//spinner初始化的时候不执行点击事件
+                                    tanzhen = false;
+                                } else {
+                                    try {
+                                        String str = hm_probe.get(list_tanzhen.get(position));
+                                        if (str.equals("0")) {
+                                            microprobeId = "0";
+                                        } else {
+                                            microprobeId = str.substring(0, str.indexOf("_"));
+                                        }
+                                        clearAllData();
+                                        getData(pageNum);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
-                        }
 
-                        @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
 
-                        }
-                    });
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case 3:
                     try {
@@ -337,6 +367,8 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                 list_model.add(visitorsself.getRows().get(i).getModel());
                                 hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
                                 hm_visitors.put("mac", visitorsself.getRows().get(i).getMac());
+                                hm_visitors.put("probemac", visitorsself.getRows().get(i).getProbemac());//门店mac
+                                hm_visitors.put("is_new", String.valueOf(visitorsself.getRows().get(i).is_new()));
                                 list_visitors.add(hm_visitors);
                             }
                             pageNum++;
@@ -381,7 +413,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     jsonObject.put("storeId", storeId);
                     jsonObject.put("sort", "visittime");
                     jsonObject.put("order", "desc");
-                    if (storeId != 0) {//如果storeId为0就不用传参数macs了
+                    if (!microprobeId.equals("0")) {
                         JSONArray jsonArray = new JSONArray();
                         jsonArray.put(microprobeId);
                         jsonObject.put("macs", jsonArray);

@@ -99,7 +99,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="到店客流性别分布"
+                        android:text="性别分布"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:visibility="invisible" />
@@ -116,7 +116,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="到店客流年龄分布"
+                        android:text="年龄分布"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:visibility="invisible" />
@@ -129,11 +129,28 @@
                         android:layout_marginTop="@dimen/padding_left_right" />
 
                     <TextView
+                        android:id="@+id/tv_active"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="活跃度分布"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
+
+                    <com.zhiziyun.dmptest.bot.widget.PieChart_active
+                        android:id="@+id/chart_active"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="@dimen/padding_left_right"
+                        android:layout_marginTop="@dimen/padding_left_right" />
+
+                    <TextView
                         android:id="@+id/tv_mpb"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="到店客流手机品牌分布"
+                        android:text="手机品牌分布"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:visibility="invisible" />
@@ -150,7 +167,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="到店客流手机型号分布"
+                        android:text="手机型号分布"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:visibility="invisible" />
@@ -167,7 +184,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="到店客流手机价格分布"
+                        android:text="手机价格分布"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:visibility="invisible" />
@@ -179,22 +196,6 @@
                         android:layout_marginBottom="@dimen/padding_left_right"
                         android:layout_marginTop="@dimen/padding_left_right" />
 
-                    <TextView
-                        android:id="@+id/tv_active"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="到店客流活跃度分布"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:visibility="invisible" />
-
-                    <com.zhiziyun.dmptest.bot.widget.PieChart_active
-                        android:id="@+id/chart_active"
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:layout_marginBottom="@dimen/padding_left_right"
-                        android:layout_marginTop="@dimen/padding_left_right" />
                 </LinearLayout>
             </ScrollView>
         </com.scwang.smartrefresh.layout.SmartRefreshLayout>

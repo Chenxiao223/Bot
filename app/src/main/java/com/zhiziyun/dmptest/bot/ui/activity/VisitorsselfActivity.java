@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.umeng.analytics.MobclickAgent;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.AppImage;
@@ -31,7 +30,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import co.lujun.androidtagview.TagContainerLayout;
@@ -56,6 +58,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
     private MyDialog dialog;
     private AppImage app;
     private SlidingLayout slidingLayout;
+    private LinearLayout line_date, line_num, line_time;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,6 +102,9 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
         tv_num = (TextView) findViewById(R.id.tv_num);
         tv_time = (TextView) findViewById(R.id.tv_time);
         tv_mac = (TextView) findViewById(R.id.tv_mac);
+        line_date = (LinearLayout) findViewById(R.id.line_date);
+        line_num = (LinearLayout) findViewById(R.id.line_num);
+        line_time = (LinearLayout) findViewById(R.id.line_time);
 
         ImageView iv_back = (ImageView) findViewById(R.id.iv_back);
         iv_back.setOnClickListener(this);
@@ -125,6 +131,10 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
         //果冻弹跳效果
         slidingLayout = (SlidingLayout) findViewById(R.id.slidingLayout);
         slidingLayout.setSlidingOffset(0.2f);
+
+        if (getIntent().getStringExtra("is_new").equals("true")) {
+            line_date.setVisibility(View.GONE);
+        }
     }
 
     public void getData(final String mac) {
@@ -316,48 +326,62 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    if (TextUtils.isEmpty(vp.getDid())) {//如果没数据就提示
-                        ToastUtils.showShort(VisitorsselfActivity.this, "无数据");
-                    } else {
-                        try {
-                            String did = vp.getDid();//设备号
-                            //设备号从第十四位开始，后四位改为星号，其余不变。也就是从14到17位变为星号；
-                            StringBuffer buffer = new StringBuffer(did);
-                            tv_did.setText(buffer.replace(13, 17, "****"));//参数一：开始位置，参数二：结束位置，参数三：替换的字符串
-                            tv_date.setText(vp.getVisittime().substring(0, vp.getVisittime().indexOf(" ")));
-                            tv_num.setText(vp.getProbe_log().size() + "");
-                            tv_gender.setText(msg.getData().getString("gender", "未知"));
-                            tv_marriage.setText(msg.getData().getString("marriage", "未知"));
-                            tv_age.setText(msg.getData().getString("age", "未知"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        if (TextUtils.isEmpty(vp.getDid())) {//如果没数据就提示
+                            ToastUtils.showShort(VisitorsselfActivity.this, "无数据");
+                        } else {
+                            try {
+                                String did = vp.getDid();//设备号
+                                //设备号从第十四位开始，后四位改为星号，其余不变。也就是从14到17位变为星号；
+                                StringBuffer buffer = new StringBuffer(did);
+                                tv_did.setText(buffer.replace(13, 17, "****"));//参数一：开始位置，参数二：结束位置，参数三：替换的字符串
+                                tv_gender.setText(msg.getData().getString("gender", "未知"));
+                                tv_marriage.setText(msg.getData().getString("marriage", "未知"));
+                                tv_age.setText(msg.getData().getString("age", "未知"));
+                                for (int i = 0; i < vp.getProbe_log().size(); i++) {
+                                    if (getIntent().getStringExtra("probemac").equals(vp.getProbe_log().get(i).getProbe_mac())) {
+                                        tv_num.setText(vp.getProbe_log().get(i).getVisit_count() + "");
+                                        List<String> list = new ArrayList<>();
+                                        double counts = 0;
+                                        for (int j = 0; j < vp.getProbe_log().get(i).getVisit().size(); j++) {
+                                            list.add(vp.getProbe_log().get(i).getVisit().get(j).getVisit_date());
+                                            counts += vp.getProbe_log().get(i).getVisit().get(j).getVisit_length();
+                                        }
+                                        DecimalFormat df = new DecimalFormat("######0.00");//保留两位小数
+                                        tv_time.setText(df.format(counts / vp.getProbe_log().get(i).getVisit().size()) + "");
+                                        if (TextUtils.isEmpty(tv_time.getText().toString())) {
+                                            line_time.setVisibility(View.GONE);
+                                        }
+                                        //实现排序方法
+                                        Collections.sort(list);
+                                        if (list.size() > 1) {
+                                            tv_date.setText(list.get(list.size() - 2));
+                                            if (TextUtils.isEmpty(tv_date.getText().toString())) {
+                                                line_date.setVisibility(View.GONE);
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
-                        double sum = 0;
-                        int size = vp.getProbe_log().get(0).getVisit_count();//后台（王柏浩）说取第一条数据就行了
-                        for (int i = 0; i < size; i++) {
-                            sum += vp.getProbe_log().get(0).getVisit().get(i).getVisit_length();
-                        }
-                        try {
-                            DecimalFormat df = new DecimalFormat("######0.00");//保留两位小数
-                            tv_time.setText(df.format(sum / size) + "");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                            List<String> list_app = new ArrayList();
+                            for (int i = 0; i < vp.getApp().size(); i++) {
+                                list_app.add(vp.getApp().get(i).getName());
+                            }
+                            addApp(list_app);//动态添加APP
 
-                        List<String> list_app = new ArrayList();
-                        for (int i = 0; i < vp.getApp().size(); i++) {
-                            list_app.add(vp.getApp().get(i).getName());
+                            List<String> list_game = new ArrayList();
+                            for (int i = 0; i < vp.getGame().size(); i++) {
+                                list_game.add(vp.getGame().get(i).getName());
+                            }
+                            addGame(list_game);//动态添加APP
                         }
-                        addApp(list_app);//动态添加APP
-
-                        List<String> list_game = new ArrayList();
-                        for (int i = 0; i < vp.getGame().size(); i++) {
-                            list_game.add(vp.getGame().get(i).getName());
-                        }
-                        addGame(list_game);//动态添加APP
+                        dialog.dismiss();//关闭动画加载
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    dialog.dismiss();//关闭动画加载
                     break;
                 case 2:
                     Bitmap bitmap = (Bitmap) msg.obj;
@@ -369,6 +393,11 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
             }
         }
     };
+
+    private String getTime() {//可根据需要自行截取数据显示
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        return format.format(new Date());
+    }
 
     public String front(String str) {
         if (!str.equals("性别未知") && judgment(str)) {
@@ -412,19 +441,23 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                tv_age = null;
-                tv_marriage = null;
-                tv_gender = null;
-                tv_brands = null;
-                tv_model = null;
-                tv_did = null;
-                tv_date = null;
-                tv_num = null;
-                tv_time = null;
-                vp = null;
-                app = null;
-                Glide.get(VisitorsselfActivity.this).clearMemory();
-                System.gc();
+                try {
+                    tv_age = null;
+                    tv_marriage = null;
+                    tv_gender = null;
+                    tv_brands = null;
+                    tv_model = null;
+                    tv_did = null;
+                    tv_date = null;
+                    tv_num = null;
+                    tv_time = null;
+                    vp = null;
+                    app = null;
+                    Glide.get(VisitorsselfActivity.this).clearMemory();
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }, 500);
     }

@@ -198,123 +198,127 @@ public class DetailsActivity extends BaseActivity implements View.OnClickListene
     }
 
     public void phone(final String id, final View v) {
-        bindCode = "";
-        //判断是否为android6.0系统版本，如果是，需要动态添加权限
-        if (Build.VERSION.SDK_INT >= 23) {
-            //拨打电话权限
-            if (ContextCompat.checkSelfPermission(DetailsActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(DetailsActivity.this,
-                        Manifest.permission.CALL_PHONE)) {
-                    /**
-                     * 返回值：
-                     如果app之前请求过该权限,被用户拒绝, 这个方法就会返回true.
-                     如果用户之前拒绝权限的时候勾选了对话框中”Don’t ask again”的选项,那么这个方法会返回false.
-                     如果设备策略禁止应用拥有这条权限, 这个方法也返回false.
-                     弹窗需要解释为何需要该权限，再次请求授权
-                     */
-                    ToastUtils.showShort(DetailsActivity.this, "请授权！");
+        try {
+            bindCode = "";
+            //判断是否为android6.0系统版本，如果是，需要动态添加权限
+            if (Build.VERSION.SDK_INT >= 23) {
+                //拨打电话权限
+                if (ContextCompat.checkSelfPermission(DetailsActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(DetailsActivity.this,
+                            Manifest.permission.CALL_PHONE)) {
+                        /**
+                         * 返回值：
+                         如果app之前请求过该权限,被用户拒绝, 这个方法就会返回true.
+                         如果用户之前拒绝权限的时候勾选了对话框中”Don’t ask again”的选项,那么这个方法会返回false.
+                         如果设备策略禁止应用拥有这条权限, 这个方法也返回false.
+                         弹窗需要解释为何需要该权限，再次请求授权
+                         */
+                        ToastUtils.showShort(DetailsActivity.this, "请授权！");
 
-                    // 跳转到该应用的设置界面，让用户手动授权
-                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    Uri uri = Uri.fromParts("package", getAppProcessName(DetailsActivity.this), null);
-                    intent.setData(uri);
-                    startActivity(intent);
-                    ToastUtils.showShort(DetailsActivity.this, "请开启电话权限！");
-                } else {
-                    requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, 1);
+                        // 跳转到该应用的设置界面，让用户手动授权
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", getAppProcessName(DetailsActivity.this), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                        ToastUtils.showShort(DetailsActivity.this, "请开启电话权限！");
+                    } else {
+                        requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, 1);
+                    }
                 }
             }
-        }
 
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(DetailsActivity.this.TELEPHONY_SERVICE);
-        final String te1 = telephonyManager.getLine1Number();//获取本机号码
-        if (TextUtils.isEmpty(te1) && TextUtils.isEmpty(share.getString("phone", ""))) {
-            //如果获取不到手机号码就手动输入
-            //点击弹出对话框
-            final EditDialog editDialog = new EditDialog(DetailsActivity.this);
-            editDialog.setTitle("请输入电话号码");
-            editDialog.setYesOnclickListener("确定", new EditDialog.onYesOnclickListener() {
-                @Override
-                public void onYesClick(String phone) {
-                    if (TextUtils.isEmpty(phone)) {
-                        ToastUtils.showShort(DetailsActivity.this, "请输入电话号码");
-                    } else {
-                        if (isMobile(phone)) {//如果手机格式正确
-                            editors.putString("phone", phone);
-                            editors.commit();
-                            editDialog.dismiss();
-                            //让软键盘隐藏
-                            InputMethodManager imm = (InputMethodManager) DetailsActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(DetailsActivity.this.TELEPHONY_SERVICE);
+            final String te1 = telephonyManager.getLine1Number();//获取本机号码
+            if (TextUtils.isEmpty(te1) && TextUtils.isEmpty(share.getString("phone", ""))) {
+                //如果获取不到手机号码就手动输入
+                //点击弹出对话框
+                final EditDialog editDialog = new EditDialog(DetailsActivity.this);
+                editDialog.setTitle("请输入电话号码");
+                editDialog.setYesOnclickListener("确定", new EditDialog.onYesOnclickListener() {
+                    @Override
+                    public void onYesClick(String phone) {
+                        if (TextUtils.isEmpty(phone)) {
+                            ToastUtils.showShort(DetailsActivity.this, "请输入电话号码");
                         } else {
-                            ToastUtils.showShort(DetailsActivity.this, "手机号不合法");
+                            if (isMobile(phone)) {//如果手机格式正确
+                                editors.putString("phone", phone);
+                                editors.commit();
+                                editDialog.dismiss();
+                                //让软键盘隐藏
+                                InputMethodManager imm = (InputMethodManager) DetailsActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                            } else {
+                                ToastUtils.showShort(DetailsActivity.this, "手机号不合法");
+                            }
                         }
                     }
-                }
-            });
-            editDialog.setNoOnclickListener("取消", new EditDialog.onNoOnclickListener() {
-                @Override
-                public void onNoClick() {
-                    editDialog.dismiss();
-                }
-            });
-            editDialog.show();
-        } else {
-            //拨打电话接口
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        JSONObject json = new JSONObject();
-                        json.put("siteId", share.getString("siteid", ""));
-                        if (TextUtils.isEmpty(te1)) {
-                            //如果获取不到手机号就从缓存获取
-                            json.put("phoneNumber", share.getString("phone", "").replace("+86", ""));//将电话号码前的+86去掉
-                        } else {
-                            //能够获取手机号就直接使用
-                            json.put("phoneNumber", te1.replace("+86", ""));
-                        }
-                        json.put("guestId", id);
-                        OkHttpClient client = new OkHttpClient();
-                        String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
-                        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                        RequestBody body = RequestBody.create(mediaType, url);
-                        Request request = new Request.Builder()
-                                .url(BaseUrl.BaseWang + "dial/phone.action")
-                                .post(body)
-                                .addHeader("content-type", "application/x-www-form-urlencoded")
-                                .build();
-
-                        client.newCall(request).enqueue(new Callback() {
-                            @Override
-                            public void onFailure(Call call, IOException e) {
-
+                });
+                editDialog.setNoOnclickListener("取消", new EditDialog.onNoOnclickListener() {
+                    @Override
+                    public void onNoClick() {
+                        editDialog.dismiss();
+                    }
+                });
+                editDialog.show();
+            } else {
+                //拨打电话接口
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JSONObject json = new JSONObject();
+                            json.put("siteId", share.getString("siteid", ""));
+                            if (TextUtils.isEmpty(te1)) {
+                                //如果获取不到手机号就从缓存获取
+                                json.put("phoneNumber", share.getString("phone", "").replace("+86", ""));//将电话号码前的+86去掉
+                            } else {
+                                //能够获取手机号就直接使用
+                                json.put("phoneNumber", te1.replace("+86", ""));
                             }
+                            json.put("guestId", id);
+                            OkHttpClient client = new OkHttpClient();
+                            String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                            MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                            RequestBody body = RequestBody.create(mediaType, url);
+                            Request request = new Request.Builder()
+                                    .url(BaseUrl.BaseWang + "dial/phone.action")
+                                    .post(body)
+                                    .addHeader("content-type", "application/x-www-form-urlencoded")
+                                    .build();
 
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                try {
-                                    Gson gson = new Gson();
-                                    callInfo = gson.fromJson(response.body().string(), CallInfo.class);
-                                    if (callInfo.isSuccess()) {
-                                        bindCode = callInfo.getObj();
-                                        Message message = new Message();
-                                        message.what = 2;
-                                        message.obj = callInfo.getMsg();
-                                        handler.sendMessage(message);
-                                    } else {
-                                        handler.sendEmptyMessage(3);
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                            client.newCall(request).enqueue(new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+
                                 }
-                            }
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    try {
+                                        Gson gson = new Gson();
+                                        callInfo = gson.fromJson(response.body().string(), CallInfo.class);
+                                        if (callInfo.isSuccess()) {
+                                            bindCode = callInfo.getObj();
+                                            Message message = new Message();
+                                            message.what = 2;
+                                            message.obj = callInfo.getMsg();
+                                            handler.sendMessage(message);
+                                        } else {
+                                            handler.sendEmptyMessage(3);
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-            }).start();
+                }).start();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -516,16 +520,20 @@ public class DetailsActivity extends BaseActivity implements View.OnClickListene
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    Customer customer = (Customer) msg.obj;
-                    List<String> list = new ArrayList<>();
-                    for (int i = 0; i < customer.getRows().size(); i++) {
-                        if (customer.getRows().get(i).getSegmentId() == -1) {
-                            list.add("新增客户");
-                        } else {
-                            list.add(customer.getRows().get(i).getSegmentName());
+                    try {
+                        Customer customer = (Customer) msg.obj;
+                        List<String> list = new ArrayList<>();
+                        for (int i = 0; i < customer.getRows().size(); i++) {
+                            if (customer.getRows().get(i).getSegmentId() == -1) {
+                                list.add("新增客户");
+                            } else {
+                                list.add(customer.getRows().get(i).getSegmentName());
+                            }
                         }
+                        setCustomerSource(list);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    setCustomerSource(list);
                     break;
                 case 2:
                     if (ActivityCompat.checkSelfPermission(DetailsActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {

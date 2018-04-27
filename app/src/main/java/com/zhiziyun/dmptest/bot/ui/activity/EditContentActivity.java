@@ -75,14 +75,17 @@ public class EditContentActivity extends BaseActivity implements View.OnClickLis
         tv_content.setText(intent.getStringExtra("msg"));
         et_content = (EditText) findViewById(R.id.et_content);
         et_follow = (EditText) findViewById(R.id.et_follow);
-        if (intent.getIntExtra("flag", 3) != 9527) {//点击客户、负责人、备注进来
-            et_content.setVisibility(View.VISIBLE);
-            et_content.setText(intent.getStringExtra("content"));
-            et_content.setSelection(intent.getStringExtra("content").length());
-        }
-        if (intent.getIntExtra("flag", 3) == 9527) {//点击写跟进进来
-            et_follow.setVisibility(View.VISIBLE);
-            relativeLayout.setVisibility(View.VISIBLE);
+        try {
+            if (intent.getIntExtra("flag", 3) != 9527) {//点击客户、负责人、备注进来
+                et_content.setVisibility(View.VISIBLE);
+                et_content.setText(intent.getStringExtra("content"));
+            }
+            if (intent.getIntExtra("flag", 3) == 9527) {//点击写跟进进来
+                et_follow.setVisibility(View.VISIBLE);
+                relativeLayout.setVisibility(View.VISIBLE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.tv_save).setOnClickListener(this);
@@ -98,14 +101,18 @@ public class EditContentActivity extends BaseActivity implements View.OnClickLis
                 finish();
                 break;
             case R.id.tv_save:
-                if (TextUtils.isEmpty(et_content.getText().toString()) && TextUtils.isEmpty(et_follow.getText().toString())) {
-                    ToastUtils.showShort(EditContentActivity.this, "请将数据填完整");
-                } else {
-                    if (intent.getIntExtra("flag", 3) == 9527) {
-                        saveFollow();
+                try {
+                    if (TextUtils.isEmpty(et_content.getText().toString()) && TextUtils.isEmpty(et_follow.getText().toString())) {
+                        ToastUtils.showShort(EditContentActivity.this, "请将数据填完整");
                     } else {
-                        saveData(intent.getIntExtra("flag", 3));
+                        if (intent.getIntExtra("flag", 3) == 9527) {
+                            saveFollow();
+                        } else {
+                            saveData(intent.getIntExtra("flag", 3));
+                        }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 break;
             case R.id.page:
@@ -118,7 +125,6 @@ public class EditContentActivity extends BaseActivity implements View.OnClickLis
                     @Override
                     public void onTimeSelect(Date date, View v) {
                         tv_date.setText(getTime(date));
-                        tv_date.setTextColor(EditContentActivity.this.getResources().getColor(R.color.defaultcolor));
                     }
                 })
                         .setType(new boolean[]{true, true, true, true, true, true})// 对应年月日时分秒
@@ -272,12 +278,16 @@ public class EditContentActivity extends BaseActivity implements View.OnClickLis
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    ToastUtils.showShort(EditContentActivity.this, msg.obj.toString());
-                    dialog.dismiss();
-                    Intent it = new Intent();
-                    it.putExtra("content", et_content.getText().toString());
-                    setResult(intent.getIntExtra("flag", 3), it);
-                    finish();
+                    try {
+                        ToastUtils.showShort(EditContentActivity.this, msg.obj.toString());
+                        dialog.dismiss();
+                        Intent it = new Intent();
+                        it.putExtra("content", et_content.getText().toString());
+                        setResult(intent.getIntExtra("flag", 3), it);
+                        finish();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case 2:
                     ToastUtils.showShort(EditContentActivity.this, msg.obj.toString());
@@ -295,4 +305,31 @@ public class EditContentActivity extends BaseActivity implements View.OnClickLis
             }
         }
     };
+
+    @Override
+    public void onBackPressed() {
+        toFinish();
+        finish();
+    }
+
+    //清空内存
+    private void toFinish() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    tv_title = null;
+                    tv_date = null;
+                    tv_content = null;
+                    et_content = null;
+                    et_follow = null;
+                    intent = null;
+                    relativeLayout = null;
+                    System.gc();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
+    }
 }
