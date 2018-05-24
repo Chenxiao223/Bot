@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,8 +44,11 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 import okhttp3.Call;
@@ -73,6 +77,7 @@ public class SMSFragment extends Fragment implements View.OnClickListener {
     private EditText et_text;
     private SmsActivityConsumptionQuery smsConsumption;
     private LinearLayout line_page;
+    SimpleDateFormat df = new SimpleDateFormat("HH:mm");//设置日期格式
 
 
     @Nullable
@@ -172,26 +177,55 @@ public class SMSFragment extends Fragment implements View.OnClickListener {
             @Override
             public void setInfo(final String activityid, int position) {
                 if (ClickUtils.isFastClick()) {//防止点击多次
-                    if (list_sms.get(position).get("smsStatus").equals("审核通过")) {
-                        smsActivityConsumptionQuery(activityid);
-                    } else {//如果短信审核未通过
-                        //点击弹出对话框
-                        final SelfDialog selfDialog = new SelfDialog(getActivity());
-                        selfDialog.setTitle("消息提示");
-                        selfDialog.setMessage("短信尚未审核，无法发送！");
-                        selfDialog.setYesOnclickListener("确定", new SelfDialog.onYesOnclickListener() {
-                            @Override
-                            public void onYesClick() {
-                                selfDialog.dismiss();
+                    try {
+                        //判断当前时间是否在20:00到次日8:30之间
+                        if (belongCalendar(df.parse(df.format(new Date())))) {
+                            if (list_sms.get(position).get("smsStatus").equals("审核通过")) {
+                                smsActivityConsumptionQuery(activityid);
+                            } else {//如果短信审核未通过
+                                //点击弹出对话框
+                                final SelfDialog selfDialog = new SelfDialog(getActivity());
+                                selfDialog.setTitle("消息提示");
+                                selfDialog.setMessage("短信尚未审核，无法发送！");
+                                selfDialog.setYesOnclickListener("确定", new SelfDialog.onYesOnclickListener() {
+                                    @Override
+                                    public void onYesClick() {
+                                        selfDialog.dismiss();
+                                    }
+                                });
+                                selfDialog.show();
                             }
-                        });
-                        selfDialog.show();
+                        } else {
+                            ToastUtils.showShort(getActivity(), "为了减少用户投诉，请不要在晚间20:00到次日8:30发短信");
+                        }
+                    } catch (ParseException e) {
+                        e.printStackTrace();
                     }
                 }
             }
         });
 
         getData(1, "");
+    }
+
+    /**
+     * 判断时间是否在时间段内
+     */
+    public boolean belongCalendar(Date nowTime) throws ParseException {
+        Calendar date = Calendar.getInstance();
+        date.setTime(nowTime);
+
+        Calendar begin = Calendar.getInstance();
+        begin.setTime(df.parse("8:30"));
+
+        Calendar end = Calendar.getInstance();
+        end.setTime(df.parse("20:00"));
+
+        if (date.after(begin) && date.before(end)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void clearAllData() {
@@ -333,8 +367,10 @@ public class SMSFragment extends Fragment implements View.OnClickListener {
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
+                                String str = response.body().string();
+                                Log.i("infos", str);
                                 Gson gson = new Gson();
-                                sms = gson.fromJson(response.body().string(), SmsFragment.class);
+                                sms = gson.fromJson(str, SmsFragment.class);
                                 if (sms != null) {
                                     handler.sendEmptyMessage(1);//通知刷新适配器
                                 } else {

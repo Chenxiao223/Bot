@@ -8,11 +8,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.umeng.analytics.MobclickAgent;
@@ -22,6 +25,7 @@ import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
+import com.zhiziyun.dmptest.bot.view.PopWin_sms_type;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,7 +33,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -45,9 +48,9 @@ import okhttp3.Response;
  */
 
 public class AddSmsActivity extends BaseActivity implements View.OnClickListener {
+    public static AddSmsActivity addSmsActivity;
     private EditText et_name, edit_phone;
-    private TextView tv_send_object, tv_sms, tv_type, tv_mark;
-    private List<String> list_corwd = new ArrayList<>();
+    public TextView tv_send_object, tv_sms, tv_type, tv_mark, tv_smstype;
     private String smsid;
     private final int Flag_corwd = 1702;
     private final int Flag_sms = 1298;
@@ -77,6 +80,7 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
     }
 
     private void initView() {
+        addSmsActivity = this;
         //设置系统栏颜色
         ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
@@ -88,6 +92,7 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
         tv_sms = (TextView) findViewById(R.id.tv_sms);
         tv_mark = (TextView) findViewById(R.id.tv_mark);
         tv_type = (TextView) findViewById(R.id.tv_type);
+        tv_smstype = findViewById(R.id.tv_smstype);
         findViewById(R.id.linearLayout).setOnClickListener(this);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.rl_sms).setOnClickListener(this);
@@ -95,6 +100,7 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
         findViewById(R.id.btn_commit).setOnClickListener(this);
         findViewById(R.id.rl_type).setOnClickListener(this);
         findViewById(R.id.rl_mark).setOnClickListener(this);
+        findViewById(R.id.rl_smstype).setOnClickListener(this);
         et_name = (EditText) findViewById(R.id.edit_name);
         edit_phone = (EditText) findViewById(R.id.edit_phone);
     }
@@ -102,6 +108,32 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.rl_smstype:
+                try {
+                    //隐藏软键盘
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    //让背景变暗
+                    WindowManager.LayoutParams lp = getWindow().getAttributes();
+                    lp.alpha = 0.7f;
+                    getWindow().setAttributes(lp);
+                    getWindow().setAttributes(lp);
+                    //弹出窗体
+                    PopWin_sms_type popWin_sms_type = new PopWin_sms_type(this, null, 0);
+                    popWin_sms_type.showAtLocation(findViewById(R.id.linearLayout), Gravity.BOTTOM, 0, 0);//125
+                    //监听popwin是否关闭，关闭的话让背景恢复
+                    popWin_sms_type.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                        @Override
+                        public void onDismiss() {
+                            WindowManager.LayoutParams lp = getWindow().getAttributes();
+                            lp.alpha = 1f;
+                            getWindow().setAttributes(lp);
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
             case R.id.iv_back:
                 toFinish();
                 finish();
@@ -113,16 +145,8 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
                 break;
             case R.id.rl_send_object:
                 try {
-                    //通过判断list_corwd有没有值来确定要不要将值传入进入显示选中状态
-                    if (list_corwd.isEmpty()) {//无值
-                        Intent it = new Intent(AddSmsActivity.this, CrowdSmsActivity.class);
-                        startActivityForResult(it, Flag_corwd);
-                    } else {//有值的话将值传过去显示选中状态
-                        Intent it = new Intent(AddSmsActivity.this, CrowdSmsActivity.class);
-                        it.putStringArrayListExtra("list", (ArrayList<String>) list_corwd);
-                        it.putExtra("flag", 123);
-                        startActivityForResult(it, Flag_corwd);
-                    }
+                    Intent it = new Intent(AddSmsActivity.this, CrowdSmsActivity.class);
+                    startActivityForResult(it, Flag_corwd);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -133,8 +157,8 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
             case R.id.btn_commit:
                 try {
                     if (TextUtils.isEmpty(et_name.getText().toString()) || tv_send_object.getText().toString().equals("请选择")
-                            || tv_sms.getText().toString().equals("请选择")) {
-                        ToastUtils.showShort(this, "请将数据填完整");
+                            || tv_sms.getText().toString().equals("请选择") || tv_smstype.getText().toString().equals("请选择")) {
+                        ToastUtils.showShort(this, "请将带星号的数据填完整");
                     } else {
                         if (!TextUtils.isEmpty(edit_phone.getText().toString())) {
                             if (isLegal(edit_phone.getText().toString())) {
@@ -215,6 +239,11 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
                     }
                     if (!TextUtils.isEmpty(edit_phone.getText().toString())) {
                         jsonObject.put("phoneNums", getJson(edit_phone.getText().toString()));
+                    }
+                    if (tv_smstype.getText().toString().equals("短信")) {
+                        jsonObject.put("type", 0);//短信0
+                    } else {
+                        jsonObject.put("type", 1);//闪信1
                     }
                     OkHttpClient okHttpClient = new OkHttpClient();
                     String url = null;
@@ -324,19 +353,11 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
             //区分从哪个页面回传的数据
             case Flag_corwd://人群
                 try {
-                    if (!data.getStringArrayListExtra("list").isEmpty()) {
-                        //用集合来接收这个集合
-                        list_corwd = data.getStringArrayListExtra("list");
-                        int num = list_corwd.size();
-                        if (num != 0) {
-                            tv_send_object.setText(num + "个");
-                            json_corwd = new JSONArray();
-                            tv_send_object.setTextColor(this.getResources().getColor(R.color.defaultcolor));
-                            for (int i = 0; i < num; i++) {
-                                json_corwd.put(list_corwd.get(i));
-                            }
-                        }
-                    }
+                    String crowd = data.getStringExtra("crowd");
+                    tv_send_object.setText(data.getStringExtra("crowdname"));
+                    tv_send_object.setTextColor(this.getResources().getColor(R.color.defaultcolor));
+                    json_corwd = new JSONArray();
+                    json_corwd.put(crowd);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -399,7 +420,6 @@ public class AddSmsActivity extends BaseActivity implements View.OnClickListener
                     et_name = null;
                     list_type.clear();
                     list_mark.clear();
-                    list_corwd.clear();
                     System.gc();
                 } catch (Exception e) {
                     e.printStackTrace();

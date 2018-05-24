@@ -80,7 +80,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private int pageNum = 1;
     private SharedPreferences share;
     private List<String> list_brands = new ArrayList<>();
-    private List<String> list_model = new ArrayList<>();
     private SmartRefreshLayout smartRefreshLayout;
     private boolean shop = true;
     private boolean tanzhen = true;
@@ -110,7 +109,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             list_visitors.clear();
             pageNum = 1;
             list_brands.clear();
-            list_model.clear();
             v = null;
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,7 +170,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 Intent intent = new Intent(getActivity(), VisitorsselfActivity.class);
                 intent.putExtra("mac", list_visitors.get(position).get("mac"));
                 intent.putExtra("brands", list_brands.get(position));
-                intent.putExtra("model", list_model.get(position));
                 intent.putExtra("probemac", list_visitors.get(position).get("probemac"));
                 intent.putExtra("is_new", list_visitors.get(position).get("is_new"));
                 startActivity(intent);
@@ -185,7 +182,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             public void onRefresh(RefreshLayout refreshlayout) {
                 try {
                     clearAllData();
-                    getData(pageNum);
+                    getData(pageNum, "");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -198,7 +195,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             public void onLoadmore(RefreshLayout refreshlayout) {
                 try {
                     if ((v.getTotal() - (pageNum - 1) * 10) > 0) {
-                        getData(pageNum);
+                        getData(pageNum, "");
                     } else {
                         ToastUtils.showShort(getActivity(), "最后一页了");
                         smartRefreshLayout.finishLoadmore(0);//停止刷新
@@ -214,7 +211,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         line_date = getView().findViewById(R.id.line_date);
         line_date.setOnClickListener(this);
 
-        getData(1);
+        getData(1, "");
     }
 
     public void getSiteOption() {
@@ -299,7 +296,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                 } else {
                                     storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
                                     clearAllData();
-                                    getData(pageNum);
+                                    getData(pageNum, "");
                                     //为了防止无限循环
                                     requestNT();
                                     shop = true;
@@ -335,7 +332,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                             microprobeId = str.substring(0, str.indexOf("_"));
                                         }
                                         clearAllData();
-                                        getData(pageNum);
+                                        getData(pageNum, "");
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
@@ -363,8 +360,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                 hm_visitors.put("content1", visitorsself.getRows().get(i).getVisittime());
                                 hm_visitors.put("content2", visitorsself.getRows().get(i).getBrand());
                                 list_brands.add(visitorsself.getRows().get(i).getBrand());
-                                hm_visitors.put("content3", visitorsself.getRows().get(i).getModel());
-                                list_model.add(visitorsself.getRows().get(i).getModel());
                                 hm_visitors.put("content4", getPosion(visitorsself.getRows().get(i).getRssi()));
                                 hm_visitors.put("mac", visitorsself.getRows().get(i).getMac());
                                 hm_visitors.put("probemac", visitorsself.getRows().get(i).getProbemac());//门店mac
@@ -398,7 +393,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         }
     };
 
-    public void getData(final int page) {
+    public void getData(final int page, final String mac) {
         //获取访客信息列表
         new Thread(new Runnable() {
             @Override
@@ -413,6 +408,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     jsonObject.put("storeId", storeId);
                     jsonObject.put("sort", "visittime");
                     jsonObject.put("order", "desc");
+                    jsonObject.put("dmac", mac);
                     if (!microprobeId.equals("0")) {
                         JSONArray jsonArray = new JSONArray();
                         jsonArray.put(microprobeId);
@@ -493,7 +489,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                         beginTime = getTime(date);
                         endTime = beginTime;
                         clearAllData();
-                        getData(pageNum);
+                        getData(pageNum, "");
                     }
                 })
                         .setType(new boolean[]{true, true, true, false, false, false})// 默认全部显示
@@ -509,7 +505,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 try {
                     if (ClickUtils.isFastClick()) {
                         clearAllData();
-                        getData(pageNum);
+                        getData(pageNum, "");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

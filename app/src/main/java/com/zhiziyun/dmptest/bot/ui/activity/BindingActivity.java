@@ -63,6 +63,7 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
         super.onResume();
         MobclickAgent.onResume(this);
     }
+
     public void onPause() {
         super.onPause();
         MobclickAgent.onPause(this);

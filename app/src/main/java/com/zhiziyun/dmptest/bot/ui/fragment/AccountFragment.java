@@ -23,7 +23,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -40,7 +39,6 @@ import android.widget.Toast;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.ui.activity.AccountActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.CallRecordsActivity;
-import com.zhiziyun.dmptest.bot.ui.activity.EditPhoneNMActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.MyOriginalityActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.QualificationActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.SettingActivity;
@@ -56,6 +54,7 @@ import com.zhiziyun.dmptest.bot.view.TakePhotoPopWin;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +71,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import static android.app.Activity.RESULT_OK;
-
 
 /**
  * 账户
@@ -113,8 +111,8 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
-        fileUri = new File(Environment.getExternalStorageDirectory().getPath() + "/Bot/" + share.getString("userid", "") + "/photo.jpg");
-        fileCropUri = new File(Environment.getExternalStorageDirectory().getPath() + "/Bot/" + share.getString("userid", "") + "/img_head.jpg");
+        fileUri = new File(getActivity().getCacheDir().getPath() + "/Bot/" + share.getString("userid", "") + "/photo.jpg");
+        fileCropUri = new File(getActivity().getCacheDir().getPath() + "/Bot/" + share.getString("userid", "") + "/img_head.jpg");
         tv_balance = getView().findViewById(R.id.tv_balance);
         getView().findViewById(R.id.rl_account).setOnClickListener(this);
         getView().findViewById(R.id.rl_store).setOnClickListener(this);
@@ -150,9 +148,13 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                         takePhotoPopWin.setOnDismissListener(new PopupWindow.OnDismissListener() {
                             @Override
                             public void onDismiss() {
-                                WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
-                                lp.alpha = 1f;
-                                getActivity().getWindow().setAttributes(lp);
+                                try {
+                                    WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+                                    lp.alpha = 1f;
+                                    getActivity().getWindow().setAttributes(lp);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         });
                     }
@@ -321,11 +323,46 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
             case CODE_RESULT_REQUEST:
                 Bitmap bitmap = PhotoUtils.getBitmapFromUri(cropImageUri, getActivity());
                 if (bitmap != null) {
-                    showImages(bitmap);
+                    showImages(ratio(bitmap, 240f, 120f));
                 }
                 break;
             default:
         }
+    }
+
+    public Bitmap ratio(Bitmap image, float pixelW, float pixelH) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, os);
+        if (os.toByteArray().length / 1024 > 3072) {//判断如果图片大于3M,进行压缩避免在生成图片（BitmapFactory.decodeStream）时溢出
+            os.reset();//重置baos即清空baos
+            image.compress(Bitmap.CompressFormat.JPEG, 50, os);//这里压缩50%，把压缩后的数据存放到baos中
+        }
+        ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+        BitmapFactory.Options newOpts = new BitmapFactory.Options();
+        //开始读入图片，此时把options.inJustDecodeBounds 设回true了
+        newOpts.inJustDecodeBounds = true;
+        newOpts.inPreferredConfig = Bitmap.Config.RGB_565;
+        Bitmap bitmap = BitmapFactory.decodeStream(is, null, newOpts);
+        newOpts.inJustDecodeBounds = false;
+        int w = newOpts.outWidth;
+        int h = newOpts.outHeight;
+        float hh = pixelH;// 设置高度为240f时，可以明显看到图片缩小了
+        float ww = pixelW;// 设置宽度为120f，可以明显看到图片缩小了
+        //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
+        int be = 1;//be=1表示不缩放
+        if (w > h && w > ww) {//如果宽度大的话根据宽度固定大小缩放
+            be = (int) (newOpts.outWidth / ww);
+        } else if (w < h && h > hh) {//如果高度高的话根据宽度固定大小缩放
+            be = (int) (newOpts.outHeight / hh);
+        }
+        if (be <= 0) be = 1;
+        newOpts.inSampleSize = be;//设置缩放比例
+        //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
+        is = new ByteArrayInputStream(os.toByteArray());
+        bitmap = BitmapFactory.decodeStream(is, null, newOpts);
+        //压缩好比例大小后再进行质量压缩
+//      return compress(bitmap, maxSize); // 这里再进行质量压缩的意义不大，反而耗资源，删除
+        return bitmap;
     }
 
     private void showImages(Bitmap bitmap) {
@@ -367,6 +404,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
+
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 if (TextUtils.isEmpty(jsonObject.get("response").toString())) {//为null表示上传失败
                                     handler.sendEmptyMessage(5);

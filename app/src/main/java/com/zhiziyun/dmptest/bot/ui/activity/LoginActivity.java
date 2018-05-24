@@ -12,11 +12,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -63,15 +66,19 @@ import okhttp3.Response;
  * Created by Administrator on 2017/11/17.
  */
 
-public class LoginActivity extends BaseActivity {
-    private EditText tv_username, tv_password;
+public class LoginActivity extends BaseActivity implements View.OnClickListener {
+    private EditText et_username, et_password;
     private LinearLayout traceroute_rootview;
     private SharedPreferences.Editor editors;
     private MyDialog dialog;
     private VersionUpdate versionUpdate;
     private SharedPreferences.Editor editorss;
     private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 0x04;
+    private static final int GET_UNKNOWN_APP_SOURCES = 0x05;
+    private static final int INSTALL_PACKAGES_REQUESTCODE = 0x06;
     private Boolean Permissions = false;
+    private File file;
+    private ImageView iv_emal, iv_pwd;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,11 +105,57 @@ public class LoginActivity extends BaseActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         editors = sharedPreferences.edit();
 
-        tv_username = (EditText) findViewById(R.id.edit_username);
-        tv_password = (EditText) findViewById(R.id.edit_password);
-        tv_username.setText(getemail());
-        tv_username.setSelection(getemail().length());//将光标定位到最后
-        tv_password.setText(getpassword());
+        iv_emal = findViewById(R.id.iv_emal);
+        iv_emal.setOnClickListener(this);
+        iv_pwd = findViewById(R.id.iv_pwd);
+        iv_pwd.setOnClickListener(this);
+        et_username = (EditText) findViewById(R.id.edit_username);
+        et_password = (EditText) findViewById(R.id.edit_password);
+        et_username.setText(getemail());
+        et_username.setSelection(getemail().length());//将光标定位到最后
+        et_password.setText(getpassword());
+        if (!TextUtils.isEmpty(getemail())) {
+            //如果有值就显示
+            iv_emal.setVisibility(View.VISIBLE);
+        }
+        if (!TextUtils.isEmpty(getpassword())) {
+            //如果有值就显示
+            iv_pwd.setVisibility(View.VISIBLE);
+        }
+        //监听内容变化
+        et_username.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                iv_emal.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        //监听内容变化
+        et_password.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                iv_pwd.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
         traceroute_rootview = (LinearLayout) findViewById(R.id.traceroute_rootview);
         traceroute_rootview.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,13 +170,13 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onMultiClick(View v) {
                 try {
-                    if (tv_username.getText().toString().equals("")) {
-                        tv_username.setError("账号不能为空！");
-                    } else if (tv_password.getText().toString().equals("")) {
-                        tv_password.setError("密码不能为空！");
+                    if (et_username.getText().toString().equals("")) {
+                        et_username.setError("账号不能为空！");
+                    } else if (et_password.getText().toString().equals("")) {
+                        et_password.setError("密码不能为空！");
                     } else {
-                        editors.putString("email", tv_username.getText().toString());
-                        editors.putString("password", tv_password.getText().toString());
+                        editors.putString("email", et_username.getText().toString());
+                        editors.putString("password", et_password.getText().toString());
                         if (Permissions) {
                             recordLogin();
                         }
@@ -158,8 +211,8 @@ public class LoginActivity extends BaseActivity {
                     try {
                         OkHttpClient client = new OkHttpClient();
                         RequestBody body = new FormBody.Builder()
-                                .add("email", tv_username.getText().toString())
-                                .add("password", tv_password.getText().toString()).build();
+                                .add("email", et_username.getText().toString())
+                                .add("password", et_password.getText().toString()).build();
                         final Request request = new Request.Builder()
                                 .url(BaseUrl.BaseLogin)
                                 .post(body)
@@ -291,9 +344,9 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void run() {
                 try {
-                    File file = getFileFromServer(uri, pd);
+                    file = getFileFromServer(uri, pd);
                     sleep(3000);
-                    installApk(file);
+                    checkIsAndroidO(file);
                     pd.dismiss(); //结束掉进度条对话框
                 } catch (Exception e) {
                     pd.dismiss(); //更新失败,结束掉进度条对话框
@@ -306,44 +359,57 @@ public class LoginActivity extends BaseActivity {
     }
 
     /**
+     * 判断是否是8.0,8.0需要处理未知应用来源权限问题,否则直接安装
+     */
+    private void checkIsAndroidO(File file) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            boolean b = getPackageManager().canRequestPackageInstalls();
+            if (b) {
+                installApk(file);//安装应用的逻辑
+            } else {
+                //请求安装未知应用来源的权限
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.REQUEST_INSTALL_PACKAGES}, INSTALL_PACKAGES_REQUESTCODE);
+            }
+        } else {
+            installApk(file);
+        }
+
+    }
+
+    /**
      * 从服务器获取apk文件的代码
      * 传入网址uri，进度条对象即可获得一个File文件
      * （要在子线程中执行哦）
      */
-    public static File getFileFromServer(String uri, ProgressDialog pd) throws Exception {
-        //如果相等的话表示当前的sdcard挂载在手机上并且是可用的
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            File file = null;
-            try {
-                URL url = new URL(uri);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setConnectTimeout(5000);
-                //获取到文件的大小
-                pd.setMax(conn.getContentLength());
-                InputStream is = conn.getInputStream();
-                long time = System.currentTimeMillis();//当前时间的毫秒数
-                file = new File(Environment.getExternalStorageDirectory(), time + "updata.apk");
-                FileOutputStream fos = new FileOutputStream(file);
-                BufferedInputStream bis = new BufferedInputStream(is);
-                byte[] buffer = new byte[1024];
-                int len;
-                int total = 0;
-                while ((len = bis.read(buffer)) != -1) {
-                    fos.write(buffer, 0, len);
-                    total += len;
-                    //获取当前下载量
-                    pd.setProgress(total);
-                }
-                fos.close();
-                bis.close();
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+    public File getFileFromServer(String uri, ProgressDialog pd) throws Exception {
+        File file = null;
+        try {
+            URL url = new URL(uri);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            //获取到文件的大小
+            pd.setMax(conn.getContentLength());
+            InputStream is = conn.getInputStream();
+            long time = System.currentTimeMillis();//当前时间的毫秒数
+            file = new File(LoginActivity.this.getCacheDir(), time + "updata.apk");
+            FileOutputStream fos = new FileOutputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(is);
+            byte[] buffer = new byte[1024];
+            int len;
+            int total = 0;
+            while ((len = bis.read(buffer)) != -1) {
+                fos.write(buffer, 0, len);
+                total += len;
+                //获取当前下载量
+                pd.setProgress(total);
             }
-            return file;
-        } else {
-            return null;
+            fos.close();
+            bis.close();
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return file;
     }
 
     /**
@@ -380,7 +446,7 @@ public class LoginActivity extends BaseActivity {
                         final JSONObject json = new JSONObject();
                         json.put("siteid", "0zoTLi29XRgq");
                         json.put("zzid", "0zoTLha93ySI");//广告活动编号
-                        json.put("appid", "com.zhiziyun.dmptest.bot");//应用编号
+                        json.put("appid", getPackageName());//应用编号
                         TelephonyManager telephonyManager = (TelephonyManager) LoginActivity.this.getSystemService(LoginActivity.this.TELEPHONY_SERVICE);
                         String imei = telephonyManager.getDeviceId();
                         json.put("imei", imei);
@@ -503,7 +569,7 @@ public class LoginActivity extends BaseActivity {
                         final JSONObject json = new JSONObject();
                         json.put("siteid", "0zoTLi29XRgq");
                         json.put("zzid", "0zoTLha93ySI");//广告活动编号
-                        json.put("appid", "com.zhiziyun.dmptest.bot");//应用编号
+                        json.put("appid", getPackageName());//应用编号
                         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(LoginActivity.this.TELEPHONY_SERVICE);
                         String imei = telephonyManager.getDeviceId();
                         json.put("deviceid", imei);//设备编号
@@ -591,15 +657,12 @@ public class LoginActivity extends BaseActivity {
                         || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED
                         || ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                        != PackageManager.PERMISSION_GRANTED
+                        || ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
                     ToastUtils.showShort(this, "没有权限,请手动开启定位权限");
                     // 申请一个（或多个）权限，并提供用于回调返回的获取码（用户定义）
-                    ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_PHONE_STATE}, 2);
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSIONS_REQUEST_CODE);
-                    }
+                    ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSIONS_REQUEST_CODE);
                 }
             }
         } catch (Exception e) {
@@ -618,13 +681,6 @@ public class LoginActivity extends BaseActivity {
             //调用系统相册申请Sdcard权限回调
             case STORAGE_PERMISSIONS_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    ToastUtils.showShort(this, "请允许操作SDCard！！");
-                }
-                break;
-            case 2:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // 获取到权限，作相应处理（调用定位SDK应当确保相关权限均被授权，否则可能引起定位失败）
                     Permissions = true;//如果打开了权限就为true
                 } else {
@@ -633,11 +689,46 @@ public class LoginActivity extends BaseActivity {
                     Permissions = false;//如果没有打开权限就为false，根据这个值来判断接口执不执行
                 }
                 break;
+            case INSTALL_PACKAGES_REQUESTCODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    installApk(file);
+                } else {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                    startActivityForResult(intent, GET_UNKNOWN_APP_SOURCES);
+                }
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case GET_UNKNOWN_APP_SOURCES:
+                checkIsAndroidO(file);
+                break;
+
+            default:
+                break;
         }
     }
 
     public void onPause() {
         super.onPause();
         MobclickAgent.onPause(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_emal:
+                et_username.setText("");
+                iv_emal.setVisibility(View.GONE);
+                break;
+            case R.id.iv_pwd:
+                et_password.setText("");
+                iv_pwd.setVisibility(View.GONE);
+                break;
+        }
     }
 }
