@@ -22,7 +22,11 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.fragment.ClickCrowdFragment;
+import com.zhiziyun.dmptest.bot.ui.fragment.CustomerFragment;
+import com.zhiziyun.dmptest.bot.ui.fragment.ShopCrowdFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsselfFragment;
+import com.zhiziyun.dmptest.bot.ui.fragment.WifiCrowdFragment;
 import com.zhiziyun.dmptest.bot.util.MyListView;
 import com.zhiziyun.dmptest.bot.util.RecordSQLiteOpenHelper;
 
@@ -124,12 +128,48 @@ public class SearchPageActivity extends BaseActivity implements View.OnClickList
     }
 
     //搜索
-    public void search(String str, String text) {
+    public void search(String str, String text) {//参数：1、来自哪个类；2、搜索的内容
         switch (str) {
             case "VisitorsselfFragment"://访客列表
                 try {
                     VisitorsselfFragment.fragment.clearAllData();
                     VisitorsselfFragment.fragment.getData(1, text);
+                    finish();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "ShopCrowdFragment":
+                try {
+                    ShopCrowdFragment.shopCrowdFragment.clearAllData();
+                    ShopCrowdFragment.shopCrowdFragment.getData(1, text);
+                    finish();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "WifiCrowdFragment":
+                try {
+                    WifiCrowdFragment.wifiCrowdFragment.clearAllData();
+                    WifiCrowdFragment.wifiCrowdFragment.getData(1, text);
+                    finish();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "ClickCrowdFragment":
+                try {
+                    ClickCrowdFragment.clickCrowdFragment.clearAllData();
+                    ClickCrowdFragment.clickCrowdFragment.getData(1, text);
+                    finish();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "CustomerFragment":
+                try {
+                    CustomerFragment.fragment.clearAllData();
+                    CustomerFragment.fragment.getData(1, text, null);
                     finish();
                 } catch (Exception e) {
                     e.printStackTrace();

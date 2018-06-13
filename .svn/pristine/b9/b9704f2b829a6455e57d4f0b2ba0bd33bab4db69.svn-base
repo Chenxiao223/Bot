@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/control_padding"
+            android:paddingLeft="@dimen/padding_left_right4"
+            android:paddingTop="@dimen/control_padding">
+
+            <TextView
+                android:id="@+id/tv_phone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:textColor="@color/text"
+                android:textSize="@dimen/textsizi3" />
+
+            <TextView
+                android:id="@+id/tv_date"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/textsizi" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.7"
+            android:gravity="center_vertical|right"
+            android:paddingRight="@dimen/image_small"
+            android:text="fwea"
+            android:textSize="@dimen/textsizi3" />
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="@dimen/padding_left_right3"
+            android:layout_height="match_parent"
+            android:layout_marginRight="@dimen/image_small"
+            android:padding="@dimen/image_small"
+            android:src="@drawable/eyes" />
+    </LinearLayout>
+
+</LinearLayout>

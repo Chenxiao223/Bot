@@ -18,18 +18,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -39,18 +34,20 @@ import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.CustomerAdapter;
-import com.zhiziyun.dmptest.bot.adapter.SpinnerArrayAdapter;
 import com.zhiziyun.dmptest.bot.entity.CallInfo;
 import com.zhiziyun.dmptest.bot.entity.CrowdInfo;
-import com.zhiziyun.dmptest.bot.ui.activity.AddCustomerActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.CustomerDetailsActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.SearchPageActivity;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.CustomDialog;
 import com.zhiziyun.dmptest.bot.util.EditDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
+import com.zhiziyun.dmptest.bot.view.PopWin_customer_source;
+import com.zhiziyun.dmptest.bot.view.PopWin_screening;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -79,24 +76,33 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
     public CustomerAdapter adapter;
     public HashMap<String, String> hm_crowd;
     public ArrayList<HashMap<String, String>> list_crowd = new ArrayList<>();
-    private Spinner spn_type, spn_state;
-    private ArrayList<String> list_type = new ArrayList<>();
-    private ArrayAdapter<String> adp_type;
-    private ArrayList<String> list_state = new ArrayList<>();
-    private ArrayAdapter<String> adp_state;
     private SharedPreferences share;
     private SmartRefreshLayout smartRefreshLayout;
-    private EditText et_text;
     private int pageNum = 1;
-    private int m_type = 4;
-    private int m_mark = 4;
-    private boolean b_type = true;
-    private boolean b_mark = true;
+    public int m_type = 4;
+    public int m_mark = 4;
+    private int hasDial = 0;
     private CrowdInfo crowdInfo;
     private LinearLayout line_page;
     private CallInfo callInfo;
     public String bindCode = "";
     private SharedPreferences.Editor editors;
+    private PopWin_screening mPopupWindow = null;
+    private PopWin_customer_source mPopcustomer = null;
+    public TextView tv_customer_source, tv_screening;
+    public JSONArray jsonArray = null;
+    private String[] crowdparentStrings = {"到店人群", "wifi人群", "点击人群", "不限"};
+    private String[][] crowdchildrenStrings = {
+            {"到店人群1", "到店人群2", "到店人群3", "到店人群4", "到店人群5", "到店人群6", "到店人群7", "到店人群8", "到店人群9", "到店人群10", "到店人群11", "到店人群12", "到店人群13", "到店人群14", "到店人群15"},
+            {"wifi人群1", "wifi人群2", "wifi人群3", "wifi人群4", "wifi人群5", "wifi人群6", "wifi人群7", "wifi人群8", "wifi人群9", "wifi人群10", "wifi人群11", "wifi人群12", "wifi人群13", "wifi人群14", "wifi人群15"},
+            {"点击人群1", "点击人群2", "点击人群3", "点击人群4", "点击人群5", "点击人群6", "点击人群7", "点击人群8", "点击人群9", "点击人群10", "点击人群11", "点击人群12", "点击人群13", "点击人群14", "点击人群15"},
+    };
+    private String[] parentStrings = {"客户类型", "跟进状态", "拨打状态"};
+    private String[][] childrenStrings = {
+            {"全部客户类型", "普通客户", "低价值客户", "积极客户", "高价值客户"},
+            {"全部跟进状态", "新转入", "暂无意向", "持续跟进", "已成交"},
+            {"不限", "已拨打", "未拨打"},
+    };
 
     @Nullable
     @Override
@@ -110,18 +116,20 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
         //
         fragment = this;
         initView();
-        getData(pageNum, et_text.getText().toString());
+        getData(pageNum, "", jsonArray);
     }
 
     private void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         editors = share.edit();
         lv_crowd = getView().findViewById(R.id.lv_crowd);
-        spn_type = getView().findViewById(R.id.spn_type);
-        spn_state = getView().findViewById(R.id.spn_state);
-        et_text = getView().findViewById(R.id.et_text);
         line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
         line_page.setOnClickListener(this);
+        getView().findViewById(R.id.iv_search).setOnClickListener(this);
+        tv_customer_source = getView().findViewById(R.id.tv_customer_source);
+        tv_customer_source.setOnClickListener(this);
+        tv_screening = getView().findViewById(R.id.tv_screening);
+        tv_screening.setOnClickListener(this);
         adapter = new CustomerAdapter(getActivity(), list_crowd);
         lv_crowd.setAdapter(adapter);
         smartRefreshLayout = (SmartRefreshLayout) getView().findViewById(R.id.refreshLayout);
@@ -177,36 +185,13 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
             }
         });
 
-        //点击搜索键的监听
-        et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    // 先隐藏键盘
-                    ((InputMethodManager) et_text.getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
-                            .hideSoftInputFromWindow(
-                                    getActivity()
-                                            .getCurrentFocus()
-                                            .getWindowToken(),
-                                    InputMethodManager.HIDE_NOT_ALWAYS);
-                    //以下是搜索逻辑
-                    list_crowd.clear();
-                    //查询门店
-                    pageNum = 1;
-                    getData(pageNum, et_text.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
-
         //下拉刷新
         smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
                 try {
                     clearAllData();
-                    getData(pageNum, et_text.getText().toString());
+                    getData(pageNum, "", jsonArray);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -218,7 +203,7 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
             public void onLoadmore(RefreshLayout refreshlayout) {
                 try {
                     if ((crowdInfo.getTotal() - (pageNum - 1) * 10) > 0) {
-                        getData(pageNum, "");
+                        getData(pageNum, "", jsonArray);
                     } else {
                         ToastUtils.showShort(getActivity(), "最后一页了");
                         smartRefreshLayout.finishLoadmore(0);//停止刷新
@@ -228,7 +213,18 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                 }
             }
         });
-        getSiteOption();
+    }
+
+    public void getTypes(int position) {
+        m_type = getType(childrenStrings[0][position]);
+    }
+
+    public void getMark(int position) {
+        m_mark = getState(childrenStrings[1][position]);
+    }
+
+    public void hasDial(int position) {
+        hasDial = position;
     }
 
     //清空所有数据
@@ -243,36 +239,55 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void getData(final int pageNum, final String name) {
+    public void getData(final int pageNum, final String name, final JSONArray original) {
         //客户列表
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     final JSONObject json = new JSONObject();
-                    json.put("id", "");
                     json.put("charger", "");
                     if (m_mark != 4) {
-                        json.put("marks", m_mark);
+                        JSONArray jsonArray = new JSONArray();
+                        jsonArray.put(m_mark + "");//装成数组
+                        json.put("mark", jsonArray);
                     }
                     if (m_type != 4) {
-                        json.put("types", m_type);
+                        JSONArray jsonArray = new JSONArray();
+                        jsonArray.put(m_type + "");//装成数组
+                        json.put("type", jsonArray);
                     }
-                    json.put("name", name);
+                    if (name.matches("[0-9]+")) {//如果是纯数字就表示是电话号码
+                        json.put("tailPhone", name);
+                    } else {
+                        json.put("name", name);
+                    }
                     json.put("siteId", share.getString("siteid", ""));
                     json.put("page", pageNum);
                     json.put("rows", 10);
+                    if (hasDial != 0) {//不传表示查所有
+                        if (hasDial == 1) {
+                            json.put("hasDial", true);//true:查询已拨打过电话的客户
+                        } else if (hasDial == 2) {
+                            json.put("hasDial", false);//false:查询未拨打过电话的客户
+                        }
+                    }
+                    if (original != null) {
+                        json.put("original", original);
+                    }
+                    json.put("sort", "CreateTime");//按更新时间排序
+                    json.put("order", "desc");//排序方式,倒序
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url(BaseUrl.BaseWang + "guestFromProbe/list.action")
+                            .url(BaseUrl.BaseTest + "guestFromProbe/list")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -317,14 +332,14 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                     OkHttpClient client = new OkHttpClient();
                     String url = null;
                     try {
-                        url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url(BaseUrl.BaseWang + "guestFromProbe/edit.action")
+                            .url(BaseUrl.BaseTest + "guestFromProbe/edit")
                             .post(body)
                             .addHeader("content-type", "application/x-www-form-urlencoded")
                             .build();
@@ -524,11 +539,11 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                                         }
                                         json.put("guestId", id);
                                         OkHttpClient client = new OkHttpClient();
-                                        String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                                        String url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                                         MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                                         RequestBody body = RequestBody.create(mediaType, url);
                                         Request request = new Request.Builder()
-                                                .url(BaseUrl.BaseWang + "dial/phone.action")
+                                                .url(BaseUrl.BaseTest + "dial/phone")
                                                 .post(body)
                                                 .addHeader("content-type", "application/x-www-form-urlencoded")
                                                 .build();
@@ -619,11 +634,11 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                                     }
                                     json.put("guestId", id);
                                     OkHttpClient client = new OkHttpClient();
-                                    String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                                    String url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                                     RequestBody body = RequestBody.create(mediaType, url);
                                     Request request = new Request.Builder()
-                                            .url(BaseUrl.BaseWang + "dial/phone.action")
+                                            .url(BaseUrl.BaseTest + "dial/phone")
                                             .post(body)
                                             .addHeader("content-type", "application/x-www-form-urlencoded")
                                             .build();
@@ -675,11 +690,11 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                             json.put("phoneNumber", getTel().replace("+86", ""));
                             json.put("guestId", id);
                             OkHttpClient client = new OkHttpClient();
-                            String url = "agentId=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                            String url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                             MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                             RequestBody body = RequestBody.create(mediaType, url);
                             Request request = new Request.Builder()
-                                    .url(BaseUrl.BaseWang + "dial/phone.action")
+                                    .url(BaseUrl.BaseTest + "dial/phone")
                                     .post(body)
                                     .addHeader("content-type", "application/x-www-form-urlencoded")
                                     .build();
@@ -758,58 +773,6 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
         return "";
     }
 
-    public void getSiteOption() {
-        list_type.add("全部客户类型");
-        list_type.add("普通客户");
-        list_type.add("低价值客户");
-        list_type.add("积极客户");
-        list_type.add("高价值客户");
-        list_state.add("全部跟进状态");
-        list_state.add("新转入");
-        list_state.add("暂无意向");
-        list_state.add("持续跟进");
-        list_state.add("已成交");
-        adp_type = new SpinnerArrayAdapter(getActivity(), list_type);
-        spn_type.setAdapter(adp_type);
-        adp_state = new SpinnerArrayAdapter(getActivity(), list_state);
-        spn_state.setAdapter(adp_state);
-        spn_state.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (b_mark) {//spinner初始化的时候不执行点击事件
-                    b_mark = false;
-                } else {
-                    m_mark = getState(list_state.get(position));
-                    clearAllData();
-                    getData(pageNum, et_text.getText().toString());
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        spn_type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (b_type) {//spinner初始化的时候不执行点击事件
-                    b_type = false;
-                } else {
-                    m_type = getType(list_type.get(position));
-                    clearAllData();
-                    getData(pageNum, et_text.getText().toString());
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
     public int getState(String str) {
         switch (str) {
             case "新转入":
@@ -880,9 +843,59 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
             case R.id.line_page:
                 if (ClickUtils.isFastClick()) {
                     clearAllData();
-                    getData(pageNum, et_text.getText().toString());
+                    getData(pageNum, "", jsonArray);
+                }
+                break;
+            case R.id.iv_search:
+                Intent it = new Intent(getActivity(), SearchPageActivity.class);
+                it.putExtra("activity", "CustomerFragment");
+                startActivity(it);
+                break;
+            case R.id.tv_customer_source://访客来源
+                try {
+                    if (mPopcustomer == null) {
+                        mPopcustomer = new PopWin_customer_source(crowdparentStrings, childrenStrings, getActivity(), selectCateg);
+                    }
+                    mPopcustomer.showAsDropDown(tv_customer_source, -5, 10);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case R.id.tv_screening://筛选
+                try {
+                    if (mPopupWindow == null) {
+                        mPopupWindow = new PopWin_screening(parentStrings, childrenStrings, getActivity(), selectCategory);
+                    }
+                    mPopupWindow.showAsDropDown(tv_screening, -5, 10);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 break;
         }
     }
+
+    /**
+     * 选择完成回调接口
+     */
+    private PopWin_screening.SelectCategory selectCategory = new PopWin_screening.SelectCategory() {
+        @Override
+        public void selectCategory(int parentSelectposition, int childrenSelectposition) {
+            String parentStr = parentStrings[parentSelectposition];
+            String childrenStr = childrenStrings[parentSelectposition][childrenSelectposition];
+
+        }
+    };
+
+    /**
+     * 选择完成回调接口
+     */
+    private PopWin_customer_source.SelectCategory selectCateg = new PopWin_customer_source.SelectCategory() {
+        @Override
+        public void selectCategory(int parentSelectposition, int childrenSelectposition) {
+//            String parentStr = parentStrings[parentSelectposition];
+//            String childrenStr = childrenStrings[parentSelectposition][childrenSelectposition];
+
+        }
+    };
+
 }
