@@ -12,7 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.HomePageAdapter;
 import com.zhiziyun.dmptest.bot.ui.fragment.CustomerFragment;
+import com.zhiziyun.dmptest.bot.ui.fragment.HomePageFragment;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.MyService;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
@@ -415,15 +416,10 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    @RequiresApi(api = 26)
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(new Intent(this, MyService.class));
-        } else {
-            startService(new Intent(this, MyService.class));//启动服务
-        }
+        startService(new Intent(this, MyService.class));//启动服务
         unregisterReceiver(networkChangeReceiver);//注销广播
     }
 

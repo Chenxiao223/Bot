@@ -74,9 +74,9 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private String microprobeId;
     private int storeId = 0;
     private ListView xlistview;
-    private VisitorsselfAdapter adapter;
+    public VisitorsselfAdapter adapter;
     private HashMap<String, String> hm_visitors;
-    private ArrayList<HashMap<String, String>> list_visitors = new ArrayList<>();
+    public ArrayList<HashMap<String, String>> list_visitors = new ArrayList<>();
     private int pageNum = 1;
     private SharedPreferences share;
     private List<String> list_brands = new ArrayList<>();
@@ -175,6 +175,7 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 intent.putExtra("storeId", storeId);
                 intent.putExtra("isShown", list_visitors.get(position).get("isShown"));
                 intent.putExtra("date", beginTime);
+                intent.putExtra("position", position);
                 startActivity(intent);
             }
         });

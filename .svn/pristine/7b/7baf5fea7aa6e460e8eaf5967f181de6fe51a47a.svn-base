@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -219,6 +220,7 @@ public class AdvertisingFragment extends Fragment implements View.OnClickListene
                     jsonObject.put("endDate", endTime);
                     jsonObject.put("page", page);
                     jsonObject.put("rows", 10);
+                    Log.i("infos", jsonObject.toString());
                     OkHttpClient okHttpClient = new OkHttpClient();
                     String url = null;
                     try {
@@ -243,6 +245,7 @@ public class AdvertisingFragment extends Fragment implements View.OnClickListene
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
                                 String str = response.body().string();
+                                Log.i("infos", str);
                                 Gson gson = new Gson();
                                 advertising = gson.fromJson(str, Advertising.class);
                                 if (advertising != null) {

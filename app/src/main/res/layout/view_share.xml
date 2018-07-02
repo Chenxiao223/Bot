@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="170dp"
+        android:layout_height="130dp"
         android:layout_marginBottom="@dimen/padding_left_right3"
         android:layout_marginLeft="@dimen/padding_left_right3"
         android:layout_marginRight="@dimen/padding_left_right3"
@@ -18,12 +18,12 @@
         android:padding="@dimen/padding_left_right4">
 
         <TextView
-            android:id="@+id/tv_a"
+            android:id="@+id/tv_shareqq"
             android:layout_width="match_parent"
             android:layout_height="@dimen/buttom_height"
             android:layout_marginTop="2dp"
             android:gravity="center"
-            android:text="添加到店人群"
+            android:text="分享到QQ"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/title_text_size" />
 
@@ -34,28 +34,12 @@
             android:src="@drawable/grayline" />
 
         <TextView
-            android:id="@+id/tv_b"
+            android:id="@+id/tv_sharewechat"
             android:layout_width="match_parent"
             android:layout_height="@dimen/buttom_height"
             android:layout_marginTop="2dp"
             android:gravity="center"
-            android:text="添加点击广告人群"
-            android:textColor="@color/colorBlack"
-            android:textSize="@dimen/title_text_size" />
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/line_height"
-            android:scaleType="fitXY"
-            android:src="@drawable/grayline" />
-
-        <TextView
-            android:id="@+id/tv_c"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/buttom_height"
-            android:layout_marginTop="2dp"
-            android:gravity="center"
-            android:text="添加WiFi探测人群"
+            android:text="分享到微信"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/title_text_size" />
     </LinearLayout>

@@ -136,7 +136,6 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
             et_signature.setText(intent.getStringExtra("signature"));//
             tv_industry.setClickable(false);
             tv_industry_type.setClickable(false);
-            line_type.setClickable(false);
             if (state.equals("未提交")) {
                 tv_state.setText("预审中");
             } else {

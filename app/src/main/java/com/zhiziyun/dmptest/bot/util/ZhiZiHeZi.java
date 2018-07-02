@@ -3,6 +3,8 @@ package com.zhiziyun.dmptest.bot.util;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -41,10 +43,15 @@ public class ZhiZiHeZi extends Application {
                 startApp(false);
             }
 
+            @RequiresApi(api = 26)
             @Override
             public void onBack() {
                 //应用切到后台处理
-                startService(new Intent(ZhiZiHeZi.this, MyService.class));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(new Intent(ZhiZiHeZi.this, MyService.class));
+                } else {
+                    startService(new Intent(ZhiZiHeZi.this, MyService.class));//启动服务
+                }
             }
         });
     }

@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.AppImage;
 import com.zhiziyun.dmptest.bot.entity.Visitorsselfparticulars;
-import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsselfFragment;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.MyDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
@@ -385,7 +384,7 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
                             try {
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 if (jsonObject.get("success").toString().equals("true")) {
-                                    handler.sendEmptyMessage(6);
+                                    handler.sendEmptyMessage(4);
                                 } else {
                                     Message message = new Message();
                                     message.what = 5;
@@ -604,16 +603,9 @@ public class VisitorsselfActivity extends BaseActivity implements View.OnClickLi
                     break;
                 case 4:
                     ToastUtils.showShort(VisitorsselfActivity.this, "操作成功");
-                    VisitorsselfFragment.fragment.list_visitors.get(getIntent().getIntExtra("position", 0)).put("isShown", "true");
-                    VisitorsselfFragment.fragment.adapter.notifyDataSetChanged();
                     break;
                 case 5:
                     ToastUtils.showShort(VisitorsselfActivity.this, msg.obj.toString());
-                    break;
-                case 6:
-                    ToastUtils.showShort(VisitorsselfActivity.this, "操作成功");
-                    VisitorsselfFragment.fragment.list_visitors.get(getIntent().getIntExtra("position", 0)).put("isShown", "false");
-                    VisitorsselfFragment.fragment.adapter.notifyDataSetChanged();
                     break;
             }
         }

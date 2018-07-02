@@ -6,7 +6,7 @@ package com.zhiziyun.dmptest.bot.util;
 
 public class BaseUrl {
     //版本号
-    public static final String BaseVersion = "v1.4.0";
+    public static final String BaseVersion = "v1.5.0";
     //日志采集
     public static final String BaseJiang = "http://trace.zhiziyun.com/app/v1/";
 
