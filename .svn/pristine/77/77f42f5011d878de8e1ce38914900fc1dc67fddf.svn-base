@@ -391,7 +391,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url("http://matest.vipgz1.idcfengye.com/zhiziyun-api-app-site/api/advertiserApp/editLogoImg")
+                            .url(BaseUrl.BaseZhang + "api/advertiserApp/editLogoImg")
                             .post(body)
                             .build();
 
