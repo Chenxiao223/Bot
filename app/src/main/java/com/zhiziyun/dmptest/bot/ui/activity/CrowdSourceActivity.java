@@ -121,12 +121,13 @@ public class CrowdSourceActivity extends BaseActivity implements View.OnClickLis
                     if (list_corwd.isEmpty() && list_wifi_corwd.isEmpty() && list_click_corwd.isEmpty()) {
                         ToastUtils.showShort(CrowdSourceActivity.this, "请选择人群");
                     } else {
-                        Intent it = new Intent();
-                        it.putStringArrayListExtra("list", (ArrayList<String>) list_corwd);
-                        it.putStringArrayListExtra("list_wifi", (ArrayList<String>) list_wifi_corwd);
-                        it.putStringArrayListExtra("list_click", (ArrayList<String>) list_click_corwd);
-                        setResult(1702, it);
-                        finish();
+//                        Intent it = new Intent();
+//                        it.putStringArrayListExtra("list", (ArrayList<String>) list_corwd);
+//                        it.putStringArrayListExtra("list_wifi", (ArrayList<String>) list_wifi_corwd);
+//                        it.putStringArrayListExtra("list_click", (ArrayList<String>) list_click_corwd);
+//                        setResult(1702, it);
+//                        finish();
+                        startActivity(new Intent(this, ChooseCreativeActivity.class));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

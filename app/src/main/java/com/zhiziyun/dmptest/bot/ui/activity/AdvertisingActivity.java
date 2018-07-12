@@ -367,13 +367,15 @@ public class AdvertisingActivity extends BaseActivity implements View.OnClickLis
                         if (tv_beginTime.getText().equals(tv_endTime.getText())) {//如果开始时间和结束时间相同则提示
                             ToastUtils.showShort(AdvertisingActivity.this, "开始日期和结束日期不能相同");
                         } else {
-                            dialog.show();//显示加载框
-                            if (TextUtils.isEmpty(intent.getStringExtra("creativeId"))) {//如果是从投广告进来的话就是编辑，否则是创建
-                                advertisingCreate();
-                            } else {
-                                //这里从广告页进来
-                                advertisingEdit();
-                            }
+//                            dialog.show();//显示加载框
+//                            if (TextUtils.isEmpty(intent.getStringExtra("creativeId"))) {//如果是从投广告进来的话就是编辑，否则是创建
+//                                advertisingCreate();
+//                            } else {
+//                                //这里从广告页进来
+//                                advertisingEdit();
+//                            }
+                            Intent it = new Intent(AdvertisingActivity.this, CrowdSourceActivity.class);
+                            startActivityForResult(it, Flag_corwd);
                         }
                     } else {
                         ToastUtils.showShort(this, "请将带星号的数据填写完整");

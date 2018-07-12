@@ -349,6 +349,14 @@
             android:name=".ui.activity.GeneralTemplateC"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan|stateHidden" />
+        <activity
+            android:name=".ui.activity.ChooseCreativeActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan|stateHidden" />
+        <activity
+            android:name=".ui.activity.UploadMaterialActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan|stateHidden" />
         <!-- 阿里支付配置-活动 -->
         <activity
             android:name="com.alipay.sdk.app.H5PayActivity"

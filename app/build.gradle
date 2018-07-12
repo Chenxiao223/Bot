@@ -69,4 +69,6 @@ dependencies {
     compile files('libs/fastjson-1.2.47.jar')
     //APP更新
     compile 'com.allenliu.versionchecklib:library:2.0.5'
+    //轮播图
+    compile 'com.youth.banner:banner:1.4.10'
 }

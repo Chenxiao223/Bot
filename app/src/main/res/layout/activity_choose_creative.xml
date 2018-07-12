@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/grey"
     android:orientation="vertical">
 
     <ImageView
@@ -30,36 +31,42 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:text="选择人群"
+            android:text="选择创意"
             android:textColor="@color/white"
             android:textSize="@dimen/title_text_size" />
 
     </RelativeLayout>
 
+    <com.youth.banner.Banner
+        android:id="@+id/banner"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/relativeLayout_h" />
+
     <RelativeLayout
-        android:id="@+id/rl_crowd"
+        android:id="@+id/rl_template"
         android:layout_width="match_parent"
         android:layout_height="@dimen/imagview_top"
-        android:layout_marginTop="@dimen/line_height"
+        android:layout_marginTop="@dimen/padding_left_right4"
         android:background="@color/white"
         android:paddingLeft="@dimen/padding_left_right">
-
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:text="到店人群"
-            android:textSize="@dimen/title_text_size" />
+            android:text="模板"
+            android:textSize="@dimen/textsizi3" />
 
         <TextView
-            android:id="@+id/tv_crowd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/imageView1"
             android:layout_toStartOf="@+id/imageView1"
-            android:text="请选择"
+            android:text="通用模板"
+            android:textColor="@color/gray"
             android:textSize="@dimen/textsizi" />
 
         <ImageView
@@ -75,29 +82,30 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/rl_wifi_crowd"
+        android:id="@+id/rl_material"
         android:layout_width="match_parent"
         android:layout_height="@dimen/imagview_top"
         android:layout_marginTop="@dimen/line_height"
         android:background="@color/white"
         android:paddingLeft="@dimen/padding_left_right">
 
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:text="wifi人群"
-            android:textSize="@dimen/title_text_size" />
+            android:text="素材"
+            android:textSize="@dimen/textsizi3" />
 
         <TextView
-            android:id="@+id/tv_wifi_crowd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/imageView2"
             android:layout_toStartOf="@+id/imageView2"
-            android:text="请选择"
+            android:text="上传素材"
+            android:textColor="@color/gray"
             android:textSize="@dimen/textsizi" />
 
         <ImageView
@@ -113,29 +121,30 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/rl_click_crowd"
+        android:id="@+id/rl_promote"
         android:layout_width="match_parent"
         android:layout_height="@dimen/imagview_top"
         android:layout_marginTop="@dimen/line_height"
         android:background="@color/white"
         android:paddingLeft="@dimen/padding_left_right">
 
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:text="点击人群"
-            android:textSize="@dimen/title_text_size" />
+            android:text="推广页"
+            android:textSize="@dimen/textsizi3" />
 
         <TextView
-            android:id="@+id/tv_click_crowd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/imageView3"
             android:layout_toStartOf="@+id/imageView3"
-            android:text="请选择"
+            android:text="创建推广"
+            android:textColor="@color/gray"
             android:textSize="@dimen/textsizi" />
 
         <ImageView
@@ -164,7 +173,8 @@
             android:layout_marginLeft="@dimen/padding_left_right2"
             android:layout_marginRight="@dimen/padding_left_right2"
             android:background="@color/blue"
-            android:text="@string/next"
+            android:text="@string/commit"
             android:textColor="@color/white" />
     </RelativeLayout>
+
 </LinearLayout>

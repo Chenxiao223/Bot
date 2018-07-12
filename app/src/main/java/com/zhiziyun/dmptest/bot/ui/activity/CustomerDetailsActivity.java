@@ -638,8 +638,10 @@ public class CustomerDetailsActivity extends BaseActivity implements View.OnClic
                 Timer timer = new Timer();// 实例化Timer类
                 timer.schedule(new TimerTask() {
                     public void run() {
-                        handup(bindCode);
-                        this.cancel();
+                        if (!TextUtils.isEmpty(bindCode)) {
+                            handup(bindCode);
+                            this.cancel();
+                        }
                     }
                 }, 10000);//10秒之后执行解绑
             }

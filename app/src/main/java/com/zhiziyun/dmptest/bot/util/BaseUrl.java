@@ -11,12 +11,12 @@ public class BaseUrl {
     public static final String BaseJiang = "http://trace.zhiziyun.com/app/v1/";
 
     //通用测试环境接口
-//    public static final String BaseTest = "http://test2.api.zhiziyun.com/api/v1/";
-//    public static final String BaseZhang = "http://test2.api.zhiziyun.com/";
+    public static final String BaseTest = "http://test2.api.zhiziyun.com/api/v1/";
+    public static final String BaseZhang = "http://test2.api.zhiziyun.com/";
 
     //正式环境
-    public static final String BaseTest = "http://m.zhiziyun.com/api/v1/";
-    public static final String BaseZhang = "http://m.zhiziyun.com/";
+//    public static final String BaseTest = "http://m.zhiziyun.com/api/v1/";
+//    public static final String BaseZhang = "http://m.zhiziyun.com/";
 
     public static String BaseAPPName = "Bot";
 

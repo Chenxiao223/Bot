@@ -17,4 +17,5 @@
     <string name="prompt">人群创建15分钟后，投广告，发短信才可选中此人群</string>
     <string name="text2">*个体工商户需要在信息安全责任书签名，并将身份证放在责任书上，正面朝上，然后拍照上传</string>
     <string name="text3">*JPG格式，大小不超过1M</string>
+    <string name="next">下一步</string>
 </resources>

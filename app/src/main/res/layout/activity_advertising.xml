@@ -831,7 +831,7 @@
                         android:layout_marginLeft="@dimen/padding_left_right2"
                         android:layout_marginRight="@dimen/padding_left_right2"
                         android:background="@color/blue"
-                        android:text="@string/commit"
+                        android:text="@string/next"
                         android:textColor="@color/white" />
 
                 </RelativeLayout>

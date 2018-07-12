@@ -261,13 +261,14 @@ public class HomePageActivity extends BaseActivity implements View.OnClickListen
         try {
             getData();
             if (!TextUtils.isEmpty(CustomerFragment.fragment.bindCode)) {
-                Log.i("infoss","执行了");
                 Timer timer = new Timer();// 实例化Timer类
                 timer.schedule(new TimerTask() {
                     public void run() {
-                        handup(CustomerFragment.fragment.bindCode);
-                        CustomerFragment.fragment.bindCode = "";
-                        this.cancel();
+                        if (!TextUtils.isEmpty(CustomerFragment.fragment.bindCode)) {
+                            handup(CustomerFragment.fragment.bindCode);
+                            CustomerFragment.fragment.bindCode = "";
+                            this.cancel();
+                        }
                     }
                 }, 10000);//10秒之后执行解绑
             }

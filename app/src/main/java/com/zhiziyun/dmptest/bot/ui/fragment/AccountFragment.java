@@ -391,7 +391,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
                     RequestBody body = RequestBody.create(mediaType, url);
                     final Request request = new Request.Builder()
-                            .url("http://matest.vipgz1.idcfengye.com/zhiziyun-api-app-site/api/advertiserApp/editLogoImg")
+                            .url(BaseUrl.BaseZhang + "api/advertiserApp/editLogoImg")
                             .post(body)
                             .build();
 
@@ -405,7 +405,6 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
                                 String str = response.body().string();
-                                Log.i("infos", str);
                                 JSONObject jsonObject = new JSONObject(str);
                                 if (TextUtils.isEmpty(jsonObject.get("response").toString())) {//为null表示上传失败
                                     handler.sendEmptyMessage(5);

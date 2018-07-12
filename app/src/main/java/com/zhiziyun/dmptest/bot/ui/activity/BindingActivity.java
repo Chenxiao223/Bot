@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -148,7 +149,7 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
                     json.put("name", et_name.getText().toString());
                     json.put("mac", it.getStringExtra("mac"));
                     json.put("floorArea", (int) Math.PI * signalStrength * signalStrength);
-                    json.put("signalStrength", (int) computations(signalStrength));
+//                    json.put("signalStrength", (int) computations(signalStrength));
                     json.put("longitude", Float.parseFloat(new DecimalFormat(".000").format(lon)));
                     json.put("latitude", Float.parseFloat(new DecimalFormat(".000").format(lat)));
                     OkHttpClient client = new OkHttpClient();
@@ -175,7 +176,9 @@ public class BindingActivity extends BaseActivity implements View.OnClickListene
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
-                                JSONObject jsonObject = new JSONObject(response.body().string());
+                                String str=response.body().string();
+                                Log.i("infos",str);
+                                JSONObject jsonObject = new JSONObject(str);
                                 Message msg = new Message();
                                 msg.what = 1;
                                 msg.obj = jsonObject.get("msg");
