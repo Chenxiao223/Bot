@@ -16,8 +16,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -432,6 +432,7 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                     break;
                 case 3:
                     ToastUtils.showShort(getActivity(), msg.obj.toString());
+                    dialog.dismiss();
                     break;
                 case 4:
                     try {
@@ -460,141 +461,40 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
     public void phone(final String id, final int position) {
         try {
             bindCode = "";
-            if (TextUtils.isEmpty(getTel())) {
-                //如果没有保存号码就获取号码
-                //判断是否为android6.0系统版本，如果是，需要动态添加权限
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                                Manifest.permission.CALL_PHONE)) {
-                            //点击弹出对话框
-                            final CustomDialog customDialog = new CustomDialog(getActivity());
-                            customDialog.setTitle("消息提示");
-                            customDialog.setMessage("请到权限管理打开电话权限");
-                            customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
-                                @Override
-                                public void onYesClick() {
-                                    // 跳转到该应用的设置界面，让用户手动授权
-                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    Uri uri = Uri.fromParts("package", getAppProcessName(getActivity()), null);
-                                    intent.setData(uri);
-                                    startActivity(intent);
-                                    customDialog.dismiss();
-                                }
-                            });
-                            customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
-                                @Override
-                                public void onNoClick() {
-                                    customDialog.dismiss();
-                                }
-                            });
-                            customDialog.show();
-                        } else {
-                            requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, 1);
-                        }
-                    } else {
-                        //有权限才执行
-                        TelephonyManager telephonyManager = (TelephonyManager) getActivity().getSystemService(getActivity().TELEPHONY_SERVICE);
-                        final String te1 = telephonyManager.getLine1Number();//获取本机号码
-                        if (TextUtils.isEmpty(te1) && TextUtils.isEmpty(getTel())) {
-                            //如果获取不到手机号码就手动输入
-                            //点击弹出对话框
-                            final EditDialog editDialog = new EditDialog(getActivity());
-                            editDialog.setTitle("请输入电话号码");
-                            editDialog.setYesOnclickListener("确定", new EditDialog.onYesOnclickListener() {
-                                @Override
-                                public void onYesClick(String phone) {
-                                    if (TextUtils.isEmpty(phone)) {
-                                        ToastUtils.showShort(getActivity(), "请输入电话号码");
-                                    } else {
-                                        if (isMobile(phone)) {//如果手机格式正确
-                                            saveTel(phone);
-                                            //让软键盘隐藏
-                                            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                            imm.hideSoftInputFromWindow(getView().getApplicationWindowToken(), 0);
-                                            editDialog.dismiss();
-                                        } else {
-                                            ToastUtils.showShort(getActivity(), "手机号不合法");
-                                        }
-                                    }
-                                }
-                            });
-                            editDialog.setNoOnclickListener("取消", new EditDialog.onNoOnclickListener() {
-                                @Override
-                                public void onNoClick() {
-                                    editDialog.dismiss();
-                                }
-                            });
-                            editDialog.show();
-                        } else {
-                            dialog.show();
-                            //拨打电话接口
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        JSONObject json = new JSONObject();
-                                        json.put("siteId", share.getString("siteid", ""));
-                                        if (TextUtils.isEmpty(te1)) {
-                                            //如果获取不到手机号就从缓存获取
-                                            json.put("phoneNumber", getTel().replace("+86", ""));//将电话号码前的+86去掉
-                                        } else {
-                                            //能够获取手机号就直接使用
-                                            json.put("phoneNumber", te1.replace("+86", ""));
-                                            saveTel(te1.replace("+86", ""));
-                                        }
-                                        json.put("guestId", id);
-                                        OkHttpClient client = new OkHttpClient();
-                                        String url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
-                                        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                                        RequestBody body = RequestBody.create(mediaType, url);
-                                        Request request = new Request.Builder()
-                                                .url(BaseUrl.BaseTest + "dial/phone")
-                                                .post(body)
-                                                .addHeader("content-type", "application/x-www-form-urlencoded")
-                                                .build();
-
-                                        client.newCall(request).enqueue(new Callback() {
-                                            @Override
-                                            public void onFailure(Call call, IOException e) {
-
-                                            }
-
-                                            @Override
-                                            public void onResponse(Call call, Response response) throws IOException {
-                                                try {
-                                                    Gson gson = new Gson();
-                                                    callInfo = gson.fromJson(response.body().string(), CallInfo.class);
-                                                    Message message = new Message();
-                                                    if (callInfo.isSuccess()) {
-                                                        bindCode = callInfo.getObj();
-                                                        message.what = 2;
-                                                        message.obj = callInfo.getMsg();
-                                                        handler.sendMessage(message);
-                                                    } else {
-                                                        message.what = 3;
-                                                        message.obj = callInfo.getMsg();
-                                                        handler.sendMessage(message);
-                                                    }
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-                                            }
-                                        });
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }).start();
-                            edit(id, position);//编辑接口，放这里保险
-                        }
-                    }
-                } else {//如果是6.0一下的版本
-                    TelephonyManager telephonyManager = (TelephonyManager) getActivity().getSystemService(getActivity().TELEPHONY_SERVICE);
-                    final String te1 = telephonyManager.getLine1Number();//获取本机号码
-                    if (TextUtils.isEmpty(te1) && TextUtils.isEmpty(getTel())) {
-                        //如果获取不到手机号码就手动输入
+            //判断是否为android6.0系统版本，如果是，需要动态添加权限
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                            Manifest.permission.CALL_PHONE)) {
                         //点击弹出对话框
+                        final CustomDialog customDialog = new CustomDialog(getActivity());
+                        customDialog.setTitle("消息提示");
+                        customDialog.setMessage("请到权限管理打开电话权限");
+                        customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                            @Override
+                            public void onYesClick() {
+                                // 跳转到该应用的设置界面，让用户手动授权
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getAppProcessName(getActivity()), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                                customDialog.dismiss();
+                            }
+                        });
+                        customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                            @Override
+                            public void onNoClick() {
+                                customDialog.dismiss();
+                            }
+                        });
+                        customDialog.show();
+                    } else {
+                        requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, 1);
+                    }
+                } else {
+                    //有权限才执行，看是否保存有电话
+                    if (TextUtils.isEmpty(getTel())) {
+                        //如果没有保存
                         final EditDialog editDialog = new EditDialog(getActivity());
                         editDialog.setTitle("请输入电话号码");
                         editDialog.setYesOnclickListener("确定", new EditDialog.onYesOnclickListener() {
@@ -622,7 +522,7 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                             }
                         });
                         editDialog.show();
-                    } else {
+                    } else {//如果保存了电话直接拨打
                         dialog.show();
                         //拨打电话接口
                         new Thread(new Runnable() {
@@ -631,15 +531,9 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                                 try {
                                     JSONObject json = new JSONObject();
                                     json.put("siteId", share.getString("siteid", ""));
-                                    if (TextUtils.isEmpty(te1)) {
-                                        //如果获取不到手机号就从缓存获取
-                                        json.put("phoneNumber", getTel().replace("+86", ""));//将电话号码前的+86去掉
-                                    } else {
-                                        //能够获取手机号就直接使用
-                                        json.put("phoneNumber", te1.replace("+86", ""));
-                                        saveTel(te1);
-                                    }
+                                    json.put("phoneNumber", getTel().replace("+86", ""));//将电话号码前的+86去掉
                                     json.put("guestId", id);
+                                    Log.i("infos", json.toString());
                                     OkHttpClient client = new OkHttpClient();
                                     String url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
                                     MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
@@ -659,19 +553,20 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                                         @Override
                                         public void onResponse(Call call, Response response) throws IOException {
                                             try {
+                                                String str = response.body().string();
+                                                Log.i("infos", str);
                                                 Gson gson = new Gson();
-                                                callInfo = gson.fromJson(response.body().string(), CallInfo.class);
+                                                callInfo = gson.fromJson(str, CallInfo.class);
                                                 Message message = new Message();
                                                 if (callInfo.isSuccess()) {
                                                     bindCode = callInfo.getObj();
                                                     message.what = 2;
                                                     message.obj = callInfo.getMsg();
-                                                    handler.sendMessage(message);
                                                 } else {
                                                     message.what = 3;
                                                     message.obj = callInfo.getMsg();
-                                                    handler.sendMessage(message);
                                                 }
+                                                handler.sendMessage(message);
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
@@ -685,62 +580,90 @@ public class CustomerFragment extends Fragment implements View.OnClickListener {
                         edit(id, position);//编辑接口，放这里保险
                     }
                 }
-            } else {
-                dialog.show();
-                //如果保存有号码了就直接拨打
-                //拨打电话接口
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            JSONObject json = new JSONObject();
-                            json.put("siteId", share.getString("siteid", ""));
-                            json.put("phoneNumber", getTel().replace("+86", ""));
-                            json.put("guestId", id);
-                            OkHttpClient client = new OkHttpClient();
-                            String url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
-                            MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                            RequestBody body = RequestBody.create(mediaType, url);
-                            Request request = new Request.Builder()
-                                    .url(BaseUrl.BaseTest + "dial/phone")
-                                    .post(body)
-                                    .addHeader("content-type", "application/x-www-form-urlencoded")
-                                    .build();
-
-                            client.newCall(request).enqueue(new Callback() {
-                                @Override
-                                public void onFailure(Call call, IOException e) {
-
+            } else {//如果是6.0以下的版本
+                if (TextUtils.isEmpty(getTel())) {
+                    //如果没有保存
+                    final EditDialog editDialog = new EditDialog(getActivity());
+                    editDialog.setTitle("请输入电话号码");
+                    editDialog.setYesOnclickListener("确定", new EditDialog.onYesOnclickListener() {
+                        @Override
+                        public void onYesClick(String phone) {
+                            if (TextUtils.isEmpty(phone)) {
+                                ToastUtils.showShort(getActivity(), "请输入电话号码");
+                            } else {
+                                if (isMobile(phone)) {//如果手机格式正确
+                                    saveTel(phone);
+                                    //让软键盘隐藏
+                                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(getView().getApplicationWindowToken(), 0);
+                                    editDialog.dismiss();
+                                } else {
+                                    ToastUtils.showShort(getActivity(), "手机号不合法");
                                 }
-
-                                @Override
-                                public void onResponse(Call call, Response response) throws IOException {
-                                    try {
-                                        Gson gson = new Gson();
-                                        callInfo = gson.fromJson(response.body().string(), CallInfo.class);
-                                        Message message = new Message();
-                                        if (callInfo.isSuccess()) {
-                                            bindCode = callInfo.getObj();
-                                            message.what = 2;
-                                            message.obj = callInfo.getMsg();
-                                            handler.sendMessage(message);
-                                        } else {
-                                            message.what = 3;
-                                            message.obj = callInfo.getMsg();
-                                            handler.sendMessage(message);
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                            }
                         }
-                    }
-                }).start();
+                    });
+                    editDialog.setNoOnclickListener("取消", new EditDialog.onNoOnclickListener() {
+                        @Override
+                        public void onNoClick() {
+                            editDialog.dismiss();
+                        }
+                    });
+                    editDialog.show();
+                } else {//如果保存了电话直接拨打
+                    dialog.show();
+                    //拨打电话接口
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                JSONObject json = new JSONObject();
+                                json.put("siteId", share.getString("siteid", ""));
+                                json.put("phoneNumber", getTel().replace("+86", ""));//将电话号码前的+86去掉
+                                json.put("guestId", id);
+                                OkHttpClient client = new OkHttpClient();
+                                String url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                                MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                                RequestBody body = RequestBody.create(mediaType, url);
+                                Request request = new Request.Builder()
+                                        .url(BaseUrl.BaseTest + "dial/phone")
+                                        .post(body)
+                                        .addHeader("content-type", "application/x-www-form-urlencoded")
+                                        .build();
 
-                edit(id, position);//编辑接口，放这里保险
+                                client.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        try {
+                                            Gson gson = new Gson();
+                                            callInfo = gson.fromJson(response.body().string(), CallInfo.class);
+                                            Message message = new Message();
+                                            if (callInfo.isSuccess()) {
+                                                bindCode = callInfo.getObj();
+                                                message.what = 2;
+                                                message.obj = callInfo.getMsg();
+                                            } else {
+                                                message.what = 3;
+                                                message.obj = callInfo.getMsg();
+                                            }
+                                            handler.sendMessage(message);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                    edit(id, position);//编辑接口，放这里保险
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

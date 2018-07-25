@@ -1,0 +1,25 @@
+package com.zhiziyun.dmptest.bot.login;
+
+import rx.Observable;
+
+/**
+ * Created by Administrator on 2018/7/17.
+ */
+
+public class DeviceVisit extends BaseUseCase<LoginApi> {
+    String agentid;
+    String token;
+    String json;
+
+    public DeviceVisit(String agentid, String token, String json) {
+        this.agentid = agentid;
+        this.token = token;
+        this.json = json;
+    }
+
+    @Override
+    protected Observable buildUseCaseObservable() {
+
+        return userApiClient().deviceVisit(agentid, token, json);
+    }
+}

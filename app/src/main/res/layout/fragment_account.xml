@@ -110,6 +110,40 @@
                 </RelativeLayout>
 
                 <RelativeLayout
+                    android:id="@+id/rl_friends"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/imagview_top"
+                    android:layout_marginTop="@dimen/line_height"
+                    android:background="@color/white"
+                    android:paddingLeft="@dimen/image_small">
+
+                    <ImageView
+                        android:id="@+id/imageView11"
+                        android:layout_width="@dimen/imagview_top"
+                        android:layout_height="match_parent"
+                        android:padding="@dimen/control_padding"
+                        android:src="@drawable/wechat" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@+id/imageView11"
+                        android:layout_toRightOf="@+id/imageView11"
+                        android:text="微信朋友圈账户"
+                        android:textSize="@dimen/textsizi3" />
+
+                    <ImageView
+                        android:layout_width="@dimen/imagview_top"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentTop="true"
+                        android:padding="@dimen/padding"
+                        android:src="@drawable/click" />
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:id="@+id/rl_store"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/imagview_top"

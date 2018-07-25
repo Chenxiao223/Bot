@@ -103,6 +103,7 @@ public class SmsListActivity extends BaseActivity implements View.OnClickListene
                 it.putExtra("state", smsState(list_sms.get(position).get("content4")));
                 it.putExtra("smsCategoryId", list_sms.get(position).get("smsCategoryId"));
                 it.putExtra("signature", list_sms.get(position).get("signature"));
+                it.putExtra("type", list_sms.get(position).get("type"));
                 startActivity(it);
             }
         });
@@ -261,6 +262,7 @@ public class SmsListActivity extends BaseActivity implements View.OnClickListene
                                 hm_sms.put("smsId", sms.getRows().get(i).getEntityId());
                                 hm_sms.put("smsCategoryId", sms.getRows().get(i).getSmsCategoryId());
                                 hm_sms.put("signature", sms.getRows().get(i).getSignature());
+                                hm_sms.put("type", String.valueOf(sms.getRows().get(i).getType()));
                                 list_sms.add(hm_sms);
                             }
                             pageNum++;

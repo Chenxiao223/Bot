@@ -1,0 +1,109 @@
+package com.zhiziyun.dmptest.bot.login;
+
+import java.io.Serializable;
+
+/**
+ * Created by zhiziyun on 2018/7/13.
+ */
+
+public class BLoginUserBean implements Serializable {
+
+    /**
+     * accountid : 112095
+     * isAllowOnlinePay : true
+     * isShowPlanAds : true
+     * success : true
+     * siteid : 0zoTLi29XRgq
+     * company : 上海智子信息科技股份有限公司
+     * userid : 1700
+     * logourl : http://images2.zhiziyun.com/creative/0zoTLi29XRgq_logo.jpg?1531209707649
+     */
+
+    private String accountid;
+    private boolean isAllowOnlinePay;
+    private boolean isShowPlanAds;
+    private boolean success;
+    private String siteid;
+    private String company;
+    private String userid;
+    private String logourl;
+
+
+    public String getAccountid() {
+        return accountid;
+    }
+
+    public void setAccountid(String accountid) {
+        this.accountid = accountid;
+    }
+
+    public boolean isIsAllowOnlinePay() {
+        return isAllowOnlinePay;
+    }
+
+    public void setIsAllowOnlinePay(boolean isAllowOnlinePay) {
+        this.isAllowOnlinePay = isAllowOnlinePay;
+    }
+
+    public boolean isIsShowPlanAds() {
+        return isShowPlanAds;
+    }
+
+    public void setIsShowPlanAds(boolean isShowPlanAds) {
+        this.isShowPlanAds = isShowPlanAds;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getSiteid() {
+        return siteid;
+    }
+
+    public void setSiteid(String siteid) {
+        this.siteid = siteid;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
+    public String getUserid() {
+        return userid;
+    }
+
+    public void setUserid(String userid) {
+        this.userid = userid;
+    }
+
+    public String getLogourl() {
+        return logourl;
+    }
+
+    public void setLogourl(String logourl) {
+        this.logourl = logourl;
+    }
+
+    @Override
+    public String toString() {
+        return "BLoginUserBean{" +
+                "accountid='" + accountid + '\'' +
+                ", isAllowOnlinePay=" + isAllowOnlinePay +
+                ", isShowPlanAds=" + isShowPlanAds +
+                ", success=" + success +
+                ", siteid='" + siteid + '\'' +
+                ", company='" + company + '\'' +
+                ", userid='" + userid + '\'' +
+                ", logourl='" + logourl + '\'' +
+                '}';
+    }
+}

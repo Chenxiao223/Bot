@@ -1,0 +1,276 @@
+package com.zhiziyun.dmptest.bot.network;
+
+
+/**
+ * Created by Chailin on 2017/6/29.
+ * Shanghai Deaon Information Technology Co.,Ltd
+ */
+
+public class NetWorkApi {
+
+
+    //        基础API
+//    public static final String baseUrl = "http://192.168.1.132:86/smartcat-app/";
+//    public static final String baseUrl = "http://27.115.23.230:86/smartcat-app/";
+//    public static final String baseUrl = "http://192.168.1.150:8080/smartcat-app/";
+//    public static final String baseUrl = "http://192.168.1.129:8080/smartcat-app/";
+//    public static final String baseUrl = "http://192.168.43.9:8080/smartcat-app/";
+//    public static final String baseUrl = "http://106.14.249.15:86/smartcat-app/";
+    public static final String baseUrl = "http://47.96.61.9:86/smartcat-app/";
+    //    public static final String baseUrl = "http://192.168.43.112:8080/smartcat-app/";
+    public static final String endPoint = "http://file.deaon.cn"; //这个是CName
+    public static final String endPoints = "http://cms.deaon.cn"; //这个是CName
+
+    //app初次打开
+    public static final String appInfo = "sys/appInfo";
+
+    //用户登录
+    public static final String login = "sys/login";
+    public static final String loginuser = "loginuser/login";
+    public static final String store = "store/list";
+    //登陆成功后获取通用信息
+    public static final String loginInfo = "sys/loginInfo";
+
+    //注册极光设备
+    public static final String registJDevice = "sys/registJDevice";
+
+    //巡店计划列表
+    public static final String inpectionPlanList = "overlookplans/overlookPlansList";
+
+    //巡店计划详情
+    public static final String inpectionPlanDetails = "overlookplans/overlookPlanInfo";
+
+    //巡店添加计划
+    public static final String inpectionAddPlan = "overlookplans/addOverlookPlan";
+
+    //删除巡店计划
+    public static final String inpectionDeletePlan = "overlookplans/deleteOverlookPlan";
+
+    //防盗计划开关
+    public static final String inpectionOnOffPlan = "overlookplans/switchOverlookPlan";
+
+    //防盗计划列表
+    public static final String guardPlanList = "antitheifplans/antitheifPlanList";
+
+    //防盗计划详情
+    public static final String guardPlanDetails = "antitheifplans/antitheifPlanInfo";
+
+    //防盗添加计划
+    public static final String guardAddPlan = "antitheifplans/addAntitheifPlan";
+
+    //删除防盗计划
+    public static final String guardDeletePlan = "antitheifplans/deleteAntitheifPlan";
+
+    //防盗计划开关
+
+    public static final String guardOnOffPlan = "antitheifplans/switchAntitheifPlan";
+
+    //脱岗巡查列表
+    public static final String dutyPlanList = "outworkingplans/outworkingplanList";
+
+    //脱岗巡查详情
+    public static final String dutyPlanDetails = "outworkingplans/outworkingplanInfo";
+
+    //添加脱岗计划
+    public static final String dutyAddPlan = "outworkingplans/addOutworkingplan";
+
+    //删除脱岗计划
+    public static final String dutyDeletePlan = "outworkingplans/deleteOutworkingplan";
+
+    //脱岗巡查开关
+    public static final String dutyOnOffPlan = "outworkingplans/switchOutworkingplan";
+
+    //智能模块事件列表
+    public static final String eventList = "actions/actionList";
+
+    //创建事件
+    public static final String eventCreate = "actions/addAction";
+
+    //事件详情页面
+    public static final String eventDetails = "actionlogs/actionLogsList";
+
+    //事件处理
+    public static final String eventProcessing = "actions/handleAction";
+
+    //账号开通
+    public static final String openAccount = "sys/addUser";
+
+    //账号列表
+    public static final String accountList = "sys/getUserList";
+
+    //账号详情
+    public static final String accountDetails = "sys/getUserInfo";
+
+    //账号编辑
+    public static final String accountEdit = "sys/editUser";
+
+    //账号删除
+    public static final String accountDelete = "sys/deleteUser";
+
+    /**
+     *
+     *
+     *
+     */
+    //车流
+    public static final String carFlowInfo = "carflows/carFlowInfo";
+
+    //客流
+    public static final String custsomerflowInfo = "customerflows/customerflowInfo";
+
+    //事件
+    public static final String actionReport = "actions/actionReport";
+
+    //事件列表
+    public static final String actionList = "actions/actionList";
+
+    //评估计划列表
+    public static final String getVisitPlanList = "visitplans/getVisitPlanList";
+
+    //评估计划内任务计划
+    public static final String getVisitTaskList = "visittasks/getVisitTaskList";
+
+    //提交任务
+    public static final String uploadtaskFiles = "taskfiles/uploadTaskFile";
+
+    //获取任务指标
+    public static final String getVisitTaskConetentList = "visittasks/getVisitTaskConetentList";
+
+    //点位列表
+    public static final String devicesList = "devices/devicesList";
+
+    //文件上传
+    public static final String uploadFile = "files/uploadFile";
+
+    //设备ID查询门店号码
+    public static final String getStorePhone = "stores/getStorePhone";
+
+    //直播列表
+    public static final String liveList = "lives/liveList";
+
+    //添加直播
+    public static final String createLive = "lives/createLive";
+
+    //获取用户Sig
+    public static final String getUserSig = "lives/getUserSig";
+
+    //开始直播
+    public static final String startLive = "lives/startLive";
+
+    //进出房间
+    public static final String updateViewerCount = "lives/updateViewerCount";
+
+    //获取直播房间人员列表
+    public static final String getViewerList = "lives/getViewerList";
+
+    //获取直播详情
+    public static final String getLivingInfo = "lives/getLivingInfo";
+
+    //开始任务直播
+    public static final String startVideoTask = "visittasks/startVideoTask";
+
+    //获取大区所属的省份
+    public static final String getSiteCountryList = "devices/getSiteCountryList";
+
+    //获取门店列表
+    public static final String getStoreList = "stores/getStoreList";
+
+    //待派工|增项待派工
+    public static final String getDispatchingList = "sd/getDispatchingList ";
+
+    //取消
+    public static final String endDispatch = "sd/endDispatch";
+
+    //获取派工信息
+    public static final String getDispatchInfo = "sd/getDispatchInfo";
+
+    //车间主任待完工 列表
+    public static final String getWaitFinishList = "sd/getWaitFinishList";
+
+    //技师、SA列表
+    public static final String getArtificerAndSaList = "sd/getArtificerAndSaList ";
+
+    //派工|增派|重派|返工|新建
+    public static final String changeDispatch = "sd/changeDispatch";
+
+
+    //服务顾问——待接车
+    public static final String getWaitCarList = "sa/getWaitCarList";
+
+    //服务顾问——待交车
+    public static final String getWaitDeliverList = "sa/getWaitDeliverList ";
+
+
+    //服务顾问——接车
+    public static final String hasCarPrecheck = "sa/hasCarPrecheck";
+
+    //服务顾问——交车
+    public static final String handleCar = "sa/handleCar";
+
+    //服务顾问——历史记录
+    public static final String historyRecord = "sa/historyRecord";
+
+    //生成预检单
+    public static final String addPreCheck = "sa/addPreCheck";
+
+
+    //增项列表
+    public static final String getExtraProjectList = "sd/getExtraProjectList";
+
+
+    //新增增项
+    public static final String addExtraProject = "sd/addExtraProject";
+
+    //完工
+    public static final String finishWork = "sd/finishWork";
+
+    //预检单
+    public static final String gainPreCheckList = "sa/gainPreCheckList";
+
+
+    //车主信息
+    public static final String getPrecheckStatus = "sa/getPrecheckStatus";
+
+    //车型
+    public static final String getCarType = "sd/getCarType";
+
+
+    /**
+     *
+     *
+     *
+     */
+    //修改密码
+    public static final String editUser = "sys/editUser";
+
+    //意见反馈
+    public static final String suggestion = "feedbacks/addFeedbacks ";
+
+    //验证码
+    public static final String phoneCode = "sys/getVerCode";
+
+    //相册
+    public static final String album = "sys/myAlbum ";
+
+    //消息中心
+    public static final String message = "messages/infoCenterList";
+
+    //忘记密码
+    public static final String forgetPass = "sys/resetPwd";
+
+    //人员列表
+    public static final String tabulation = "sys/getMember";
+
+    //消息更新
+    public static final String ReNew = "messages/updateMessageStatus";
+
+    //未读消息
+    public static final String MessageCount = "messages/getMessageCount ";
+
+
+    //业务
+    public static final String Wait_Car = "sa/getWaitCarList";
+
+    //删除车主信息
+    public static final String delOwnerInfo = "sa/delOwnerInfo";
+}

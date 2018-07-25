@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.zhiziyun.dmptest.bot.ui.activity.SubmitFriendActivitty">
+
+    <ImageView
+        android:id="@+id/iv_system"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/homepagebg"/>
+
+    <RelativeLayout
+        android:id="@+id/rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_title"
+        android:layout_below="@+id/iv_system"
+        android:background="@drawable/homepagebg">
+
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/back"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="添加朋友圈活动"
+            android:textColor="@color/white"
+            android:textSize="@dimen/title_text_size"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rl"
+        android:layout_marginTop="@dimen/control_padding"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/padding_left_right4"
+        android:paddingRight="@dimen/padding_left_right4">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="模板"
+                android:textSize="@dimen/textsizi3"/>
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="@null"
+                android:hint="800x640"
+                android:textColorHint="@color/gray"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="标题"
+                android:textSize="@dimen/textsizi3"/>
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="@null"
+                android:hint="填写广告标题"
+                android:textColorHint="@color/gray"/>
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/imagview_top"
+            android:gravity="center_vertical"
+            android:text="40字符以内"
+            android:textSize="10sp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="落地页"
+                android:textSize="@dimen/textsizi3"/>
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="@null"
+                android:hint="url"
+                android:textColorHint="@color/gray"/>
+        </RelativeLayout>
+
+        <ImageView
+            android:layout_marginTop="@dimen/textsizi5"
+            android:id="@+id/ground_im"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"/>
+
+        <RelativeLayout
+            android:layout_marginTop="@dimen/textsizi5"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="是否分享设置"
+                android:textSize="@dimen/textsizi3"/>
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="20dp"
+                android:layout_toLeftOf="@+id/true_cb"
+                android:text="否"/>
+
+            <CheckBox
+                android:id="@+id/true_cb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dp"
+                android:text="是"/>
+        </RelativeLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:text="分享标题"
+            android:textSize="@dimen/textsizi3"/>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:text="分享描述"
+            android:textSize="@dimen/textsizi3"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/padding_left_right4"
+            android:layout_marginLeft="@dimen/padding_left_right2"
+            android:layout_marginRight="@dimen/padding_left_right2"
+            android:background="@color/blue"
+            android:text="@string/commit"
+            android:textColor="@color/white"/>
+
+    </RelativeLayout>
+</RelativeLayout>

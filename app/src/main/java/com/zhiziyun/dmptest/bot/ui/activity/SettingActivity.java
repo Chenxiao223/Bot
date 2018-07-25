@@ -1,18 +1,13 @@
 package com.zhiziyun.dmptest.bot.ui.activity;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -80,39 +75,14 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         findViewById(R.id.rl_version).setOnClickListener(this);
         rl_mac = findViewById(R.id.rl_mac);
         rl_mac.setOnClickListener(this);
-        if (TextUtils.isEmpty(getTel())) {
-            //如果没有填号码就从手机获取，否则从缓存获取
-            tv_phone_number.setText(getphoneNM());
-        } else {
-            tv_phone_number.setText(getTel());
-        }
+        //从缓存获取手机号
+        tv_phone_number.setText(getTel());
         isHidden();
     }
 
     public String getTel() {
         SharedPreferences shared = SettingActivity.this.getSharedPreferences("phone", Context.MODE_PRIVATE);
         return shared.getString("tel", "");
-    }
-
-    public String getphoneNM() {
-        try {
-            //判断是否为android6.0系统版本，如果是，需要动态添加权限
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (ContextCompat.checkSelfPermission(SettingActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                    //有权限才执行
-                    TelephonyManager telephonyManager = (TelephonyManager) SettingActivity.this.getSystemService(SettingActivity.this.TELEPHONY_SERVICE);
-                    final String te1 = telephonyManager.getLine1Number();//获取本机号码
-                    return te1.replace("+86", "");
-                }
-            } else {//6.0以下版本直接获取
-                TelephonyManager telephonyManager = (TelephonyManager) SettingActivity.this.getSystemService(SettingActivity.this.TELEPHONY_SERVICE);
-                final String te1 = telephonyManager.getLine1Number();//获取本机号码
-                return te1.replace("+86", "");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 
     @Override
@@ -260,7 +230,8 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                                         AllenVersionChecker
                                                 .getInstance()
                                                 .downloadOnly(
-                                                        UIData.create().setDownloadUrl(versionUpdate.getResponse().getDownloadUrl())
+                                                        UIData.create().setTitle("消息提示").setContent("是否需要极速下载？取消后将无法更新")
+                                                                .setDownloadUrl(versionUpdate.getResponse().getDownloadUrl())
                                                 )
                                                 .excuteMission(SettingActivity.this);
                                         selfDialog.dismiss();

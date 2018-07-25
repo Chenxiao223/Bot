@@ -1,0 +1,30 @@
+package com.zhiziyun.dmptest.bot.login;
+
+import rx.Observable;
+
+/**
+ * Created by zhiziyun on 2018/7/16.
+ */
+
+public class StoreCase extends BaseUseCase<LoginApi> {
+    String siteId;
+//    int page;
+//    int rows;
+//    String name;
+//    String sort;
+//    String order;
+
+    public StoreCase(String siteId) {
+        this.siteId = siteId;
+//        this.page = page;
+//        this.rows = rows;
+//        this.name = name;
+//        this.sort = sort;
+//        this.order = order;
+    }
+
+    @Override
+    protected Observable buildUseCaseObservable() {
+        return userApiClient().store(siteId);
+    }
+}

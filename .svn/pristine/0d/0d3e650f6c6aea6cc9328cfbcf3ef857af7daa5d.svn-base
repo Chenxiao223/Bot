@@ -1,0 +1,71 @@
+package com.zhiziyun.dmptest.bot.login;
+
+
+
+
+
+
+
+
+
+import com.zhiziyun.dmptest.bot.network.ApiClient;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.Subscriptions;
+
+/**
+ * Created by Chailin on 2017/7/4.
+ */
+
+public abstract class BaseUseCase<T> {
+
+    protected Subscription subscription = Subscriptions.empty();
+    protected Subscriber subscriber;
+
+    protected BaseUseCase() {
+    }
+
+    /**
+     * 构建UseCase
+     */
+    protected abstract Observable buildUseCaseObservable();
+
+    public <T> void execute(Subscriber useCaseSubscriber) {
+        this.subscriber = useCaseSubscriber;
+        this.subscription = this.buildUseCaseObservable().subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe(useCaseSubscriber);
+    }
+
+    /**
+     * 取消订阅
+     */
+    public void unSubscribe() {
+        if (!subscription.isUnsubscribed()) {
+            subscription.unsubscribe();
+        }
+    }
+
+    public T platfromApiClient() {
+        return ApiClient.platformClient().create(getType());
+    }
+
+    public T userApiClient(){
+        return ApiClient.userClient().create(getType());
+    }
+
+    private Class<T> getType() {
+        Class<T> entityClass = null;
+        Type t = getClass().getGenericSuperclass();
+        Type[] p = ((ParameterizedType) t).getActualTypeArguments();
+        entityClass = (Class<T>) p[0];
+        return entityClass;
+    }
+
+}

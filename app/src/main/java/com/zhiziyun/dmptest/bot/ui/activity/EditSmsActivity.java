@@ -68,12 +68,13 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
     private LinearLayout line, line2, line_type;
     private SmsSignature smsSignature;
     private String signature = null;
-    private final int MAXLENGTH = 64;
+    private final int MAXLENGTH = 63;
     private Button btn_commit;
     private SharedPreferences.Editor editors;
     private boolean smg = true;
     private ArrayList<String> list_industry = new ArrayList<>();
     private ArrayList<String> list_industry_type = new ArrayList<>();
+    private ArrayList<String> list_industry_id = new ArrayList<>();
     private PopWin_industry popWin_industry;
     private Industry industry;
     private String smsCategoryId = null;
@@ -110,7 +111,7 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
         tv_state = (TextView) findViewById(R.id.tv_state);
         tv_prompt = (TextView) findViewById(R.id.tv_prompt);
         tv_word = (TextView) findViewById(R.id.tv_word);
-        tv_word.setText("64字");
+        tv_word.setText("63字");
         tv_type = findViewById(R.id.tv_type);
         et_signature = (EditText) findViewById(R.id.et_signature);
         tv_industry = findViewById(R.id.tv_industry);
@@ -134,6 +135,11 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
             et_content.setText(intent.getStringExtra("content"));
             String state = intent.getStringExtra("state");
             signature(intent.getStringExtra("smsId"));
+            if (intent.getStringExtra("type").equals("0")) {
+                tv_type.setText("短信");
+            } else {
+                tv_type.setText("闪信");
+            }
             tv_industry.setClickable(false);
             tv_industry_type.setClickable(false);
             line_type.setClickable(false);
@@ -272,11 +278,13 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
                             tv_industry.setText(selectDateTimeStrToShow);
                             //
                             list_industry_type.clear();
+                            list_industry_id.clear();
                             for (int i = 0; i < industry.getRows().size(); i++) {
                                 if (industry.getRows().get(i).getName().equals(selectDateTimeStrToShow)) {
                                     for (int j = 0; j < industry.getRows().size(); j++) {
                                         if (industry.getRows().get(i).getEntityId().equals(industry.getRows().get(j).getParentId())) {
                                             list_industry_type.add(industry.getRows().get(j).getName());
+                                            list_industry_id.add(industry.getRows().get(j).getEntityId());
                                         }
                                     }
                                 }
@@ -320,9 +328,13 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
                             String mSelectDate = wv2.getSelectedItem();
                             selectDateTimeStrToShow = mSelectDate;
                             tv_industry_type.setText(selectDateTimeStrToShow);
+                            for (int k = 0; k < list_industry_type.size(); k++) {
+                                if (selectDateTimeStrToShow.equals(list_industry_type.get(k))) {
+                                    smsCategoryId = list_industry_id.get(k);
+                                }
+                            }
                             for (int i = 0; i < industry.getRows().size(); i++) {
-                                if (industry.getRows().get(i).getName().equals(selectDateTimeStrToShow)) {
-                                    smsCategoryId = industry.getRows().get(i).getEntityId();
+                                if (industry.getRows().get(i).getEntityId().equals(smsCategoryId)) {
                                     String str = industry.getRows().get(i).getSignature();
                                     if (!TextUtils.isEmpty(str)) {//如果不为空就显示返回的签名
                                         et_signature.setText(str);
@@ -897,6 +909,7 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
                     break;
                 case 9:
                     try {
+                        list_industry.clear();
                         final Industry industry = (Industry) msg.obj;
                         for (int i = 0; i < industry.getRows().size(); i++) {
                             if (!industry.getRows().get(i).isLeaf()) {
@@ -940,6 +953,9 @@ public class EditSmsActivity extends BaseActivity implements View.OnClickListene
                     et_content = null;
                     tv_state = null;
                     line = null;
+                    list_industry.clear();
+                    list_industry_type.clear();
+                    list_industry_id.clear();
                     System.gc();
                 } catch (Exception e) {
                     e.printStackTrace();
