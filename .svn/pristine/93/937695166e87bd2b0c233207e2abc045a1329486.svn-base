@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="vertical">
+
+    <Button
+        android:id="@+id/commit_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/buttom_height"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="@dimen/imagview_top"
+        android:layout_marginLeft="@dimen/padding_left_right2"
+        android:layout_marginRight="@dimen/padding_left_right2"
+        android:background="@color/blue"
+        android:text="@string/commit"
+        android:textColor="@color/white"/>
+
+</RelativeLayout>

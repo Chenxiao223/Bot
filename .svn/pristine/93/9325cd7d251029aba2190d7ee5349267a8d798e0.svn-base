@@ -1,0 +1,300 @@
+package com.zhiziyun.dmptest.bot.ui.activity;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.telephony.TelephonyManager;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.allenliu.versionchecklib.v2.AllenVersionChecker;
+import com.allenliu.versionchecklib.v2.builder.UIData;
+import com.google.gson.Gson;
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.entity.VersionUpdate;
+import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.CustomDialog;
+import com.zhiziyun.dmptest.bot.util.SelfDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
+import com.zhiziyun.dmptest.bot.util.Token;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+/**
+ * Created by Administrator on 2018/5/10.
+ */
+
+public class SettingActivity extends BaseActivity implements View.OnClickListener {
+    public static SettingActivity activity;
+    public TextView tv_phone_number, tv_version;
+    private RelativeLayout rl_mac;
+    private VersionUpdate versionUpdate;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_setting);
+        initView();
+    }
+
+    private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        activity = this;
+        tv_phone_number = (TextView) findViewById(R.id.tv_phone_number);
+        tv_version = (TextView) findViewById(R.id.tv_version);
+        tv_version.setText(BaseUrl.BaseVersion);
+
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.rl_phone_number).setOnClickListener(this);
+        findViewById(R.id.btn_commit).setOnClickListener(this);
+        findViewById(R.id.rl_version).setOnClickListener(this);
+        rl_mac = findViewById(R.id.rl_mac);
+        rl_mac.setOnClickListener(this);
+        //从缓存获取手机号
+        tv_phone_number.setText(getTel());
+        isHidden();
+    }
+
+    public String getTel() {
+        SharedPreferences shared = SettingActivity.this.getSharedPreferences("phone", Context.MODE_PRIVATE);
+        return shared.getString("tel", "");
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_back:
+                finish();
+                break;
+            case R.id.rl_phone_number:
+                if (getPackageName().equals("com.zhiziyun.dmptest.bot") || getPackageName().equals("com.zhiziyun.dmptest.tkb")) {
+                    //如果是智子盒子或探客宝就跳转
+                    Intent it = new Intent(SettingActivity.this, EditPhoneNMActivity.class);
+                    it.putExtra("phoneNM", tv_phone_number.getText().toString());
+                    startActivityForResult(it, 543);
+                } else {
+                    Intent it = new Intent(SettingActivity.this, ChangePhoneNMActivity.class);
+                    it.putExtra("phoneNM", tv_phone_number.getText().toString());
+                    startActivityForResult(it, 543);
+                }
+                break;
+            case R.id.btn_commit:
+                finish();
+                clear();
+                HomePageActivity.activity.finish();
+                startActivity(new Intent(SettingActivity.this, LoginActivity.class));
+                break;
+            case R.id.rl_version:
+                versionUpdate();
+                break;
+            case R.id.rl_mac:
+                startActivity(new Intent(SettingActivity.this, MacDeviceActivity.class));
+                break;
+        }
+    }
+
+    public void versionUpdate() {
+        //版本更新
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject json = new JSONObject();
+                    json.put("version", BaseUrl.BaseVersion);
+                    json.put("device", "android");
+                    json.put("appId", getPackageName());
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url(BaseUrl.BaseZhang + "api/versionApp/checkAppUpdate")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+                    okHttpClient.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                Gson gson = new Gson();
+                                versionUpdate = gson.fromJson(response.body().string(), VersionUpdate.class);
+                                //判断是否需要更新
+                                if (versionUpdate.getResponse().isNeedUpdate()) {
+                                    handler.sendEmptyMessage(2);
+                                } else {
+                                    handler.sendEmptyMessage(3);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void isHidden() {
+        //短信活动创建接口
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    OkHttpClient client = new OkHttpClient();
+                    RequestBody body = new FormBody.Builder()
+                            .add("device", "android").build();
+                    final Request request = new Request.Builder()
+                            .url(BaseUrl.BaseZhang + "loginuser/getVisibleDevices")
+                            .post(body)
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                TelephonyManager telephonyManager = (TelephonyManager) SettingActivity.this.getSystemService(SettingActivity.this.TELEPHONY_SERVICE);
+                                String imei = telephonyManager.getDeviceId();
+                                JSONArray jsonArray = new JSONArray(response.body().string());
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    if (imei.equals(jsonArray.get(i).toString())) {
+                                        handler.sendEmptyMessage(1);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    rl_mac.setVisibility(View.VISIBLE);
+                    break;
+                case 2:
+                    try {
+                        if (versionUpdate.getResponse().isNeedForcedUpdate()) {//是否需要强制更新
+                            try {
+                                //强制更新没有取消选项
+                                final SelfDialog selfDialog = new SelfDialog(SettingActivity.this);
+                                selfDialog.setTitle(versionUpdate.getResponse().getTitle());
+                                selfDialog.setMessage(versionUpdate.getResponse().getMessage());
+                                selfDialog.setYesOnclickListener("确定", new SelfDialog.onYesOnclickListener() {
+                                    @Override
+                                    public void onYesClick() {
+                                        AllenVersionChecker
+                                                .getInstance()
+                                                .downloadOnly(
+                                                        UIData.create().setTitle("消息提示").setContent("是否需要极速下载？取消后将无法更新")
+                                                                .setDownloadUrl(versionUpdate.getResponse().getDownloadUrl())
+                                                )
+                                                .excuteMission(SettingActivity.this);
+                                        selfDialog.dismiss();
+                                    }
+                                });
+                                selfDialog.show();
+                                selfDialog.setCancelable(false);//禁止点击回退键
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            try {
+                                //点击弹出对话框
+                                final CustomDialog customDialog = new CustomDialog(SettingActivity.this);
+                                customDialog.setTitle(versionUpdate.getResponse().getTitle());
+                                customDialog.setMessage(versionUpdate.getResponse().getMessage());
+                                customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                                    @Override
+                                    public void onYesClick() {
+                                        AllenVersionChecker
+                                                .getInstance()
+                                                .downloadOnly(
+                                                        UIData.create().setDownloadUrl(versionUpdate.getResponse().getDownloadUrl())
+                                                )
+                                                .excuteMission(SettingActivity.this);
+                                        customDialog.dismiss();
+                                    }
+                                });
+                                customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                                    @Override
+                                    public void onNoClick() {
+                                        customDialog.dismiss();
+                                    }
+                                });
+                                customDialog.show();
+                                customDialog.setCancelable(false);//禁止点击回退键
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 3:
+                    ToastUtils.showShort(SettingActivity.this, "无新版本");
+                    break;
+            }
+        }
+    };
+
+    public void clear() {
+        SharedPreferences sharedPreferences = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editors = sharedPreferences.edit();
+        editors.putString("email", "");
+        editors.putString("password", "");
+        editors.commit();//提交
+    }
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal"
+                android:padding="5dp"
+    >
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/white"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:id="@+id/title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_marginLeft="10dp"
+            android:gravity="center_vertical"
+            android:hint="标题"
+            android:textSize="@dimen/textsizi3"/>
+
+        <EditText
+            android:id="@+id/max_et"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:background="@null"
+            android:hint="2-8个字"
+            android:lines="1"
+            android:singleLine="true"
+            android:textColorHint="@color/gray"/>
+    </RelativeLayout>
+
+    <!--<LinearLayout-->
+    <!--android:id="@+id/image_ly"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="@dimen/activity_home_bottom"-->
+    <!--android:background="@color/white"-->
+    <!--android:orientation="horizontal"-->
+    <!--android:visibility="gone">-->
+
+    <!--<ImageView-->
+    <!--android:id="@+id/material_logo"-->
+    <!--android:layout_width="@dimen/activity_home_bottom"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_gravity="center_vertical"-->
+    <!--android:layout_margin="@dimen/image_small"-->
+    <!--android:src="@mipmap/ic_launcher"/>-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/image_tv"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_marginRight="10dp"-->
+    <!--android:background="@null"-->
+    <!--android:gravity="right|center_vertical"-->
+    <!--android:hint="请上传一张LOGO"-->
+    <!--android:textColorHint="@color/gray"/>-->
+    <!--</LinearLayout>-->
+
+</RelativeLayout>
+

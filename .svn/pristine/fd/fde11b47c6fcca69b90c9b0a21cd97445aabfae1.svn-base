@@ -1,0 +1,225 @@
+package com.zhiziyun.dmptest.bot.entity;
+
+import java.util.List;
+
+/**
+ * Created by Administrator on 2018/7/26.
+ */
+
+public class WechatActivityList {
+
+    /**
+     * status : true
+     * errorcode :
+     * errormsg :
+     * response : {"wechatActivities":[{"wechatActivityId":19825969,"wechatActivityName":"测试2018072702","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"800x640","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AMgAKAAAvBbVYphCo8TraFD.jpg/0?ck=83b1112801663f2516b29e589b11b60a","bidAmount":200,"dailyBudget":20000,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0},{"wechatActivityId":19825424,"wechatActivityName":"测试-2018072702-yx","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"800x640","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AMgAKAAAvBbVYphCo8TraFD.jpg/0?ck=83b1112801663f2516b29e589b11b60a","bidAmount":200,"dailyBudget":200000,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0},{"wechatActivityId":19804009,"wechatActivityName":"Test180727001","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"800x640","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AMgAKAAAvBbVYphCo8TraFD.jpg/0?ck=83b1112801663f2516b29e589b11b60a","bidAmount":120,"dailyBudget":1200,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0},{"wechatActivityId":19692027,"wechatActivityName":"APP朋友圈活动测试-24-1-new-2","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"640x800","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AKAAMgAAfBbRaqmDuRCD3f9.jpg/0?ck=932e2c0270c8dadd43dc95453a4a20f7","bidAmount":123,"dailyBudget":66556,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0}],"total":13}
+     */
+
+    private boolean status;
+    private String errorcode;
+    private String errormsg;
+    private ResponseBean response;
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public String getErrorcode() {
+        return errorcode;
+    }
+
+    public void setErrorcode(String errorcode) {
+        this.errorcode = errorcode;
+    }
+
+    public String getErrormsg() {
+        return errormsg;
+    }
+
+    public void setErrormsg(String errormsg) {
+        this.errormsg = errormsg;
+    }
+
+    public ResponseBean getResponse() {
+        return response;
+    }
+
+    public void setResponse(ResponseBean response) {
+        this.response = response;
+    }
+
+    public static class ResponseBean {
+        /**
+         * wechatActivities : [{"wechatActivityId":19825969,"wechatActivityName":"测试2018072702","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"800x640","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AMgAKAAAvBbVYphCo8TraFD.jpg/0?ck=83b1112801663f2516b29e589b11b60a","bidAmount":200,"dailyBudget":20000,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0},{"wechatActivityId":19825424,"wechatActivityName":"测试-2018072702-yx","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"800x640","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AMgAKAAAvBbVYphCo8TraFD.jpg/0?ck=83b1112801663f2516b29e589b11b60a","bidAmount":200,"dailyBudget":200000,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0},{"wechatActivityId":19804009,"wechatActivityName":"Test180727001","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"800x640","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AMgAKAAAvBbVYphCo8TraFD.jpg/0?ck=83b1112801663f2516b29e589b11b60a","bidAmount":120,"dailyBudget":1200,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0},{"wechatActivityId":19692027,"wechatActivityName":"APP朋友圈活动测试-24-1-new-2","configuredStatus":"SUSPEND","systemStatus":"AD_STATUS_PENDING","size":"640x800","imageUrl":"http://pgdt.gtimg.cn/gdt/0/DAAefl_AKAAMgAAfBbRaqmDuRCD3f9.jpg/0?ck=932e2c0270c8dadd43dc95453a4a20f7","bidAmount":123,"dailyBudget":66556,"delivery":0,"clicks":0,"likeOrComment":0,"follow":0,"share":0}]
+         * total : 13
+         */
+
+        private int total;
+        private List<WechatActivitiesBean> wechatActivities;
+
+        public int getTotal() {
+            return total;
+        }
+
+        public void setTotal(int total) {
+            this.total = total;
+        }
+
+        public List<WechatActivitiesBean> getWechatActivities() {
+            return wechatActivities;
+        }
+
+        public void setWechatActivities(List<WechatActivitiesBean> wechatActivities) {
+            this.wechatActivities = wechatActivities;
+        }
+
+        public static class WechatActivitiesBean {
+            /**
+             * wechatActivityId : 19825969
+             * wechatActivityName : 测试2018072702
+             * configuredStatus : SUSPEND
+             * systemStatus : AD_STATUS_PENDING
+             * size : 800x640
+             * imageUrl : http://pgdt.gtimg.cn/gdt/0/DAAefl_AMgAKAAAvBbVYphCo8TraFD.jpg/0?ck=83b1112801663f2516b29e589b11b60a
+             * bidAmount : 200
+             * dailyBudget : 20000
+             * delivery : 0
+             * clicks : 0
+             * likeOrComment : 0
+             * follow : 0
+             * share : 0
+             */
+
+            private int wechatActivityId;
+            private String wechatActivityName;
+            private String configuredStatus;
+            private String rejectMessage;
+            private String systemStatus;
+            private String size;
+            private String imageUrl;
+            private int bidAmount;
+            private int dailyBudget;
+            private int delivery;
+            private int clicks;
+            private int likeOrComment;
+            private int follow;
+            private int share;
+
+            public String getRejectMessage() {
+                return rejectMessage;
+            }
+
+            public void setRejectMessage(String rejectMessage) {
+                this.rejectMessage = rejectMessage;
+            }
+
+            public int getWechatActivityId() {
+                return wechatActivityId;
+            }
+
+            public void setWechatActivityId(int wechatActivityId) {
+                this.wechatActivityId = wechatActivityId;
+            }
+
+            public String getWechatActivityName() {
+                return wechatActivityName;
+            }
+
+            public void setWechatActivityName(String wechatActivityName) {
+                this.wechatActivityName = wechatActivityName;
+            }
+
+            public String getConfiguredStatus() {
+                return configuredStatus;
+            }
+
+            public void setConfiguredStatus(String configuredStatus) {
+                this.configuredStatus = configuredStatus;
+            }
+
+            public String getSystemStatus() {
+                return systemStatus;
+            }
+
+            public void setSystemStatus(String systemStatus) {
+                this.systemStatus = systemStatus;
+            }
+
+            public String getSize() {
+                return size;
+            }
+
+            public void setSize(String size) {
+                this.size = size;
+            }
+
+            public String getImageUrl() {
+                return imageUrl;
+            }
+
+            public void setImageUrl(String imageUrl) {
+                this.imageUrl = imageUrl;
+            }
+
+            public int getBidAmount() {
+                return bidAmount;
+            }
+
+            public void setBidAmount(int bidAmount) {
+                this.bidAmount = bidAmount;
+            }
+
+            public int getDailyBudget() {
+                return dailyBudget;
+            }
+
+            public void setDailyBudget(int dailyBudget) {
+                this.dailyBudget = dailyBudget;
+            }
+
+            public int getDelivery() {
+                return delivery;
+            }
+
+            public void setDelivery(int delivery) {
+                this.delivery = delivery;
+            }
+
+            public int getClicks() {
+                return clicks;
+            }
+
+            public void setClicks(int clicks) {
+                this.clicks = clicks;
+            }
+
+            public int getLikeOrComment() {
+                return likeOrComment;
+            }
+
+            public void setLikeOrComment(int likeOrComment) {
+                this.likeOrComment = likeOrComment;
+            }
+
+            public int getFollow() {
+                return follow;
+            }
+
+            public void setFollow(int follow) {
+                this.follow = follow;
+            }
+
+            public int getShare() {
+                return share;
+            }
+
+            public void setShare(int share) {
+                this.share = share;
+            }
+        }
+    }
+}
