@@ -12,12 +12,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -26,15 +27,17 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.zhiziyun.dmptest.bot.R;
-import com.zhiziyun.dmptest.bot.adapter.SpinnerArrayAdapter;
 import com.zhiziyun.dmptest.bot.adapter.VisitorsselfAdapter;
 import com.zhiziyun.dmptest.bot.entity.Visitorsself;
+import com.zhiziyun.dmptest.bot.ui.activity.SearchPageActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.VisitorsViewActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.VisitorsselfActivity;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
 import com.zhiziyun.dmptest.bot.util.ToastUtils;
 import com.zhiziyun.dmptest.bot.util.Token;
+import com.zhiziyun.dmptest.bot.view.PopWin_general;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,8 +53,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -67,17 +68,14 @@ import okhttp3.Response;
  */
 public class VisitorsselfFragment extends Fragment implements View.OnClickListener {
     public static VisitorsselfFragment fragment;
-    private Spinner spn_shop, spn_tanzhen;
-    private ArrayList<String> list_shop = new ArrayList<>();
-    private ArrayList<String> list_tanzhen = new ArrayList<>();
-    private ArrayAdapter<String> adp_shop;
-    private ArrayAdapter<String> adp_tanzhen;
+    public ArrayList<HashMap<String, Object>> list_shop = new ArrayList<>();
+    public ArrayList<HashMap<String, Object>> list_tanzhen = new ArrayList<>();
     private LinearLayout line_date;
-    private HashMap<String, String> hm_store = new HashMap<String, String>();
-    private HashMap<String, String> hm_probe = new HashMap<String, String>();
+    private HashMap<String, Object> hm_store;
+    private HashMap<String, Object> hm_probe;
     private String beginTime, endTime;
-    private String microprobeId;
-    private int storeId = 0;
+    public String microprobeId = "0";
+    public int storeId = 0;
     private ListView xlistview;
     public VisitorsselfAdapter adapter;
     private HashMap<String, String> hm_visitors;
@@ -86,12 +84,10 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     private SharedPreferences share;
     private List<String> list_brands = new ArrayList<>();
     private SmartRefreshLayout smartRefreshLayout;
-    private boolean shop = true;
-    private boolean tanzhen = true;
-    private LinearLayout line_page, line;
+    private LinearLayout line_page;
     private Visitorsself v;
-    private int m_Position = 0;
-    private TextView tv_num;
+    public TextView tv_total_number, tv_shop, tv_tanzhen;
+    private ImageView iv_date, iv_tanzhen;
 
 
     @Nullable
@@ -134,15 +130,21 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
 
     public void requestNT() {
         try {
-            list_shop.clear();
-            list_tanzhen.clear();
             hm_store.clear();
+            list_shop.clear();
+            hm_store = new HashMap<String, Object>();
+            hm_store.put("name", "全部门店");//名字
+            hm_store.put("mac", "0");//id
+            hm_store.put("boolean", false);
+            list_shop.add(hm_store);
+
             hm_probe.clear();
-            //初始化接口没有的数据
-            list_shop.add("全部门店");
-            list_tanzhen.add("全部探针");
-            hm_store.put("全部门店", "0");
-            hm_probe.put("全部探针", "0");
+            list_tanzhen.clear();
+            hm_probe = new HashMap<>();
+            hm_probe.put("name", "全部探针");//名字
+            hm_probe.put("mac", "0");//id
+            hm_probe.put("boolean", false);
+            list_tanzhen.add(hm_probe);
             getSiteOption();
         } catch (Exception e) {
             e.printStackTrace();
@@ -152,19 +154,28 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     public void initView() {
         share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
         smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
-        line = getView().findViewById(R.id.line);
-        tv_num = getView().findViewById(R.id.tv_num);
+        tv_total_number = getView().findViewById(R.id.tv_total_number);
         line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
         line_page.setOnClickListener(this);
+        tv_shop = getView().findViewById(R.id.tv_shop);
+        tv_tanzhen = getView().findViewById(R.id.tv_tanzhen);
+        iv_date = getView().findViewById(R.id.iv_date);
+        iv_tanzhen = getView().findViewById(R.id.iv_tanzhen);
+        getView().findViewById(R.id.line_shop).setOnClickListener(this);
+        getView().findViewById(R.id.line_tanzhen).setOnClickListener(this);
         //初始化接口没有的数据
         list_shop.clear();
+        hm_store = new HashMap<String, Object>();
+        hm_store.put("name", "全部门店");//名字
+        hm_store.put("mac", "0");//id
+        hm_store.put("boolean", false);
+        list_shop.add(hm_store);
         list_tanzhen.clear();
-        hm_store.clear();
-        hm_probe.clear();
-        list_shop.add("全部门店");
-        list_tanzhen.add("全部探针");
-        hm_store.put("全部门店", "0");
-        hm_probe.put("全部探针", "0");
+        hm_probe = new HashMap<>();
+        hm_probe.put("name", "全部探针");//名字
+        hm_probe.put("mac", "0");//id
+        hm_probe.put("boolean", false);
+        list_tanzhen.add(hm_probe);
         getSiteOption();
         beginTime = gettodayDate();
         endTime = beginTime;
@@ -219,10 +230,10 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
             }
         });
 
-        spn_shop = getView().findViewById(R.id.spn_shop);
-        spn_tanzhen = getView().findViewById(R.id.spn_tanzhen);
         line_date = getView().findViewById(R.id.line_date);
         line_date.setOnClickListener(this);
+        getView().findViewById(R.id.tv_view).setOnClickListener(this);
+        getView().findViewById(R.id.iv_search).setOnClickListener(this);
 
         getData(1, "");
     }
@@ -267,19 +278,31 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                                 while (store.hasNext()) {
                                     // 获得key
                                     String key = store.next();
-                                    hm_store.put(key, json_store.getString(key));
-                                    list_shop.add(key);
+                                    hm_store = new HashMap<String, Object>();
+                                    hm_store.put("name", key);//名字
+                                    hm_store.put("mac", json_store.getString(key));//id
+                                    if (tv_shop.getText().toString().equals(key)) {
+                                        hm_store.put("boolean", true);
+                                    } else {
+                                        hm_store.put("boolean", false);
+                                    }
+                                    list_shop.add(hm_store);
                                 }
-                                handler.sendEmptyMessage(1);
                                 JSONObject json_probe = new JSONObject(json_obj.get("probe").toString());
                                 Iterator<String> probe = json_probe.keys();
                                 while (probe.hasNext()) {
                                     // 获得key
                                     String key = probe.next();
-                                    hm_probe.put(key, json_probe.getString(key));
-                                    list_tanzhen.add(key);
+                                    hm_probe = new HashMap<>();
+                                    hm_probe.put("name", key);//名字
+                                    hm_probe.put("mac", json_probe.getString(key));//id
+                                    if (tv_tanzhen.getText().toString().equals(key)) {
+                                        hm_probe.put("boolean", true);
+                                    } else {
+                                        hm_probe.put("boolean", false);
+                                    }
+                                    list_tanzhen.add(hm_probe);
                                 }
-                                handler.sendEmptyMessage(2);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -297,87 +320,14 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 1:
-                    try {
-                        adp_shop = new SpinnerArrayAdapter(getActivity(), list_shop);
-                        spn_shop.setAdapter(adp_shop);
-                        spn_shop.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                            @Override
-                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                if (shop) {//spinner初始化的时候不执行点击事件
-                                    shop = false;
-                                } else {
-                                    storeId = Integer.parseInt(hm_store.get(list_shop.get(position)));
-                                    clearAllData();
-                                    getData(pageNum, "");
-                                    //为了防止无限循环
-                                    requestNT();
-                                    shop = true;
-                                    m_Position = position;
-                                }
-                            }
-
-                            @Override
-                            public void onNothingSelected(AdapterView<?> parent) {
-
-                            }
-                        });
-                        spn_shop.setSelection(m_Position);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case 2:
-                    try {
-                        adp_tanzhen = new SpinnerArrayAdapter(getActivity(), list_tanzhen);
-                        spn_tanzhen.setAdapter(adp_tanzhen);
-                        spn_tanzhen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                            @Override
-                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                if (tanzhen) {//spinner初始化的时候不执行点击事件
-                                    tanzhen = false;
-                                } else {
-                                    try {
-                                        String str = hm_probe.get(list_tanzhen.get(position));
-                                        if (str.equals("0")) {
-                                            microprobeId = "0";
-                                        } else {
-                                            microprobeId = str.substring(0, str.indexOf("_"));
-                                        }
-                                        clearAllData();
-                                        getData(pageNum, "");
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onNothingSelected(AdapterView<?> parent) {
-
-                            }
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
                 case 3:
                     try {
-                        line.setVisibility(View.VISIBLE);//显示总数
                         Visitorsself visitorsself = (Visitorsself) msg.obj;
                         if (visitorsself.getRows().size() == 0) {//如果没数据就提示
                             line_page.setVisibility(View.VISIBLE);
-//                            ToastUtils.showShort(getActivity(), "无数据");
+                            tv_total_number.setText("0");
                         } else {
-                            tv_num.setText(visitorsself.getTotal() + "");
-                            Timer timer = new Timer();
-                            TimerTask task = new TimerTask() {
-                                @Override
-                                public void run() {
-                                    handler.sendEmptyMessage(7);
-                                }
-                            };
-                            timer.schedule(task, 1000 * 3); //3秒后隐藏总数
+                            tv_total_number.setText(visitorsself.getTotal() + "");
                             for (int i = 0; i < visitorsself.getRows().size(); i++) {
                                 hm_visitors = new HashMap<String, String>();
                                 hm_visitors.put("content1", visitorsself.getRows().get(i).getVisittime());
@@ -411,9 +361,6 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                     break;
                 case 6:
                     ToastUtils.showShort(getActivity(), msg.obj.toString());
-                    break;
-                case 7:
-                    line.setVisibility(View.GONE);//显示总数
                     break;
             }
             super.handleMessage(msg);
@@ -509,7 +456,45 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.line_tanzhen:
+                iv_tanzhen.setColorFilter(getResources().getColor(R.color.blue));
+                //让背景变暗
+                WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+                lp.alpha = 0.7f;
+                getActivity().getWindow().setAttributes(lp);
+                //弹出窗体
+                PopWin_general popWin_tanzhen = new PopWin_general(getActivity(), "VisitorsselfFragment_two", list_tanzhen);
+                popWin_tanzhen.showAsDropDown(getView().findViewById(R.id.line));//从这个控件下弹出
+                //监听popwin是否关闭，关闭的话让背景恢复
+                popWin_tanzhen.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+                        lp.alpha = 1f;
+                        getActivity().getWindow().setAttributes(lp);
+                    }
+                });
+                break;
+            case R.id.line_shop:
+                //让背景变暗
+                WindowManager.LayoutParams lp2 = getActivity().getWindow().getAttributes();
+                lp2.alpha = 0.7f;
+                getActivity().getWindow().setAttributes(lp2);
+                //弹出窗体
+                PopWin_general popWin_general = new PopWin_general(getActivity(), "VisitorsselfFragment", list_shop);
+                popWin_general.showAsDropDown(getView().findViewById(R.id.relativeLayout));//从这个控件下弹出
+                //监听popwin是否关闭，关闭的话让背景恢复
+                popWin_general.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+                        lp.alpha = 1f;
+                        getActivity().getWindow().setAttributes(lp);
+                    }
+                });
+                break;
             case R.id.line_date:
+                iv_date.setColorFilter(getResources().getColor(R.color.blue));
                 //显示日期选择器
                 Calendar c = Calendar.getInstance();
                 // 最后一个false表示不显示日期，如果要显示日期，最后参数可以是true或者不用输入
@@ -538,6 +523,14 @@ public class VisitorsselfFragment extends Fragment implements View.OnClickListen
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                break;
+            case R.id.iv_search:
+                Intent intent = new Intent(getActivity(), SearchPageActivity.class);
+                intent.putExtra("activity", "VisitorsselfFragment");
+                startActivity(intent);
+                break;
+            case R.id.tv_view:
+                startActivity(new Intent(getActivity(), VisitorsViewActivity.class));
                 break;
         }
     }

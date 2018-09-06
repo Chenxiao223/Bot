@@ -30,13 +30,14 @@ public class SpinnerArrayAdapter extends ArrayAdapter<String> {
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             convertView = inflater.inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
+            convertView.setBackgroundColor(Color.parseColor("#ffffff"));
         }
 
         //此处text1是Spinner默认的用来显示文字的TextView
         TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
         tv.setText(list.get(position));
         tv.setTextSize(14f);
-        tv.setTextColor(Color.parseColor("#247ab7"));
+        tv.setTextColor(Color.parseColor("#5cabf8"));
         tv.setGravity(android.view.Gravity.CENTER);   //设置居中
 
         return convertView;
@@ -55,7 +56,7 @@ public class SpinnerArrayAdapter extends ArrayAdapter<String> {
         TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
         tv.setText(list.get(position));
         tv.setTextSize(14f);
-        tv.setTextColor(Color.parseColor("#247ab7"));
+        tv.setTextColor(Color.parseColor("#5cabf8"));
         tv.setGravity(android.view.Gravity.CENTER);   //设置居中
         return convertView;
     }

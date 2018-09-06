@@ -25,7 +25,7 @@
                 android:layout_weight="1"
                 android:gravity="center_vertical"
                 android:textColor="@color/text"
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <TextView
                 android:id="@+id/tv_date"
@@ -34,7 +34,7 @@
                 android:layout_weight="1"
                 android:gravity="center_vertical"
                 android:textColor="@color/gray"
-                android:textSize="@dimen/textsizi" />
+                android:textSize="@dimen/text_sp_12" />
 
         </LinearLayout>
 

@@ -1,0 +1,148 @@
+package com.zhiziyun.dmptest.bot.mode.wifi;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.activity.BaseActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.ChooseEquipmentActivity;
+import com.zhiziyun.dmptest.bot.util.EditDialog2;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
+import com.zhiziyun.dmptest.bot.view.PopWin_Launch;
+import com.zhiziyun.dmptest.bot.widget.CustomBackToolbar;
+
+import java.util.ArrayList;
+
+
+public class WifiAdverActivity extends BaseActivity implements View.OnClickListener {
+    public static WifiAdverActivity wifiAdverActivity;
+    private CustomBackToolbar mToolbar;
+    private TextView mChooseStore;
+    public TextView mChooseThrow;
+    private TextView mTestPreview;
+    private RecyclerView mRecyclerView;
+    private StoreAdapter mStoreAdapter;
+    private ArrayList<String> mStrings;
+    private PopupWindow mPopWindow;
+    private final int FLAG = 4322;
+    private String m_equipment;//设备
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_wifi_adver);
+
+        wifiAdverActivity = this;
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+        mToolbar = findViewById(R.id.customBackToolbar);
+        mChooseStore = findViewById(R.id.choose_store_et);
+        mChooseThrow = findViewById(R.id.choose_throw_et);
+        mTestPreview = findViewById(R.id.test_preview_tv);
+        mStrings = new ArrayList<>();
+        mStrings.add("即时投放");
+        mStrings.add("WiFi人群投放");
+        setOnclik();
+//        initPopwindow();
+    }
+
+    public void setOnclik() {
+        mChooseStore.setOnClickListener(this);
+        mChooseThrow.setOnClickListener(this);
+        mTestPreview.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.choose_store_et:
+                startActivity(new Intent(WifiAdverActivity.this, ChooseStoreActivity.class));
+                break;
+            case R.id.choose_throw_et:
+//                mPopWindow.showAtLocation(findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);
+                //让背景变暗
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.alpha = 0.7f;
+                getWindow().setAttributes(lp);
+                getWindow().setAttributes(lp);
+                //弹出窗体
+                PopWin_Launch popWin_launch = new PopWin_Launch(WifiAdverActivity.this, null, 0);
+                popWin_launch.showAtLocation(findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
+                //监听popwin是否关闭，关闭的话让背景恢复
+                popWin_launch.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp = getWindow().getAttributes();
+                        lp.alpha = 1f;
+                        getWindow().setAttributes(lp);
+                    }
+                });
+//                popWin_launch.setFocusable(true);
+                break;
+            case R.id.test_preview_tv:
+                final EditDialog2 editDialog = new EditDialog2(this);
+                editDialog.setTitle("请输入本机号码");
+                editDialog.setYesOnclickListener("确定", new EditDialog2.onYesOnclickListener() {
+                    @Override
+                    public void onYesClick(String name, String mac) {
+                        if (name.isEmpty() || mac.isEmpty()) {
+                            ToastUtils.showShort(WifiAdverActivity.this, "请输入数据");
+                        } else {
+                            //这里可以拿到name和mac
+
+                            editDialog.dismiss();
+                        }
+                    }
+                });
+                editDialog.setNoOnclickListener("取消", new EditDialog2.onNoOnclickListener() {
+                    @Override
+                    public void onNoClick() {
+                        editDialog.dismiss();
+                    }
+                });
+                editDialog.show();
+                break;
+        }
+    }
+
+    //跳转
+    public void jump() {
+        Intent intent = new Intent(this, ChooseEquipmentActivity.class);
+        startActivityForResult(intent, FLAG);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case FLAG:
+                try {
+                    if (!data.getStringArrayListExtra("list").isEmpty()) {
+                        m_equipment = "";//为了防止第二次进去选中回来后叠加，在这里归零
+                        //以后用集合来接收这个集合
+                        int num = data.getStringArrayListExtra("list").size();
+                        //拼接字符串
+                        for (int i = 0; i < num; i++) {
+                            if (i == num - 1) {
+                                m_equipment += data.getStringArrayListExtra("list").get(i);
+                            } else {
+                                m_equipment += data.getStringArrayListExtra("list").get(i) + ",";
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+    }
+}

@@ -35,7 +35,7 @@ public class NotBindWeChatActivity extends BaseActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_open:
-                startActivity(new Intent(this, OpenWeChatActivity.class));
+                startActivity(new Intent(this, WebShowActivity.class));
                 break;
             case R.id.tv_back:
                 finish();

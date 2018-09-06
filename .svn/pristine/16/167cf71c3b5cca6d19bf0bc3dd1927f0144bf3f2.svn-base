@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/pop_layout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@null"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_marginBottom="@dimen/padding_left_right3"
+        android:layout_marginLeft="@dimen/padding_left_right3"
+        android:layout_marginRight="@dimen/padding_left_right3"
+        android:layout_marginTop="@dimen/padding_left_right3"
+        android:background="@drawable/shape_graybg"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_left_right4">
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buttom_height"
+            android:layout_marginTop="2dp"
+            android:background="@null"
+            android:gravity="center"
+            android:hint="输入接受广告的安卓手机信息"
+            android:singleLine="true"
+            android:textColor="@color/colorBlack"
+            android:textColorHint="@color/gray"
+            android:textSize="@dimen/title_text_size"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/padding_left_right3"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/shape_edittext"
+            android:gravity="center">
+
+            <EditText
+                android:id="@+id/et_phone_wifi"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/buttom_height"
+                android:background="@null"
+                android:gravity="center_vertical"
+                android:hint="输入安卓手机连接的WIFI名称"
+                android:singleLine="true"
+                android:textColor="@color/colorBlack"
+                android:textColorHint="@color/gray"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/padding_left_right3"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/shape_edittext"
+            android:gravity="center">
+
+            <EditText
+                android:id="@+id/et_phone_mac"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/buttom_height"
+                android:layout_marginTop="2dp"
+                android:background="@null"
+                android:gravity="center_vertical"
+                android:hint="输入安卓手机mac如:00:1f:7a:ad:5c:a8"
+                android:singleLine="true"
+                android:textColor="@color/colorBlack"
+                android:textColorHint="@color/gray"
+                android:textSize="12sp"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:background="@color/black"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="58.5dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/cancel_white_dialog"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/cancel"
+                android:textSize="16sp"/>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8.5dp"
+                android:background="@color/black"/>
+
+            <TextView
+                android:id="@+id/confirm_white_dialog"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/confirm"
+                android:textSize="16sp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

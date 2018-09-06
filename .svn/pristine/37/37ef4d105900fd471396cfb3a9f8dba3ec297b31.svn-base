@@ -1,0 +1,137 @@
+package com.zhiziyun.dmptest.bot.mode.wifi;
+
+import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.activity.BaseActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.MacDeviceActivity;
+import com.zhiziyun.dmptest.bot.view.PopWin_Launch;
+import com.zhiziyun.dmptest.bot.view.PopWin_Mac;
+import com.zhiziyun.dmptest.bot.widget.CustomBackToolbar;
+import com.zhiziyun.dmptest.bot.widget.PopuWifi;
+
+import java.util.ArrayList;
+
+
+public class WifiAdverActivity extends BaseActivity implements View.OnClickListener {
+
+    private CustomBackToolbar mToolbar;
+    private TextView mChooseStore;
+    private TextView mChooseThrow;
+    private TextView mTestPreview;
+    private RecyclerView mRecyclerView;
+    private StoreAdapter mStoreAdapter;
+    private ArrayList<String> mStrings;
+    private PopupWindow mPopWindow;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_wifi_adver);
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+        mToolbar = findViewById(R.id.customBackToolbar);
+        mChooseStore = findViewById(R.id.choose_store_et);
+        mChooseThrow = findViewById(R.id.choose_throw_et);
+        mTestPreview = findViewById(R.id.test_preview_tv);
+        mStrings = new ArrayList<>();
+        mStrings.add("即时投放");
+        mStrings.add("WiFi人群投放");
+        setOnclik();
+//        initPopwindow();
+    }
+
+    public void setOnclik() {
+        mChooseStore.setOnClickListener(this);
+        mChooseThrow.setOnClickListener(this);
+        mTestPreview.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.choose_store_et:
+                startActivity(new Intent(WifiAdverActivity.this, ChooseStoreActivity.class));
+                break;
+            case R.id.choose_throw_et:
+//                mPopWindow.showAtLocation(findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);
+                //让背景变暗
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.alpha = 0.7f;
+                getWindow().setAttributes(lp);
+                getWindow().setAttributes(lp);
+                //弹出窗体
+                PopWin_Launch popWin_launch = new PopWin_Launch(WifiAdverActivity.this, null, 0);
+                popWin_launch.showAtLocation(findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
+                //监听popwin是否关闭，关闭的话让背景恢复
+                popWin_launch.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp = getWindow().getAttributes();
+                        lp.alpha = 1f;
+                        getWindow().setAttributes(lp);
+                    }
+                });
+//                popWin_launch.setFocusable(true);
+                break;
+            case R.id.test_preview_tv:
+                //让背景变暗
+                WindowManager.LayoutParams lp1 = getWindow().getAttributes();
+                lp1.alpha = 0.7f;
+                getWindow().setAttributes(lp1);
+                getWindow().setAttributes(lp1);
+                //弹出窗体
+                PopuWifi popuWifi = new PopuWifi(WifiAdverActivity.this, null, 0);
+                popuWifi.showAtLocation(findViewById(R.id.main_view), Gravity.CENTER, 0, 0);//125
+                //监听popwin是否关闭，关闭的话让背景恢复
+                popuWifi.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp = getWindow().getAttributes();
+                        lp.alpha = 1f;
+                        getWindow().setAttributes(lp);
+                    }
+                });
+                break;
+        }
+    }
+
+    //   初始化popWindow
+//    public void initPopwindow() {
+//        DisplayMetrics metrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+//        int width = metrics.widthPixels;
+//        View contentView = LayoutInflater.from(WifiAdverActivity.this).inflate(R.layout.popu_recycle_view, null);
+//        mRecyclerView = (RecyclerView) contentView.findViewById(R.id.popurecycle_view);
+//        mRecyclerView.setLayoutManager(new LinearLayoutManager(WifiAdverActivity.this));
+//        // 是否具有固定大小
+//        mStoreAdapter = new StoreAdapter(mStrings, this);
+////        mStoreAdapter.setItemClickListener(WifiAdverActivity.this);
+//        mRecyclerView.setAdapter(mStoreAdapter);
+//        mPopWindow = new PopupWindow(contentView);
+//        float scale = getResources().getDisplayMetrics().density;
+////        判断popWindow的大小，高度，宽度及颜色
+////        mPopWindow.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.alpha_all)));
+//        mPopWindow.setHeight((int) (2 * 40 * scale + 0.5f));
+//        mPopWindow.setWidth((int) (width - (100 * scale + 0.5f)));
+//        mPopWindow.setContentView(contentView);
+//        mPopWindow.setFocusable(true);
+//    }
+}

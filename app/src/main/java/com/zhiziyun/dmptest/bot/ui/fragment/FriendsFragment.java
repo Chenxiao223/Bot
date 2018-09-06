@@ -272,7 +272,6 @@ public class FriendsFragment extends Fragment implements View.OnClickListener {
                 try {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("tencentId", share.getString("tencentid", ""));
-//                    jsonObject.put("tencentId", "100000001");
                     jsonObject.put("wechatActivityName", name);
                     jsonObject.put("startDate", beginTime);
                     jsonObject.put("endDate", endTime);
@@ -304,11 +303,6 @@ public class FriendsFragment extends Fragment implements View.OnClickListener {
                                 String str = response.body().string();
                                 Gson gson = new Gson();
                                 wechatActivityList = gson.fromJson(str, WechatActivityList.class);
-//                                if (wechatActivityList != null) {
-//                                    handler.sendEmptyMessage(1);//通知刷新适配器
-//                                } else {
-//                                    handler.sendEmptyMessage(2);
-//                                }
                                 if (wechatActivityList.isStatus()) {
                                     if (wechatActivityList.getResponse().getWechatActivities().size() == 0) {
                                         handler.sendEmptyMessage(2);
@@ -359,7 +353,6 @@ public class FriendsFragment extends Fragment implements View.OnClickListener {
                 try {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("tencentId", share.getString("tencentid", ""));
-//                    jsonObject.put("tencentId", "100000001");
                     jsonObject.put("wechatActivityId", id);
                     jsonObject.put("adStatusType", type);
                     OkHttpClient okHttpClient = new OkHttpClient();
@@ -673,6 +666,7 @@ public class FriendsFragment extends Fragment implements View.OnClickListener {
                             }
                             ((TextView) holders[i]).setTextColor(Color.parseColor("#247ab7"));
                             ((TextView) holders[i]).getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);//加下滑线
+                            ((TextView) holders[i]).getPaint().setAntiAlias(true);//抗锯齿
                         } else if (i == 7) {
                             if (this.datas.get(position).get(from[i]).toString().equals("审核不通过")) {
                                 ((TextView) holders[i]).setTextColor(Color.parseColor("#247ab7"));
@@ -681,6 +675,7 @@ public class FriendsFragment extends Fragment implements View.OnClickListener {
                                 ((TextView) holders[i]).setTextColor(Color.parseColor("#555555"));
                                 ((TextView) holders[i]).getPaint().setFlags(Paint.EMBEDDED_BITMAP_TEXT_FLAG);
                             }
+                            ((TextView) holders[i]).getPaint().setAntiAlias(true);//抗锯齿
                             ((TextView) holders[i]).setText(this.datas.get(position).get(from[i]).toString());
                         } else if (i == 11) {
                             ((ImageView) holders[i]).setImageBitmap((Bitmap) this.datas.get(position).get(from[i]));

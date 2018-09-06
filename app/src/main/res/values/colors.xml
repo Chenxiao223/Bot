@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="editcolorblack">#000000</color>
-    <color name="colorBlack">#020202 </color>
+    <color name="colorBlack">#020202</color>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
@@ -11,15 +11,19 @@
     <color name="light_grey">#f4f5f7</color>
     <color name="black">#555555</color>
     <color name="grey">#e7e9ea</color>
+    <color name="green">#4c976c</color>
 
     <!--homeActivity-->
     <color name="dibudaohang">#bfbfbf</color>
     <color name="gray">#bfbfbf</color>
-    <color name="blue">#247ab7</color>
+    <color name="blue">#5cabf8</color>
     <color name="yellow">#ffdc44</color>
     <color name="red">#ed1c24</color>
     <color name="red_homepage">#ff664e</color>
     <color name="text">#747474</color>
+    <color name="text2">#9399ae</color>
+    <color name="text3">#a0a3af</color>
+    <color name="list_line">#e3e3e3</color>
 
     <color name="defaultcolor">#6f7070</color>
     <color name="transparent">#00000000</color>

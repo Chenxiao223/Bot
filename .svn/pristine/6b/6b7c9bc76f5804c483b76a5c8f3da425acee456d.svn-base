@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.zhiziyun.dmptest.bot.mode.wifi.WifiCrowdActivity">
+
+    <ImageView
+        android:id="@+id/iv_system"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/homepagebg"/>
+
+    <com.zhiziyun.dmptest.bot.widget.CustomBackToolbar
+        android:id="@+id/customBackToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/iv_system"
+        app:titleText="@string/choose_crowd"/>
+
+    <Button
+        android:id="@+id/complete_bt"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/buttom_height"
+        android:layout_alignParentBottom="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginLeft="@dimen/padding_left_right2"
+        android:layout_marginRight="@dimen/padding_left_right2"
+        android:background="@color/blue"
+        android:text="@string/complete"
+        android:textColor="@color/white"/>
+</RelativeLayout>

@@ -43,12 +43,13 @@ public class WeChatBindActivity extends BaseActivity implements View.OnClickList
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.iv_bind:
-                Intent intent = new Intent(this, OpenWeChatActivity.class);
-                intent.putExtra("flag", 123);
+                Intent intent = new Intent(this, WebShowActivity.class);
+                intent.putExtra("flag", 1);
                 startActivity(intent);
                 break;
             case R.id.tv_back:
-                if (share.getBoolean("isBindingWeChatSubscription", false)) {
+                if (share.getBoolean("isBindingWeChatSubscription", false) && share.getBoolean("isAuthorizationAd", false)
+                        && share.getBoolean("isOpenWeChatSubscriptionAdvertiser", false)) {//三个条件必须同时满足
                     finish();
                 } else {
                     ToastUtils.showShort(this, "请绑定微信公众号");

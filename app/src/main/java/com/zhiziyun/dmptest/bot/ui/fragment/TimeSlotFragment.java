@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,16 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.gson.Gson;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
@@ -26,6 +37,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.SpinnerArrayAdapter;
 import com.zhiziyun.dmptest.bot.adapter.TimeSlotAdapter;
 import com.zhiziyun.dmptest.bot.entity.TimeSlot;
+import com.zhiziyun.dmptest.bot.entity.Trend;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
 import com.zhiziyun.dmptest.bot.util.ClickUtils;
 import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
@@ -61,6 +73,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static com.github.mikephil.charting.data.LineDataSet.Mode.HORIZONTAL_BEZIER;
+
 
 /**
  * 时段
@@ -84,7 +98,7 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
     private ArrayList<HashMap<String, String>> list_timeslot = new ArrayList<>();
     private TimeSlotAdapter adapter;
     //折线图
-    private LineChartView chartView;
+    private LineChart chartView;
     private LineChartData lineData;
     private SharedPreferences share;
     private SmartRefreshLayout smartRefreshLayout;
@@ -179,29 +193,41 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
     }
 
     //折线图
-    private void generateDefaultData(TimeSlot timeSlot) {
+    private LineData generateDefaultData(TimeSlot timeSlot) {
         int numValues = timeSlot.getObj().size();
-        List<AxisValue> axisValues = new ArrayList<AxisValue>();
-        List<PointValue> values = new ArrayList<PointValue>();
-        List<PointValue> values2 = new ArrayList<PointValue>();
+        ArrayList<Entry> values1 = new ArrayList<>();
+        ArrayList<Entry> values2 = new ArrayList<>();
         for (int i = 0; i < numValues; ++i) {
-            values2.add(new PointValue(i, Float.parseFloat(timeSlot.getObj().get(i).getTotalUV().toString())));//环境客流
-            values.add(new PointValue(i, Float.parseFloat(timeSlot.getObj().get(i).getUv())));//到店客流
-            axisValues.add(new AxisValue(i).setLabel(timeSlot.getObj().get(i).getHour() + ""));
+            values1.add(new Entry(i, Float.parseFloat(timeSlot.getObj().get(i).getUv().toString())));//到店客流
+            values2.add(new Entry(i, Float.parseFloat(timeSlot.getObj().get(i).getTotalUV())));//环境客流
         }
-        Line line = new Line(values);
-        line.setColor(Color.parseColor("#ee5b42")).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);//false是折线，true是曲线
-        Line line2 = new Line(values2);
-        line2.setColor(Color.parseColor("#12a47d")).setCubic(false).setPointRadius(2).setStrokeWidth(1).setFilled(true);
-        List<Line> lines = new ArrayList<Line>();
-        lines.add(line);
-        lines.add(line2);
-        lineData = new LineChartData(lines);
-        lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
-        lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(5));
-        chartView.setLineChartData(lineData);
-        chartView.setViewportCalculationEnabled(true);//这个地方坑了我很久，每次数据更新Y轴都不变，把这里改成true就解决了
-        chartView.setZoomType(ZoomType.HORIZONTAL);
+        LineDataSet dataSetA = new LineDataSet(values1, "新客");
+        dataSetA.setCircleSize(0f);
+        dataSetA.setDrawCircleHole(true); //是否定制节点圆心的颜色，若为false，则节点为单一的同色点，若为true则可以设置节点圆心的颜色
+        dataSetA.setCircleColorHole(Color.parseColor("#ff5d92"));  //设置节点圆心的颜色
+        dataSetA.setMode(HORIZONTAL_BEZIER);
+        dataSetA.setValueTextColor(Color.GRAY);
+        dataSetA.setColor(Color.parseColor("#ff5d92"));
+        dataSetA.setDrawFilled(true);//设置是否开启填充，默认为false
+        dataSetA.setFillColor(Color.parseColor("#ff5d92"));//设置填充颜色
+        dataSetA.setFillAlpha(55);//设置填充区域透明度，默认值为85
+        //设置折线数据 getChartData返回一个List<Entry>键值对集合标识 折线点的横纵坐标，"A"代表折线标识
+        LineDataSet dataSetB = new LineDataSet(values2, "老客");
+        dataSetB.setCircleSize(0f);
+        dataSetB.setDrawCircleHole(true); //是否定制节点圆心的颜色，若为false，则节点为单一的同色点，若为true则可以设置节点圆心的颜色
+        dataSetB.setCircleColorHole(Color.parseColor("#5cabf8"));  //设置节点圆心的颜色
+        dataSetB.setMode(HORIZONTAL_BEZIER);
+        dataSetB.setValueTextColor(Color.GRAY);
+        dataSetB.setColor(Color.parseColor("#5cabf8"));
+        dataSetB.setDrawFilled(true);//设置是否开启填充，默认为false
+        dataSetB.setFillColor(Color.parseColor("#5cabf8"));//设置填充颜色
+        dataSetB.setFillAlpha(55);//设置填充区域透明度，默认值为85
+
+        List<ILineDataSet> dataSets = new ArrayList<>();
+        dataSets.add(dataSetA);
+        dataSets.add(dataSetB);
+        LineData data = new LineData(dataSets);
+        return data;
     }
 
     public void getSiteOption() {
@@ -402,7 +428,8 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
                         adapter.notifyDataSetChanged();
                         smartRefreshLayout.finishLoadmore(0);//停止刷新
                         //折线图
-                        generateDefaultData(timeSlot);
+                        initChart(chartView, timeSlot);
+                        chartView.setData(generateDefaultData(timeSlot));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -420,6 +447,75 @@ public class TimeSlotFragment extends Fragment implements View.OnClickListener {
             super.handleMessage(msg);
         }
     };
+
+    public LineChart initChart(LineChart chart, final TimeSlot timeSlot) {
+        //设置边框颜色
+        chart.setBorderColor(Color.WHITE);
+        //是否展示网格线
+        chart.setDrawGridBackground(false);
+        // 不显示y轴右边的值
+        chart.getAxisRight().setEnabled(false);
+        //是否显示边界
+        chart.setDrawBorders(true);
+        //是否可以拖动
+        chart.setDragEnabled(false);
+        //是否有触摸事件
+        chart.setTouchEnabled(true);
+        //设置XY轴动画效果
+        chart.animateY(1500);
+        // 不显示数据描述
+        chart.getDescription().setEnabled(false);
+        // 没有数据的时候，显示“暂无数据”
+        chart.setNoDataText("暂无数据");
+        // 不显示表格颜色
+        chart.setDrawGridBackground(false);
+        // 不可以缩放
+        chart.setScaleEnabled(false);
+        // 不显示y轴右边的值
+        chart.getAxisRight().setEnabled(false);
+        // 不显示图例
+        Legend legend = chart.getLegend();
+        legend.setEnabled(false);
+        // 向左偏移15dp，抵消y轴向右偏移的30dp
+        chart.setExtraLeftOffset(-15);
+
+        XAxis xAxis = chart.getXAxis();
+        // 不显示x轴
+        xAxis.setDrawAxisLine(false);
+        // 设置x轴数据的位置
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setTextColor(Color.GRAY);
+        xAxis.setTextSize(10);
+        xAxis.setGridColor(Color.parseColor("#30FFFFFF"));
+        // 设置x轴数据偏移量
+        xAxis.setYOffset(5);
+
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                String tradeDate = (int) value + "";
+                return tradeDate;
+            }
+        });
+//        xAxis.setLabelCount(6, false);
+
+        YAxis yAxis = chart.getAxisLeft();
+        // 不显示y轴
+        yAxis.setDrawAxisLine(false);
+        // 设置y轴数据的位置
+        yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
+        // 不从y轴发出横向直线
+        yAxis.setDrawGridLines(false);
+        yAxis.setTextColor(Color.GRAY);
+        yAxis.setTextSize(10);
+        // 设置y轴数据偏移量
+        yAxis.setXOffset(20);
+        yAxis.setYOffset(-3);
+        yAxis.setAxisMinimum(0);
+
+        chart.invalidate();
+        return chart;
+    }
 
     @Override
     public void onClick(View v) {

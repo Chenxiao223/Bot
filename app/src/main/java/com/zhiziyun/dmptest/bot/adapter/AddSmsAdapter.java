@@ -96,6 +96,7 @@ public class AddSmsAdapter extends BaseAdapter {
             viewHold.text2.setTextColor(Color.parseColor("#555555"));
             viewHold.text2.getPaint().setFlags(Paint.EMBEDDED_BITMAP_TEXT_FLAG);
         }
+        viewHold.text2.getPaint().setAntiAlias(true);//抗锯齿
 
         viewHold.text1.setOnClickListener(new View.OnClickListener() {
             @Override

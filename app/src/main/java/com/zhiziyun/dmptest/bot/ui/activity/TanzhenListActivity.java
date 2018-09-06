@@ -72,13 +72,13 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
     private SlideListView lv_tanzhen;
     private TanzhenListAdapter adapter;
     private HashMap<String, String> hm_tanzhen;
-    private ArrayList<HashMap<String, String>> list_tanzhen = new ArrayList<>();
-    private EditText et_text;
+    public ArrayList<HashMap<String, String>> list_tanzhen = new ArrayList<>();
     private SmartRefreshLayout smartRefreshLayout;
     private int pageNum = 1;
     private Intent intent;
     private MyDialog dialog;
     private LinearLayout line_page;
+    public int flag = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -111,32 +111,10 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
         smartRefreshLayout = (SmartRefreshLayout) findViewById(R.id.refreshLayout);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.iv_addstory).setOnClickListener(this);
+        findViewById(R.id.iv_search).setOnClickListener(this);
         lv_tanzhen = (SlideListView) findViewById(R.id.lv_store);
         adapter = new TanzhenListAdapter(this, lv_tanzhen, list_tanzhen);
         lv_tanzhen.setAdapter(adapter);
-        et_text = (EditText) findViewById(R.id.et_text);
-        //点击搜索键的监听
-        et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    // 先隐藏键盘
-                    ((InputMethodManager) et_text.getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
-                            .hideSoftInputFromWindow(
-                                    TanzhenListActivity.this
-                                            .getCurrentFocus()
-                                            .getWindowToken(),
-                                    InputMethodManager.HIDE_NOT_ALWAYS);
-                    //以下是搜索逻辑
-                    list_tanzhen.clear();
-                    //查询门店
-                    pageNum = 1;
-                    gettanzhenList(pageNum, et_text.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
         //下拉刷新
         smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
@@ -179,10 +157,12 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
                 dialog.show();
                 gettanzhenList(1, "");//第二个参数为空就是查所有
             } else {//第二次进来
-                dialog.show();
-                hm_tanzhen.clear();
-                clearAllData();
-                gettanzhenList(pageNum, "");
+                if (flag == 0) {
+                    dialog.show();
+                    hm_tanzhen.clear();
+                    clearAllData();
+                    gettanzhenList(pageNum, "");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -192,6 +172,11 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.iv_search:
+                Intent it = new Intent(this, SearchPageActivity.class);
+                it.putExtra("activity", "TanzhenListActivity");
+                startActivity(it);
+                break;
             case R.id.iv_back:
                 toFinish();
                 finish();
@@ -621,7 +606,6 @@ public class TanzhenListActivity extends BaseActivity implements View.OnClickLis
                     lv_tanzhen.setAdapter(null);
                     adapter = null;
                     list_tanzhen.clear();
-                    et_text = null;
                     smartRefreshLayout = null;
                     intent = null;
                     hm_tanzhen.clear();

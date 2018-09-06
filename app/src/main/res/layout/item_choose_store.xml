@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/rl_check"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/padding_left_right2"
+        android:gravity="center_vertical"
+        android:paddingRight="@dimen/padding_left_right4">
+
+        <TextView
+            android:id="@+id/tv_store"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/cb"
+            android:layout_toStartOf="@+id/cb"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/padding_left_right4"
+            android:text="门店"
+            android:textSize="@dimen/textsizi"/>
+
+        <CheckBox
+            android:id="@+id/choose_check"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/padding_left_right2"
+            android:layout_alignParentRight="true"
+            android:button="@drawable/checkbox"
+            android:clickable="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:gravity="center"/>
+    </RelativeLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/line_height"
+        android:scaleType="fitXY"
+        android:src="@drawable/grayline"/>
+</LinearLayout>

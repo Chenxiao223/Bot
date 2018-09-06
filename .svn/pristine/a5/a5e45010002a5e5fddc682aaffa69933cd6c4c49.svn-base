@@ -1,0 +1,185 @@
+package com.zhiziyun.dmptest.bot.ui.activity;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.CustomDialog;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
+import com.zhiziyun.dmptest.bot.util.Token;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+/**
+ * Created by Administrator on 2018/8/27.
+ * 公众号
+ */
+
+public class WeChatSubscription extends BaseActivity implements View.OnClickListener {
+    private TextView tv_subscription, tv_id, tv_BindingWeChatSubscription, tv_AuthorizationAd, tv_WeChatSubscriptionAdvertiser;
+    private SharedPreferences share;
+    private Button btn_unbundling;
+    private MyDialog dialog;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_subscription);
+        initView();
+    }
+
+    private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        dialog = MyDialog.showDialog(this);
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        tv_subscription = findViewById(R.id.tv_subscription);
+        tv_subscription.setText(share.getString("wechatSubscriptionName", ""));
+        tv_id = findViewById(R.id.tv_id);
+        tv_id.setText(share.getString("wechatSubscriptionOriginalId", ""));
+        tv_BindingWeChatSubscription = findViewById(R.id.tv_BindingWeChatSubscription);
+        if (share.getBoolean("isBindingWeChatSubscription", false)) {
+            tv_BindingWeChatSubscription.setText("已绑定");
+        }
+        tv_AuthorizationAd = findViewById(R.id.tv_AuthorizationAd);
+        if (share.getBoolean("isAuthorizationAd", false)) {
+            tv_AuthorizationAd.setText("已绑定");
+        }
+        tv_WeChatSubscriptionAdvertiser = findViewById(R.id.tv_WeChatSubscriptionAdvertiser);
+        if (share.getBoolean("isOpenWeChatSubscriptionAdvertiser", false)) {
+            tv_WeChatSubscriptionAdvertiser.setText("已开通");
+        }
+        findViewById(R.id.tv_back).setOnClickListener(this);
+        btn_unbundling = findViewById(R.id.btn_unbundling);
+        btn_unbundling.setOnClickListener(this);
+
+        if (share.getBoolean("isApplyUnbind", false)) {//true的时候隐藏按钮
+            btn_unbundling.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.tv_back:
+                finish();
+                break;
+            case R.id.btn_unbundling:
+                //点击弹出对话框
+                final CustomDialog customDialog = new CustomDialog(this);
+                customDialog.setTitle("消息提示");
+                customDialog.setMessage("请您同时登录公众号平台提出申请解绑，申请解绑后将会暂停所有广告投放，预计处理周期1-2个工作日，请确定是否继续？");
+                customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                    @Override
+                    public void onYesClick() {
+                        unbindSite();
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                    @Override
+                    public void onNoClick() {
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.show();
+                break;
+        }
+    }
+
+    public void unbindSite() {
+        dialog.show();
+        //微信朋友圈广告主申请解绑
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("tencentId", share.getString("tencentid", ""));
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + jsonObject.toString();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url(BaseUrl.BaseZhang + "api/tencentWechatAdvertiserApp/unbindSite")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+                    okHttpClient.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                JSONObject json = new JSONObject(response.body().string());
+                                if (json.get("status").toString().equals("true")) {
+                                    handler.sendEmptyMessage(1);
+                                } else {
+                                    Message msg = new Message();
+                                    msg.what = 2;
+                                    msg.obj = json.get("errormsg").toString();
+                                    handler.sendMessage(msg);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    dialog.dismiss();
+                    ToastUtils.showShort(WeChatSubscription.this, "解绑成功");
+                    break;
+                case 2:
+                    dialog.dismiss();
+                    ToastUtils.showShort(WeChatSubscription.this, msg.obj.toString());
+                    break;
+            }
+        }
+    };
+}

@@ -7,15 +7,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -63,13 +58,13 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     private SlideListView lv_store;
     private StoreListAdapter adapter;
     private HashMap<String, String> hm_store;
-    private ArrayList<HashMap<String, String>> list_store = new ArrayList<>();
-    private EditText et_text;
+    public ArrayList<HashMap<String, String>> list_store = new ArrayList<>();
     private SmartRefreshLayout smartRefreshLayout;
     private int pageNum = 1;
     private MyDialog dialog;
     private LinearLayout line_page;
     private SharedPreferences.Editor editors;
+    public int flag = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -94,10 +89,12 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
                 dialog.show();
                 getstoreList(1, "");//第二个参数为空就是查所有
             } else {//第二次
-                dialog.show();
-                hm_store.clear();
-                clearAllData();
-                getstoreList(pageNum, "");
+                if (flag == 0) {
+                    dialog.show();
+                    hm_store.clear();
+                    clearAllData();
+                    getstoreList(pageNum, "");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,32 +134,10 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
         line_page.setOnClickListener(this);
         findViewById(R.id.iv_back).setOnClickListener(this);
         findViewById(R.id.iv_addstory).setOnClickListener(this);
+        findViewById(R.id.iv_search).setOnClickListener(this);
         lv_store = (SlideListView) findViewById(R.id.lv_store);
         adapter = new StoreListAdapter(this, lv_store, list_store);
         lv_store.setAdapter(adapter);
-        et_text = (EditText) findViewById(R.id.et_text);
-        //点击搜索键的监听
-        et_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    // 先隐藏键盘
-                    ((InputMethodManager) et_text.getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
-                            .hideSoftInputFromWindow(
-                                    StoreListActivity.this
-                                            .getCurrentFocus()
-                                            .getWindowToken(),
-                                    InputMethodManager.HIDE_NOT_ALWAYS);
-                    //以下是搜索逻辑
-                    list_store.clear();
-                    //查询门店
-                    pageNum = 1;
-                    getstoreList(pageNum, et_text.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
         //下拉刷新
         smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
@@ -211,6 +186,11 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.iv_search:
+                Intent it = new Intent(this, SearchPageActivity.class);
+                it.putExtra("activity", "StoreListActivity");
+                startActivity(it);
+                break;
             case R.id.iv_back:
                 toFinish();
                 finish();
@@ -441,7 +421,6 @@ public class StoreListActivity extends BaseActivity implements View.OnClickListe
                     lv_store.setAdapter(null);
                     adapter = null;
                     list_store.clear();
-                    et_text = null;
                     smartRefreshLayout = null;
                     hm_store.clear();
                     System.gc();

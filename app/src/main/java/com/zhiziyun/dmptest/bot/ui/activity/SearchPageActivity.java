@@ -30,6 +30,8 @@ import com.zhiziyun.dmptest.bot.ui.fragment.WifiCrowdFragment;
 import com.zhiziyun.dmptest.bot.util.MyListView;
 import com.zhiziyun.dmptest.bot.util.RecordSQLiteOpenHelper;
 
+import static com.zhiziyun.dmptest.bot.R.id.et_text;
+
 
 /**
  * Created by Administrator on 2018/5/15.
@@ -130,6 +132,23 @@ public class SearchPageActivity extends BaseActivity implements View.OnClickList
     //搜索
     public void search(String str, String text) {//参数：1、来自哪个类；2、搜索的内容
         switch (str) {
+            case "TanzhenListActivity":
+                TanzhenListActivity.tanzhenListActivity.flag = 123;
+                TanzhenListActivity.tanzhenListActivity.list_tanzhen.clear();
+                TanzhenListActivity.tanzhenListActivity.gettanzhenList(1, text);
+                finish();
+                break;
+            case "StoreListActivity":
+                try {
+                    StoreListActivity.storeListActivity.flag = 123;
+                    StoreListActivity.storeListActivity.list_store.clear();
+                    //查询门店
+                    StoreListActivity.storeListActivity.getstoreList(1, text);
+                    finish();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
             case "VisitorsselfFragment"://访客列表
                 try {
                     VisitorsselfFragment.fragment.clearAllData();

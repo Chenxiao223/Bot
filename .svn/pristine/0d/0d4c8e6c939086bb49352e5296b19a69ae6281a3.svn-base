@@ -1,0 +1,100 @@
+package com.zhiziyun.dmptest.bot.mode.wifi;
+
+import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.mode.originality.uploadmaterial.MaterialAdapter;
+import com.zhiziyun.dmptest.bot.mode.originality.uploadmaterial.TemplatePackageAddItems;
+import com.zhiziyun.dmptest.bot.mode.wifi.store.BStoreResult;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Created by zhiziyun on 2018/8/29.
+ */
+
+public class StoreAdapter extends RecyclerView.Adapter<StoreAdapter.StoreHolder> {
+    private List<BStoreResult.RowsBean> mRowsBeen;
+    private Context mContext;
+    private ItemClickDataListener<List<BStoreResult.RowsBean>> mItemClickDataListener;
+    private ItemClickListener itemClickListener;
+
+
+    public StoreAdapter(List<BStoreResult.RowsBean> mRowsBeen, Context mContext) {
+        this.mRowsBeen = mRowsBeen;
+        this.mContext = mContext;
+    }
+
+    public void setItemClickListener(ItemClickListener itemClickListener) {
+        this.itemClickListener = itemClickListener;
+    }
+
+    public void setItemClickDataListener(ItemClickDataListener<List<BStoreResult.RowsBean>> itemClickDataListener) {
+        mItemClickDataListener = itemClickDataListener;
+    }
+
+    @Override
+    public StoreHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+        View view = layoutInflater.inflate(R.layout.item_choose_store, null);
+        StoreHolder storeHolder = new StoreHolder(view);
+        return storeHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(final StoreHolder holder, final int position) {
+        holder.mStoreType.setText(mRowsBeen.get(position).getShop_name());
+        holder.itemView.setTag(R.string.app_name, position);
+        holder.mChooseCheck.setChecked(mRowsBeen.get(position).isChecked());
+//        holder.mRlCheck.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//            }
+//        });
+    }
+
+
+    class StoreHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private final TextView mStoreType;
+        private final CheckBox mChooseCheck;
+        private final RelativeLayout mRlCheck;
+
+        public StoreHolder(View itemView) {
+            super(itemView);
+            mStoreType = itemView.findViewById(R.id.tv_store);
+            mChooseCheck = itemView.findViewById(R.id.choose_check);
+            mRlCheck = itemView.findViewById(R.id.rl_check);
+            mRlCheck.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (itemClickListener != null) {
+                itemClickListener.OnItemClick(v, (Integer) itemView.getTag(R.string.app_name));
+            }
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return mRowsBeen.size();
+    }
+
+    public interface ItemClickDataListener<T> {
+        void OnItemClick(View v, List<BStoreResult.RowsBean> data);
+    }
+
+    public interface ItemClickListener {
+        void OnItemClick(View v, int position);
+    }
+}

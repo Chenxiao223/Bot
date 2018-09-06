@@ -1,0 +1,293 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion "27.0.1"
+    useLibrary 'org.apache.http.legacy'
+    packagingOptions {
+        exclude 'lib/armeabi/libvinit.so'
+        exclude 'lib/armeabi-v7a/libvinit.so'
+    }
+    defaultConfig {
+        applicationId "com.zhiziyun.dmptest.bot"
+        minSdkVersion 16
+        targetSdkVersion 27
+        versionCode 22
+        versionName "2.0.0"
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        zhidian {
+            applicationId "com.zhiziyun.dmptest.zhid"
+            manifestPlaceholders = [BAIDU_VALUE    : "rad1CpAGENuA85FjTlpWcYozyS45h9ab",
+                                    UMENG_VALUE    : "5b1885a0f29d985f6200008b",
+                                    app_authorities: "com.zhiziyun.dmptest.zhid",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "zhid"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright智店v2.0.0"'
+            buildConfigField "String", "BASENAME", '"zhid"'
+            buildConfigField "String", "ZHIZINAME", '"zg1xg0x9tCg"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f02013d'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f02013d'
+
+
+        }
+        tkb {
+            applicationId "com.zhiziyun.dmptest.tkb"
+            manifestPlaceholders = [BAIDU_VALUE    : "Ul2q1aTPlTY5vZQqSRKBbgHL9SSL4KmB",
+                                    UMENG_VALUE    : "5af3b6358f4a9d28780000c5",
+                                    app_authorities: "com.zhiziyun.dmptest.tkb",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "tkb"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright探客宝v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"yB3Ko0PmIhO"'
+            buildConfigField "String", "BASENAME", '"tkb"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020124'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020124'
+        }
+        yxxcr {
+            applicationId "com.zhiziyun.dmptest.yxxcr"
+            manifestPlaceholders = [BAIDU_VALUE    : "GLhrGdoHRjCEuKOVqZ6RA5W5AP2ZjPOg",
+                                    UMENG_VALUE    : "5af415caa40fa33bf70000f4",
+                                    app_authorities: "com.zhiziyun.dmptest.yxxcr",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "yxxcr"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright营销小超人v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"zkd0t0sYgGE"'
+            buildConfigField "String", "BASENAME", '"yxxcr"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020135'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020135'
+        }
+        lkb {
+            applicationId "com.zhiziyun.dmptest.lkb"
+            manifestPlaceholders = [BAIDU_VALUE    : "vk62PIIBydZ4NhV4jREizuLLNKrFiGyX",
+                                    UMENG_VALUE    : "5afbf4648f4a9d03e60000e4",
+                                    app_authorities: "com.zhiziyun.dmptest.lkb",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "lkb"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright来客宝v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"yMNLn0VHq7K"'
+            buildConfigField "String", "BASENAME", '"lkb"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f0200dd'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f0200dd'
+        }
+        shly {
+            applicationId "com.zhiziyun.dmptest.shly"
+            manifestPlaceholders = [BAIDU_VALUE    : "m2p5PvV3gTSvNEwfzCNGHGw0yTatgBA8",
+                                    UMENG_VALUE    : "5afbc2c1f43e480c8a0001fe",
+                                    app_authorities: "com.zhiziyun.dmptest.shly",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "shly"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright源客来v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"yMOdE0FiKs0"'
+            buildConfigField "String", "BASENAME", '"shly"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f02011b'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f02011b'
+        }
+        xmgy {
+            applicationId "com.zhiziyun.dmptest.xmgy"
+            manifestPlaceholders = [BAIDU_VALUE    : "xiFXEO8hY7G8kf2Fk3vmD2BgqFfSVOeP",
+                                    UMENG_VALUE    : "5afbcae78f4a9d5ffc0000c9",
+                                    app_authorities: "com.zhiziyun.dmptest.xmgy",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "xmgy"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright掌销助手v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"yMNYD0uIgbm"'
+            buildConfigField "String", "BASENAME", '"xmgy"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020134'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020134'
+        }
+        syhz {
+            applicationId "com.zhiziyun.dmptest.syhz"
+            manifestPlaceholders = [BAIDU_VALUE    : "B1L6BdRPLCMp9NWGHuAlTskyHIoQ1Z2D",
+                                    UMENG_VALUE    : "5b0f6229a40fa3425c000065",
+                                    app_authorities: "com.zhiziyun.dmptest.syhz",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "syhz"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright商优盒子v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"z5hlg11RFaE"'
+            buildConfigField "String", "BASENAME", '"syhz"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f02011f'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f02011f'
+        }
+        bot {
+            applicationId "com.zhiziyun.dmptest.bot"
+            manifestPlaceholders = [BAIDU_VALUE    : "3MXrIAPZu7qDPUhjnjVlXxC1fAplhA2P",
+                                    UMENG_VALUE    : " 5aa78b0da40fa3592c000218",
+                                    app_authorities: "com.zhiziyun.dmptest.bot",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "bot"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright智子盒子v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"x2RIi0u7FKg"'
+            buildConfigField "String", "BASENAME", '"bot"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020139'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020139'
+        }
+        jkb {
+            applicationId "com.zhiziyun.dmptest.jkb"
+            manifestPlaceholders = [BAIDU_VALUE    : "NGXjyudiEGz678r5RBdGtr8BNNROnZ2s",
+                                    UMENG_VALUE    : "5b69ac81f43e486773000280",
+                                    app_authorities: "com.zhiziyun.dmptest.jkb",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "jkb"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright集客宝v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"ANsgr0TOhi0"'
+            buildConfigField "String", "BASENAME", '"jkb"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020139'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020139'
+        }
+        xmf {
+            applicationId "com.zhiziyun.dmptest.xmf"
+            manifestPlaceholders = [BAIDU_VALUE    : "Kasfs1l0ZmZpCL4VSYQMrcdlwZ1anTFO",
+                                    UMENG_VALUE    : "5b70f40e8f4a9d3c5600014b",
+                                    app_authorities: "com.zhiziyun.dmptest.xmf",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "xmf"]
+            buildConfigField "String", "ENVIRONMENT", '"copyright小蜜蜂v2.0.1"'
+            buildConfigField "String", "ZHIZINAME", '"AY6gP11rroI"'
+            buildConfigField "String", "BASENAME", '"xmf"'
+            buildConfigField "String", "versionName", '"v2.0.1"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020139'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020139'
+        }
+        emigou {
+            applicationId "com.zhiziyun.dmptest.emigou"
+            manifestPlaceholders = [BAIDU_VALUE    : "lhheTFVwkLbDpvV3gugBXTEGnuDyQjA4",
+                                    UMENG_VALUE    : "5b1f6a82f29d983d4f00009b",
+                                    app_authorities: "com.zhiziyun.dmptest.emigou",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "emigou"]
+            buildConfigField "String", "ENVIRONMENT", '"copyrighte米狗v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"zhd050i16SY"'
+            buildConfigField "String", "BASENAME", '"emigou"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020139'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020139'
+        }
+        marketing {
+            applicationId "com.zhiziyun.dmptest.marketing"
+            manifestPlaceholders = [BAIDU_VALUE    : "tBZD88hLs1BZ8XqGxnUvThZNHLicFbDX",
+                                    UMENG_VALUE    : "5b7fd21eb27b0a7179000039",
+                                    app_authorities: "com.zhiziyun.dmptest.marketing",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "marketing"]
+            buildConfigField "String", "ENVIRONMENT", '"MARKETING+v2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"BeNay0LAamQ"'
+            buildConfigField "String", "BASENAME", '"marketing"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020139'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020139'
+        }
+        skl {
+            applicationId "com.zhiziyun.dmptest.skl"
+            manifestPlaceholders = [BAIDU_VALUE    : "Lb3QPAIGe4NYfqcAtgheZdnpW3kyjIsq",
+                                    UMENG_VALUE    : "5b84b87ab27b0a0c33000084",
+                                    app_authorities: "com.zhiziyun.dmptest.skl",
+                                    app_icon       : "@drawable/ic_launcher",
+                                    UMENG_NAME     : "skl"]
+            buildConfigField "String", "ENVIRONMENT", '"sklv2.0.0"'
+            buildConfigField "String", "ZHIZINAME", '"BeNay0LAamQ"'
+            buildConfigField "String", "BASENAME", '"skl"'
+            buildConfigField "String", "versionName", '"v2.0.0"'
+            buildConfigField "int", "STARTIMAGEVIEW", '0x7f020139'
+            buildConfigField "int", "LOGINIMAGEVIEW", '0x7f020139'
+        }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
+    }
+
+    dependencies {
+        compile fileTree(include: ['*.jar'], dir: 'libs')
+        androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+            exclude group: 'com.android.support', module: 'support-annotations'
+        })
+        compile files('libs/gson-2.7.jar')
+        compile files('libs/hellocharts-library-1.5.8.jar')
+        compile project(':libzxing2')
+        compile files('libs/BaiduLBS_Android.jar')
+        //上下拉刷新
+
+        //图片加载库
+
+        //文字云
+
+        //第三方图片选择器
+
+        //果冻效果
+
+        //TabLayout
+
+        //友盟日志集成
+
+        //支付宝支付
+        compile files('libs/alipaySdk-20170922.jar')
+        //仿iOS开关
+
+        //图片缩放
+        compile project(':library')
+        compile files('libs/fastjson-1.2.47.jar')
+        //APP更新
+
+        //轮播图
+        compile('com.squareup.retrofit2:converter-gson:2.1.0') {
+            exclude group: 'com.google.code.gson'
+        }
+        compile 'com.android.support:appcompat-v7:27.0.1'
+        compile 'com.android.support.constraint:constraint-layout:1.0.2'
+        compile 'com.android.support:design:27.0.1'
+        compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.6'
+        compile 'com.squareup.okhttp3:okhttp:3.3.1'
+        compile 'com.contrarywind:Android-PickerView:3.2.6'
+        compile 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.1'
+        compile 'com.scwang.smartrefresh:SmartRefreshHeader:1.0.1'
+        compile 'com.github.bumptech.glide:glide:3.7.0'
+        compile 'co.lujun:androidtagview:1.0.3'
+        compile 'com.jph.takephoto:takephoto_library:4.0.3'
+        compile 'com.nineoldandroids:library:2.4.0'
+        compile 'homhomlin.lib:sldinglayout:0.9.0'
+        compile 'com.umeng.sdk:common:latest.integration'
+        compile 'com.umeng.sdk:analytics:latest.integration'
+        compile 'ch.ielse:switchbutton:1.0.1'
+        compile 'com.github.chrisbanes:PhotoView:2.0.0'
+        compile 'com.allenliu.versionchecklib:library:2.0.5'
+        compile 'com.youth.banner:banner:1.4.10'
+        compile 'com.squareup.retrofit2:retrofit:2.1.0'
+        compile 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+        compile 'io.reactivex:rxandroid:1.2.1'
+        compile 'io.reactivex:rxjava:1.1.6'
+        compile 'com.squareup.retrofit2:converter-scalars:2.1.0'
+        compile 'com.squareup.okhttp3:logging-interceptor:3.8.1'
+        testCompile 'junit:junit:4.12'
+        //图片压缩
+        compile 'top.zibin:Luban:1.0.3'
+        compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
+    }
+}
+

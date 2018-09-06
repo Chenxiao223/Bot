@@ -34,13 +34,24 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.gson.Gson;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.ExpenditureStatistics;
 import com.zhiziyun.dmptest.bot.entity.GetHead;
 import com.zhiziyun.dmptest.bot.entity.HomePage;
 import com.zhiziyun.dmptest.bot.mode.originality.friend.FriendAccount;
-import com.zhiziyun.dmptest.bot.ui.activity.AddStoryActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.CrowdActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.HomePageActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.PassengerFlowAnalysisActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.TransactionDetailsActivity;
 import com.zhiziyun.dmptest.bot.util.BaseUrl;
@@ -62,16 +73,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import lecho.lib.hellocharts.gesture.ZoomType;
-import lecho.lib.hellocharts.model.Axis;
-import lecho.lib.hellocharts.model.AxisValue;
-import lecho.lib.hellocharts.model.Line;
-import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PieChartData;
-import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.SliceValue;
-import lecho.lib.hellocharts.model.ValueShape;
-import lecho.lib.hellocharts.view.LineChartView;
 import lecho.lib.hellocharts.view.PieChartView;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -80,6 +83,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import static com.github.mikephil.charting.data.LineDataSet.Mode.HORIZONTAL_BEZIER;
 
 
 /**
@@ -90,19 +95,19 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private SwipeRefreshLayout srl;
     private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest,
             tv_oldguest, tv_new, tv_old, tv_tody_expenditure, tv_tel, tv_sms, tv_ad, tv_wechat;
-    private ImageView iv_addstory, iv_head, iv_friend;
+    private ImageView iv_head;
     private RelativeLayout rl_today_people;
     private PieChartView pie_chart;//饼形图控件
     private PieChartData pieChardata;//数据
     List<SliceValue> values = new ArrayList<SliceValue>();
     private LinearLayout line_friend;
     //折线图
-    private LineChartView chartView;
-    private LineChartData lineData;
+    private LineChart chartView;
     private HomePage page;
     private SharedPreferences share;
     private ExpenditureStatistics expenditureStatistics;
     private boolean bool = true;
+    private boolean bool_chart = true;
 
     @Nullable
     @Override
@@ -124,15 +129,12 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         chartView = getView().findViewById(R.id.linechart);
         tv_new = getView().findViewById(R.id.tv_new);
         tv_old = getView().findViewById(R.id.tv_old);
-        tv_companyname = getView().findViewById(R.id.tv_companyname);
-        tv_companyname.setText(share.getString("company", "无数据"));
-        iv_addstory = getView().findViewById(R.id.iv_addstory);
-        iv_addstory.setOnClickListener(this);
         iv_head = getView().findViewById(R.id.iv_head);
-        iv_friend = getView().findViewById(R.id.iv_friend);
         rl_today_people = getView().findViewById(R.id.rl_today_people);
         rl_today_people.setOnClickListener(this);
         tv_story = getView().findViewById(R.id.tv_story);
+        tv_companyname = getView().findViewById(R.id.tv_companyname);
+        tv_companyname.setText(share.getString("company", "无数据"));
         tv_tanzhen = getView().findViewById(R.id.tv_tanzhen);
         tv_person = getView().findViewById(R.id.tv_person);
         tv_newguest = getView().findViewById(R.id.tv_newguest);
@@ -144,6 +146,10 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         tv_wechat = getView().findViewById(R.id.tv_wechat);
         line_friend = getView().findViewById(R.id.line_friend);
         getView().findViewById(R.id.rl_trading).setOnClickListener(this);
+        getView().findViewById(R.id.line_crowd).setOnClickListener(this);
+        getView().findViewById(R.id.line_phone).setOnClickListener(this);
+        getView().findViewById(R.id.line_sms).setOnClickListener(this);
+        getView().findViewById(R.id.line_ad).setOnClickListener(this);
         getPictrue();//获取头像
         getTableInfo();
         getData();
@@ -173,7 +179,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
 
         if (!share.getBoolean("isShowTencent", false)) {
             line_friend.setVisibility(View.GONE);
-            iv_friend.setVisibility(View.GONE);
         }
     }
 
@@ -202,8 +207,20 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.iv_addstory:
-                startActivity(new Intent(getActivity(), AddStoryActivity.class));
+            case R.id.line_crowd:
+                startActivity(new Intent(getActivity(), CrowdActivity.class));
+                break;
+            case R.id.line_phone:
+                HomePageActivity.activity.pager.setCurrentItem(3);
+                HomePageActivity.activity.changeColor(false, false, false, true, false);
+                break;
+            case R.id.line_sms:
+                HomePageActivity.activity.pager.setCurrentItem(2);
+                HomePageActivity.activity.changeColor(false, false, true, false, false);
+                break;
+            case R.id.line_ad:
+                HomePageActivity.activity.pager.setCurrentItem(2);
+                HomePageActivity.activity.changeColor(false, false, true, false, false);
                 break;
             case R.id.rl_today_people:
                 startActivity(new Intent(getActivity(), PassengerFlowAnalysisActivity.class));
@@ -512,17 +529,17 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     try {
                         Bundle bundle1 = msg.getData();
                         tv_person.setText(bundle1.get("all").toString());
-                        tv_newguest.setText(bundle1.get("new").toString());
-                        tv_oldguest.setText(bundle1.get("old").toString());
+                        tv_newguest.setText(" " + bundle1.get("new").toString());
+                        tv_oldguest.setText(" " + bundle1.get("old").toString());
                         if (bundle1.get("new").toString().equals("0")) {
                             tv_new.setText("0.00%");
                         } else {
-                            tv_new.setText(" " + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("new").toString())));
+                            tv_new.setText("" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("new").toString())));
                         }
                         if (bundle1.get("old").equals("0")) {
                             tv_old.setText("0.00%");
                         } else {
-                            tv_old.setText(" " + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("old").toString())));
+                            tv_old.setText("" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("old").toString())));
                         }
                         setPieChartData(Float.parseFloat(bundle1.get("new").toString()), Float.parseFloat(bundle1.get("old").toString()));
                         initPieChart(bundle1.get("all").toString());
@@ -532,11 +549,16 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     }
                     break;
                 case 3:
-                    generateInitialLineData(page);
+                    try {
+                        //显示曲线图
+                        initChart(chartView, page);
+                        chartView.setData(generateInitialLineData(page));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case 4:
                     try {
-//                        ToastUtils.showShort(getActivity(), "无数据");
                         srl.setRefreshing(false);//关闭加载动画
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -567,9 +589,9 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
      */
     private void setPieChartData(float a, float b) {
         try {
-            SliceValue sliceValue = new SliceValue(a, Color.parseColor("#2a7fb8"));//新客
+            SliceValue sliceValue = new SliceValue(a, Color.parseColor("#361fb0"));//新客
             values.add(sliceValue);
-            SliceValue sliceValue2 = new SliceValue(b, Color.parseColor("#ee5b42"));//老客
+            SliceValue sliceValue2 = new SliceValue(b, Color.parseColor("#746edb"));//老客
             values.add(sliceValue2);
         } catch (Exception e) {
             e.printStackTrace();
@@ -582,13 +604,13 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private void initPieChart(String str) {
         try {
             pieChardata = new PieChartData();
-            pieChardata.setHasLabels(true);//显示表情
+            pieChardata.setHasLabels(false);//显示标签
             pieChardata.setHasLabelsOnlyForSelected(false);//不用点击显示占的百分比
             pieChardata.setHasLabelsOutside(false);//占的百分比是否显示在饼图外面
             pieChardata.setHasCenterCircle(true);//是否是环形显示
             pieChardata.setValues(values);//填充数据
             pieChardata.setCenterCircleColor(Color.WHITE);//设置环形中间的颜色
-            pieChardata.setCenterCircleScale(0.5f);//设置环形的大小级别
+            pieChardata.setCenterCircleScale(0.8f);//设置环形的大小级别
             pieChardata.setValueLabelBackgroundEnabled(false);//去掉标签的背景颜色
             pieChardata.setValueLabelsTextColor(0xFF000000);//标签的颜色（75）
             if (str.equals("0")) {//如果到店总数为0，就显示无数据
@@ -596,8 +618,9 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             } else {
                 pieChardata.setCenterText1("人 数");//环形中间的文字
             }
+            pieChardata.setSlicesSpacing(0);//设置扇形之间的间距大小
             pieChardata.setCenterText1Color(Color.BLACK);//文字颜色
-            pieChardata.setCenterText1FontSize(10);//文字大小
+            pieChardata.setCenterText1FontSize(12);//文字大小
             pie_chart.setPieChartData(pieChardata);
             pie_chart.setValueSelectionEnabled(false);//选择饼图某一块变大
             pie_chart.setAlpha(0.9f);//设置透明度
@@ -614,40 +637,114 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     }
 
     //折线图
-    private void generateInitialLineData(HomePage homePage) {
-        try {
-            int numValues = homePage.getRows().size();
-            List<AxisValue> axisValues = new ArrayList<AxisValue>();
-            List<PointValue> values = new ArrayList<PointValue>();
-            List<PointValue> values2 = new ArrayList<PointValue>();
-            for (int i = 0; i < numValues; ++i) {
-                values.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getUv().toString())));//进店客流
-                values2.add(new PointValue(i, Float.parseFloat(homePage.getRows().get(i).getTotalUV())));//环境客流
-                axisValues.add(new AxisValue(i).setLabel(homePage.getRows().get(i).getStatDate().substring(5)));//为缩短字段去掉年份2017去掉
-            }
-            Line line = new Line(values);
-            line.setColor(Color.parseColor("#ee5b42")).setHasLabels(true).setShape(ValueShape.CIRCLE)
-                    .setCubic(false).setPointRadius(3).setStrokeWidth(1).setFilled(true);//setCubic(false)false是折线，true是曲线
-            Line line2 = new Line(values2);
-            line2.setColor(Color.parseColor("#247ab7")).setHasLabels(true).setShape(ValueShape.CIRCLE)
-                    .setCubic(false).setPointRadius(3).setStrokeWidth(1).setFilled(true);//setPointRadius(2).setStrokeWidth(1)是点和线的粗细，setFilled是是否要填充色
-            List<Line> lines = new ArrayList<Line>();
-            lines.add(line);
-            lines.add(line2);
-            lineData = new LineChartData(lines);
-
-            lineData.setValueLabelBackgroundEnabled(false);//去掉标签的背景颜色
-            lineData.setValueLabelsTextColor(0xFFC4C4C4);//标签的颜色（75）
-            lineData.setValueLabelTextSize(10);//标签的字体大小
-
-            lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
-            lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(5));
-            chartView.setLineChartData(lineData);
-            chartView.setViewportCalculationEnabled(true);
-            chartView.setZoomType(ZoomType.HORIZONTAL);
-        } catch (Exception e) {
-            e.printStackTrace();
+    private LineData generateInitialLineData(HomePage homePage) {
+        int numValues = homePage.getRows().size();
+        ArrayList<Entry> values1 = new ArrayList<>();
+        ArrayList<Entry> values2 = new ArrayList<>();
+        for (int i = 0; i < numValues; ++i) {
+            values1.add(new Entry(i, Float.parseFloat(homePage.getRows().get(i).getUv().toString())));//进店客流
+            values2.add(new Entry(i, Float.parseFloat(homePage.getRows().get(i).getTotalUV())));//环境客流
         }
+        LineDataSet dataSetA = new LineDataSet(values1, "新客");
+        dataSetA.setCircleSize(0f);
+        dataSetA.setDrawCircleHole(true); //是否定制节点圆心的颜色，若为false，则节点为单一的同色点，若为true则可以设置节点圆心的颜色
+        dataSetA.setCircleColorHole(Color.parseColor("#ff5d92"));  //设置节点圆心的颜色
+        dataSetA.setMode(HORIZONTAL_BEZIER);
+        dataSetA.setValueTextColor(Color.GRAY);
+        dataSetA.setColor(Color.parseColor("#ff5d92"));
+        dataSetA.setDrawFilled(true);//设置是否开启填充，默认为false
+        dataSetA.setFillColor(Color.parseColor("#ff5d92"));//设置填充颜色
+        dataSetA.setFillAlpha(55);//设置填充区域透明度，默认值为85
+        //设置折线数据 getChartData返回一个List<Entry>键值对集合标识 折线点的横纵坐标，"A"代表折线标识
+        LineDataSet dataSetB = new LineDataSet(values2, "老客");
+        dataSetB.setCircleSize(0f);
+        dataSetB.setDrawCircleHole(true); //是否定制节点圆心的颜色，若为false，则节点为单一的同色点，若为true则可以设置节点圆心的颜色
+        dataSetB.setCircleColorHole(Color.parseColor("#5cabf8"));  //设置节点圆心的颜色
+        dataSetB.setMode(HORIZONTAL_BEZIER);
+        dataSetB.setValueTextColor(Color.GRAY);
+        dataSetB.setColor(Color.parseColor("#5cabf8"));
+        dataSetB.setDrawFilled(true);//设置是否开启填充，默认为false
+        dataSetB.setFillColor(Color.parseColor("#5cabf8"));//设置填充颜色
+        dataSetB.setFillAlpha(55);//设置填充区域透明度，默认值为85
+
+        List<ILineDataSet> dataSets = new ArrayList<>();
+        dataSets.add(dataSetA);
+        dataSets.add(dataSetB);
+        LineData data = new LineData(dataSets);
+        return data;
+    }
+
+    public LineChart initChart(LineChart chart, final HomePage homePage) {
+        //设置边框颜色
+        chart.setBorderColor(Color.WHITE);
+        //是否展示网格线
+        chart.setDrawGridBackground(false);
+        // 不显示y轴右边的值
+        chart.getAxisRight().setEnabled(false);
+        //是否显示边界
+        chart.setDrawBorders(true);
+        //是否可以拖动
+        chart.setDragEnabled(false);
+        //是否有触摸事件
+        chart.setTouchEnabled(true);
+        if (bool_chart) {
+            //设置XY轴动画效果
+            chart.animateY(1500);
+            bool_chart = false;//只执行一次
+        }
+        // 不显示数据描述
+        chart.getDescription().setEnabled(false);
+        // 没有数据的时候，显示“暂无数据”
+        chart.setNoDataText("暂无数据");
+        // 不显示表格颜色
+        chart.setDrawGridBackground(false);
+        // 不可以缩放
+        chart.setScaleEnabled(false);
+        // 不显示y轴右边的值
+        chart.getAxisRight().setEnabled(false);
+        // 不显示图例
+        Legend legend = chart.getLegend();
+        legend.setEnabled(false);
+        // 向左偏移15dp，抵消y轴向右偏移的30dp
+        chart.setExtraLeftOffset(-15);
+
+        XAxis xAxis = chart.getXAxis();
+        // 不显示x轴
+        xAxis.setDrawAxisLine(false);
+        // 设置x轴数据的位置
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setTextColor(Color.GRAY);
+        xAxis.setTextSize(10);
+        xAxis.setGridColor(Color.parseColor("#30FFFFFF"));
+        // 设置x轴数据偏移量
+        xAxis.setYOffset(5);
+
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                //X轴显示的数据
+                String tradeDate = homePage.getRows().get((int) value).getStatDate().substring(5);
+                return tradeDate;
+            }
+        });
+//        xAxis.setLabelCount(6, false);
+
+        YAxis yAxis = chart.getAxisLeft();
+        // 不显示y轴
+        yAxis.setDrawAxisLine(false);
+        // 设置y轴数据的位置
+        yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
+        // 不从y轴发出横向直线
+        yAxis.setDrawGridLines(false);
+        yAxis.setTextColor(Color.GRAY);
+        yAxis.setTextSize(10);
+        // 设置y轴数据偏移量
+        yAxis.setXOffset(20);
+        yAxis.setYOffset(-3);
+        yAxis.setAxisMinimum(0);
+
+        chart.invalidate();
+        return chart;
     }
 
     /**

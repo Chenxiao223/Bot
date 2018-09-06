@@ -21,7 +21,8 @@
             android:maxEms="12"
             android:singleLine="true"
             android:text="门店名"
-            android:textSize="@dimen/textsizi3" />
+            android:textColor="@color/text3"
+            android:textSize="@dimen/textsizi" />
 
         <TextView
             android:id="@+id/tv_fee"
@@ -29,10 +30,11 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:text="3000"
-            android:textSize="@dimen/textsizi3"
+            android:textSize="@dimen/text_sp_12"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
+            android:textColor="@color/text3"
             android:layout_marginRight="43dp"
             android:layout_marginEnd="43dp" />
 
@@ -46,6 +48,7 @@
             android:gravity="center_vertical"
             android:paddingBottom="17dp"
             android:paddingTop="17dp"
+            android:tint="@color/text3"
             android:src="@drawable/click" />
     </RelativeLayout>
 

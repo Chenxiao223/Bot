@@ -1,0 +1,55 @@
+package com.zhiziyun.dmptest.bot.mode.wifi;
+
+import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.zhiziyun.dmptest.bot.R;
+
+import java.util.ArrayList;
+
+/**
+ * Created by zhiziyun on 2018/8/29.
+ */
+
+public class StoreAdapter extends RecyclerView.Adapter<StoreAdapter.StoreHolder> {
+    private ArrayList<String> mStrings;
+    private Context mContext;
+
+    public StoreAdapter(ArrayList<String> mStrings, Context mContext) {
+        this.mStrings = mStrings;
+        this.mContext = mContext;
+    }
+
+    @Override
+    public StoreHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+        View view = layoutInflater.inflate(R.layout.item_choose_store, null);
+        StoreHolder storeHolder = new StoreHolder(view);
+        return storeHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(StoreHolder holder, int position) {
+        holder.mStoreType.setText(mStrings.get(position));
+    }
+
+
+    class StoreHolder extends RecyclerView.ViewHolder {
+
+        private final TextView mStoreType;
+
+        public StoreHolder(View itemView) {
+            super(itemView);
+            mStoreType = itemView.findViewById(R.id.tv_store);
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return mStrings.size();
+    }
+}

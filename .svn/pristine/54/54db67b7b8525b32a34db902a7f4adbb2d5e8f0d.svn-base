@@ -1,0 +1,84 @@
+package com.zhiziyun.dmptest.bot.ui.activity;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.util.CustomDialog;
+
+/**
+ * Created by Administrator on 2018/8/27.
+ * 公众号
+ */
+
+public class WeChatSubscription extends BaseActivity implements View.OnClickListener {
+    private TextView tv_subscription, tv_id, tv_BindingWeChatSubscription, tv_AuthorizationAd, tv_WeChatSubscriptionAdvertiser;
+    private SharedPreferences share;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_subscription);
+        initView();
+    }
+
+    private void initView() {
+        //设置系统栏颜色
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        tv_subscription = findViewById(R.id.tv_subscription);
+        tv_id = findViewById(R.id.tv_id);
+        tv_BindingWeChatSubscription = findViewById(R.id.tv_BindingWeChatSubscription);
+        if (share.getBoolean("isBindingWeChatSubscription", false)) {
+            tv_BindingWeChatSubscription.setText("已绑定");
+        }
+        tv_AuthorizationAd = findViewById(R.id.tv_AuthorizationAd);
+        if (share.getBoolean("isAuthorizationAd", false)) {
+            tv_AuthorizationAd.setText("已绑定");
+        }
+        tv_WeChatSubscriptionAdvertiser = findViewById(R.id.tv_WeChatSubscriptionAdvertiser);
+        if (share.getBoolean("isOpenWeChatSubscriptionAdvertiser", false)) {
+            tv_WeChatSubscriptionAdvertiser.setText("已开通");
+        }
+        findViewById(R.id.tv_back).setOnClickListener(this);
+        findViewById(R.id.btn_unbundling).setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.tv_back:
+                finish();
+                break;
+            case R.id.btn_unbundling:
+                //点击弹出对话框
+                final CustomDialog customDialog = new CustomDialog(this);
+                customDialog.setTitle("消息提示");
+                customDialog.setMessage("请您同时登录公众号平台提出申请解绑，申请解绑后将会暂停所有广告投放，预计处理周期1-2个工作日，请确定是否继续？");
+                customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                    @Override
+                    public void onYesClick() {
+
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                    @Override
+                    public void onNoClick() {
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.show();
+                break;
+        }
+    }
+}

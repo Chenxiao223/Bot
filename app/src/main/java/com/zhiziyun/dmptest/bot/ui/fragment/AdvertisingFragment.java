@@ -656,6 +656,7 @@ public class AdvertisingFragment extends Fragment implements View.OnClickListene
                                 ((TextView) holders[i]).setTextColor(Color.parseColor("#555555"));
                                 ((TextView) holders[i]).getPaint().setFlags(Paint.EMBEDDED_BITMAP_TEXT_FLAG);
                             }
+                            ((TextView) holders[i]).getPaint().setAntiAlias(true);//抗锯齿
                         }
                         ((TextView) holders[i]).setText(this.datas.get(position).get(from[i]).toString());
                     } catch (Exception e) {

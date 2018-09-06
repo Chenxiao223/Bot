@@ -284,7 +284,6 @@ public class SubmitFriendActivitty extends BaseActivity implements View.OnClickL
                                         Intent intent = getIntent();
                                         final JSONObject json = new JSONObject();
                                         json.put("tencentId", share.getString("tencentid", ""));
-//                                        json.put("tencentId", "100000001");
                                         json.put("wechatActivityName", intent.getStringExtra("wechatActivityName"));
                                         json.put("productType", intent.getStringExtra("productType"));
                                         json.put("startDate", intent.getStringExtra("startDate"));
@@ -382,7 +381,6 @@ public class SubmitFriendActivitty extends BaseActivity implements View.OnClickL
                                         Intent intent = getIntent();
                                         final JSONObject json = new JSONObject();
                                         json.put("tencentId", share.getString("tencentid", ""));
-//                                        json.put("tencentId", "100000001");
                                         json.put("wechatActivityId", getIntent().getStringExtra("wechatActivityId"));
                                         json.put("wechatActivityName", intent.getStringExtra("wechatActivityName"));
 //                    json.put("productType", intent.getStringExtra("productType"));

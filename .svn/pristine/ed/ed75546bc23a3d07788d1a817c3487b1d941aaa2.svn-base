@@ -1,0 +1,33 @@
+package com.zhiziyun.dmptest.bot.mode.wifi;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.activity.BaseActivity;
+
+
+public class ChooseStoreActivity extends BaseActivity {
+
+    private RecyclerView mChooseCrowdRv;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_choose_store);
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+        mChooseCrowdRv = findViewById(R.id.rv_choose_crowd);
+    }
+
+    public void initRecycleView() {
+//        StoreAdapter storeAdapter = new StoreAdapter();
+//        mChooseCrowdRv.setLayoutManager(new LinearLayoutManager(this));
+//        mChooseCrowdRv.setAdapter(storeAdapter);
+    }
+}

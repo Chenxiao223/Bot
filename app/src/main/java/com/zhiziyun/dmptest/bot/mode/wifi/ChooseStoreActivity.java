@@ -1,0 +1,181 @@
+package com.zhiziyun.dmptest.bot.mode.wifi;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.mode.wifi.store.BStoreResult;
+import com.zhiziyun.dmptest.bot.mode.wifi.store.StoreCase;
+import com.zhiziyun.dmptest.bot.network.subscriber.PureSubscriber;
+import com.zhiziyun.dmptest.bot.ui.activity.BaseActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.ChooseCreativeActivity;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
+import com.zhiziyun.dmptest.bot.util.Token;
+
+import org.json.JSONObject;
+
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class ChooseStoreActivity extends BaseActivity implements StoreAdapter.ItemClickListener, View.OnClickListener {
+
+    private RecyclerView mChooseCrowdRv;
+    private SharedPreferences share;
+    private int page = 1, rows = 10, mNumTotal;
+    private List<BStoreResult.RowsBean> mBStoreResults;
+    private List<BStoreResult.RowsBean> mTotal;
+    private StoreAdapter mStoreAdapter;
+    private Button mSureSubmitBt;
+    private int mPosition = -1;
+    private SmartRefreshLayout mSmartRefreshLayout;
+    private LinearLayout mLinePage;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_choose_store);
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+        mSmartRefreshLayout = findViewById(R.id.friend_refreshLayout);
+        mChooseCrowdRv = findViewById(R.id.rv_choose_crowd);
+        mSureSubmitBt = findViewById(R.id.sure_submit_bt);
+        mLinePage = findViewById(R.id.line_page).findViewById(R.id.line_page);
+        mLinePage.setOnClickListener(this);
+        mSureSubmitBt.setOnClickListener(this);
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        mTotal = new ArrayList<>();
+        loadData(page);
+        smartRefreshListener();
+    }
+
+    public void loadData(int page) {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("tencentId", share.getString("tencentid", ""));
+            jsonObject.put("paeg", page);
+            jsonObject.put("rows", rows);
+            new StoreCase(1, URLEncoder.encode(Token.gettoken(), "utf-8"), jsonObject.toString()).execute(new PureSubscriber<BStoreResult>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                    mLinePage.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onSuccess(BStoreResult data) {
+                    mBStoreResults = new ArrayList<>();
+                    mBStoreResults = data.getRows();
+                    mTotal.addAll(mBStoreResults);
+                    mNumTotal = data.getTotal();
+                    for (int i = 0; i < mTotal.size(); i++) {
+                        mTotal.get(i).setChecked(false);
+                    }
+                    if (mStoreAdapter == null) {
+                        initRecycleView();
+                    }
+                    mStoreAdapter.notifyDataSetChanged();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void initRecycleView() {
+        mStoreAdapter = new StoreAdapter(mTotal, this);
+//        mStoreAdapter.setItemClickDataListener(this);
+        mStoreAdapter.setItemClickListener(this);
+        mChooseCrowdRv.setLayoutManager(new LinearLayoutManager(this));
+        mChooseCrowdRv.setAdapter(mStoreAdapter);
+    }
+
+
+    private void smartRefreshListener() {
+        mSmartRefreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
+            @Override
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                page++;
+                if ((mNumTotal - (page - 1) * 10) > 0) {
+                    loadData(page);
+                    refreshlayout.finishLoadmore();
+                    ToastUtils.showShort(ChooseStoreActivity.this, page + "/" + ((mNumTotal / 10) + 1));
+                } else {
+                    refreshlayout.finishLoadmore();
+                    ToastUtils.showShort(ChooseStoreActivity.this, "最后一页了");
+                }
+            }
+
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                page = 1;
+                mTotal.clear();
+                loadData(page);
+                refreshlayout.finishRefresh();
+            }
+        });
+    }
+
+    @Override
+    public void OnItemClick(View v, int position) {
+        switch (v.getId()) {
+            case R.id.rl_check:
+                if (mPosition == position) {
+                    mTotal.get(mPosition).setChecked(false);
+                    mStoreAdapter.notifyItemChanged(position);
+                    mPosition = -1;
+                } else if (mPosition != position && mPosition != -1) {
+                    //先取消上个item的勾选状态
+                    mTotal.get(mPosition).setChecked(false);
+                    mStoreAdapter.notifyItemChanged(mPosition);
+                    //设置新Item的勾选状态
+                    mTotal.get(position).setChecked(true);
+                    mPosition = position;
+                    mStoreAdapter.notifyItemChanged(position);
+                } else if (mPosition == -1) {
+                    mPosition = position;
+                    mTotal.get(position).setChecked(true);
+                    mStoreAdapter.notifyItemChanged(mPosition);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        int num = -1;
+        switch (v.getId()) {
+            case R.id.sure_submit_bt:
+                for (int i = 0; i < mTotal.size(); i++) {
+                    if (mTotal.get(i).isChecked()) {
+                        num = i;
+                        Intent intent = new Intent();
+                        intent.putExtra("storeid", mTotal.get(i).getShop_id());
+                        intent.putExtra("shopname", mTotal.get(i).getShop_name());
+                        intent.putExtra("ssid", mTotal.get(i).getSsid());
+                        setResult(11, intent);
+                        finish();
+                    }
+                }
+                if (num == -1) {
+                    Toast.makeText(this, "请选择门店", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
+}

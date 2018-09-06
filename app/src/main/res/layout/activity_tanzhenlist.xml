@@ -13,70 +13,48 @@
         android:scaleType="fitXY"
         android:src="@drawable/homepagebg" />
 
-    <!--FixedBehind可以让Header固定在内容的背后，下拉的时候效果同微信浏览器的效果-->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:background="@drawable/homepagebg"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:orientation="vertical">
+        android:layout_height="@dimen/activity_title"
+        android:background="@drawable/homepagebg">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/activity_title">
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/back" />
 
-            <ImageView
-                android:id="@+id/iv_back"
-                android:layout_width="@dimen/activity_title"
-                android:layout_height="match_parent"
-                android:padding="@dimen/activity_title_padding"
-                android:src="@drawable/back" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="探针"
+            android:textColor="@color/white"
+            android:textSize="@dimen/title_text_size" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:text="探针"
-                android:textColor="@color/white"
-                android:textSize="@dimen/title_text_size" />
+        <ImageView
+            android:id="@+id/iv_search"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/search"
+            android:tint="@color/white" />
 
-            <ImageView
-                android:id="@+id/iv_addstory"
-                android:layout_width="@dimen/activity_title"
-                android:layout_height="match_parent"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
-                android:padding="@dimen/activity_title_padding"
-                android:src="@drawable/add" />
-        </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="40dp"
-            android:background="@drawable/shape_whitebg"
-            android:orientation="vertical">
-
-            <EditText
-                android:id="@+id/et_text"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:background="@null"
-                android:drawableLeft="@drawable/search"
-                android:hint="搜索你的相关内容"
-                android:imeOptions="actionSearch"
-                android:maxLength="20"
-                android:singleLine="true"
-                android:textColorHint="@color/gray"
-                android:textSize="@dimen/textsizi" />
-        </LinearLayout>
-
-    </LinearLayout>
+        <ImageView
+            android:id="@+id/iv_addstory"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/iv_search"
+            android:layout_toStartOf="@+id/iv_search"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/add" />
+    </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

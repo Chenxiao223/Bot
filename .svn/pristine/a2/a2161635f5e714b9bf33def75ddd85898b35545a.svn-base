@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.zhiziyun.dmptest.bot.mode.wifi.ChooseStoreActivity">
+
+    <ImageView
+        android:id="@+id/iv_system"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/homepagebg"/>
+
+    <com.zhiziyun.dmptest.bot.widget.CustomBackToolbar
+        android:id="@+id/customBackToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/iv_system"
+        app:back="true"
+        app:titleText="@string/choosr_store"/>
+
+    <LinearLayout
+        android:layout_above="@+id/sure_submit_bt"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/customBackToolbar"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/line_page"
+            layout="@layout/layout_hides"/>
+
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout
+            android:id="@+id/friend_refreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                srlClassicsSpinnerStyle="FixedBehind"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_choose_crowd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/customBackToolbar"/>
+
+            <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+                srlClassicsSpinnerStyle="FixedBehind"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/sure_submit_bt"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/buttom_height"
+        android:layout_alignParentBottom="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginLeft="@dimen/padding_left_right2"
+        android:layout_marginRight="@dimen/padding_left_right2"
+        android:background="@color/blue"
+        android:text="@string/sure_submit"
+        android:textColor="@color/white"/>
+</RelativeLayout>

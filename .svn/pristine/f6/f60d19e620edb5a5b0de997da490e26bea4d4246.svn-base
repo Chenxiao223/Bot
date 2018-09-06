@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_grey"
+    tools:context="com.zhiziyun.dmptest.bot.mode.wifi.WifiAdverActivity">
+
+    <ImageView
+        android:id="@+id/iv_system"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/homepagebg"/>
+
+    <com.zhiziyun.dmptest.bot.widget.CustomBackToolbar
+        android:id="@+id/customBackToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/iv_system"
+        app:back="true"
+        app:rightTextString="@string/how_toufan"
+        app:titleText="@string/add_wifi"/>
+
+    <LinearLayout
+        android:id="@+id/ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/customBackToolbar"
+        android:layout_marginTop="10dp"
+        android:background="@color/white"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*"
+                android:textColor="@color/red"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@+id/imageView3"
+                android:layout_toRightOf="@+id/imageView3"
+                android:text=" Wi-Fi广告名称："
+                android:textSize="@dimen/textsizi3"/>
+
+            <EditText
+                android:id="@+id/edit_wifi_advert"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:gravity="center_vertical|right"
+                android:hint="请输入易记的名称"
+                android:lines="1"
+                android:maxLength="40"
+                android:singleLine="true"
+                android:textColorHint="@color/gray"
+                android:textSize="@dimen/textsizi"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/line_height"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/grayline"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:orientation="horizontal">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@+id/imageView3"
+                android:layout_toRightOf="@+id/imageView3"
+                android:text=" 选择展示门店"
+                android:textSize="@dimen/textsizi3"/>
+
+            <TextView
+                android:id="@+id/choose_store_et"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:gravity="center_vertical|right"
+                android:hint="未选择门店"
+                android:lines="1"
+                android:singleLine="true"
+                android:textColorHint="@color/gray"
+                android:textSize="@dimen/textsizi"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/line_height"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/grayline"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:orientation="horizontal">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@+id/imageView3"
+                android:layout_toRightOf="@+id/imageView3"
+                android:text=" 投放方式"
+                android:textSize="@dimen/textsizi3"/>
+
+            <TextView
+                android:id="@+id/choose_throw_et"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:gravity="center_vertical|right"
+                android:hint="未选择投放方式"
+                android:lines="1"
+                android:singleLine="true"
+                android:textColorHint="@color/gray"
+                android:textSize="@dimen/textsizi"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/test_preview_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/ll"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/test_preview"
+        android:textColor="@color/green"
+        android:textSize="25sp"/>
+
+    <Button
+        android:id="@+id/commit_bt"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/buttom_height"
+        android:layout_alignParentBottom="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginLeft="@dimen/padding_left_right2"
+        android:layout_marginRight="@dimen/padding_left_right2"
+        android:background="@color/blue"
+        android:text="@string/commit"
+        android:textColor="@color/white"/>
+</RelativeLayout>

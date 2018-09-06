@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/padding_left_right"
             android:text="探针"
+            android:textColor="@color/text3"
             android:textSize="@dimen/textsizi" />
     </LinearLayout>
 
