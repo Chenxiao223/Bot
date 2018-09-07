@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_left_right">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/tv_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxEms="8"
+                android:singleLine="true"
+                android:text="电话"
+                android:textColor="@color/text2"
+                android:textSize="@dimen/textsizi2" />
+
+            <TextView
+                android:id="@+id/tv_customer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="@dimen/padding_left_right"
+                android:layout_toEndOf="@+id/tv_phone"
+                android:layout_toRightOf="@+id/tv_phone"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxEms="8"
+                android:singleLine="true"
+                android:text="张先生"
+                android:textColor="@color/text2"
+                android:textSize="@dimen/textsizi2" />
+
+            <ImageView
+                android:id="@+id/imageView11"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:padding="@dimen/image_small"
+                android:src="@drawable/click"
+                android:tint="@color/list_line" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="普通客户"
+                android:textColor="@color/text3"
+                android:textSize="@dimen/text_sp_12" />
+
+            <TextView
+                android:id="@+id/tv_state"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignBaseline="@+id/tv_title"
+                android:layout_alignBottom="@+id/tv_title"
+                android:layout_marginLeft="@dimen/padding_left_right"
+                android:layout_toLeftOf="@+id/imageView11"
+                android:layout_toStartOf="@+id/imageView11"
+                android:gravity="center"
+                android:text="新转入"
+                android:textColor="@color/text3"
+                android:textSize="@dimen/text_sp_12" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|right"
+                    android:text="负责人："
+                    android:textColor="@color/text3"
+                    android:textSize="@dimen/text_sp_12" />
+
+                <TextView
+                    android:id="@+id/tv_head"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical|left"
+                    android:maxEms="8"
+                    android:singleLine="true"
+                    android:text="王经理"
+                    android:textColor="@color/text3"
+                    android:textSize="@dimen/text_sp_12" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_toEndOf="@+id/linearLayout"
+                android:layout_toRightOf="@+id/linearLayout"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|right"
+                    android:paddingLeft="@dimen/padding_left_right"
+                    android:text="备注："
+                    android:textColor="@color/text3"
+                    android:textSize="@dimen/text_sp_12" />
+
+                <TextView
+                    android:id="@+id/tv_note"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical|left"
+                    android:lines="1"
+                    android:maxEms="7"
+                    android:text="xxxxx"
+                    android:textColor="@color/text3"
+                    android:textSize="@dimen/text_sp_12" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/iv_call"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/phone3" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/line_height2"
+        android:background="@color/list_line" />
+</LinearLayout>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical"
     tools:context="com.zhiziyun.dmptest.bot.mode.originality.friend.FriendAccount">
 
@@ -41,12 +41,12 @@
         <TextView
             android:id="@+id/money_detail"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textView2"
+            android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_marginEnd="@dimen/title_text_right"
-            android:layout_marginRight="@dimen/title_text_right"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="@dimen/padding_left_right"
+            android:gravity="center"
             android:text="账户明细"
             android:textColor="@color/white"
             android:textSize="@dimen/textsizi" />

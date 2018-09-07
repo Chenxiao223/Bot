@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/image_small"
+        android:scaleType="fitXY"
+        android:src="@drawable/grayline" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/padding_left_right3"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/spn_shop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <Spinner
+            android:id="@+id/spn_tanzhen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/image_small"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/grayline" />
+
+        <LinearLayout
+            android:id="@+id/line_date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.2"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="日期"
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/textsizi" />
+
+                <ImageView
+                    android:layout_width="@dimen/padding_left_right4"
+                    android:layout_height="@dimen/padding_left_right4"
+                    android:layout_marginLeft="@dimen/image_small"
+                    android:src="@drawable/date" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/image_small"
+        android:scaleType="fitXY"
+        android:src="@drawable/grayline" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingRight="@dimen/padding_left_right">
+
+                    <ImageView
+                        android:layout_width="@dimen/padding_left_right"
+                        android:layout_height="@dimen/padding_left_right"
+                        android:src="@drawable/line_green" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" 环境客流"
+                        android:textSize="@dimen/activity_text" />
+
+                    <ImageView
+                        android:layout_width="@dimen/padding_left_right"
+                        android:layout_height="@dimen/padding_left_right"
+                        android:layout_marginLeft="@dimen/image_small"
+                        android:src="@drawable/line_red" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" 进店客流"
+                        android:textSize="@dimen/activity_text" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/linechart_pot"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:layout_margin="@dimen/padding_left_right" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@color/blue"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="日期"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/textsizi" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="环境客流"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/textsizi" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="进店客流"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/textsizi" />
+                </LinearLayout>
+
+                <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/refreshLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                        srlClassicsSpinnerStyle="FixedBehind"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <ListView
+                        android:id="@+id/xlistview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <include
+            android:id="@+id/line_page"
+            layout="@layout/layout_hides" />
+    </RelativeLayout>
+</LinearLayout>

@@ -1,0 +1,1035 @@
+package com.zhiziyun.dmptest.bot.ui.activity;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.Target;
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.adapter.SubmitFriendAdapter;
+import com.zhiziyun.dmptest.bot.ui.fragment.FriendsFragment;
+import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.BitmapUtil;
+import com.zhiziyun.dmptest.bot.util.BitmapUtils;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.PhotoUtils2;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
+import com.zhiziyun.dmptest.bot.util.Token;
+import com.zhiziyun.dmptest.bot.view.PopWin_album;
+import com.zhiziyun.dmptest.bot.view.PopWin_industry;
+import com.zhiziyun.dmptest.bot.wheelview.WheelView;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import top.zibin.luban.Luban;
+import top.zibin.luban.OnCompressListener;
+
+public class SubmitFriendActivitty extends BaseActivity implements View.OnClickListener {
+    public static SubmitFriendActivitty submitFriendActivitty;
+    private static final int CODE_GALLERY_REQUEST = 0xa0;
+    private static final int CODE_CAMERA_REQUEST = 0xa1;
+    private static final int CODE_RESULT_REQUEST = 0xa2;
+    private static final int CAMERA_PERMISSIONS_REQUEST_CODE = 0x03;
+    private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 0x04;
+    private File fileUri;
+    private Uri imageUri;
+    private File fileCropUri = new File(Environment.getExternalStorageDirectory().getPath() + "/" + BaseUrl.BaseAPPName + "/t.jpg");
+    private Uri cropImageUri;
+    private static final int OUTPUT_X = 480;
+    private static final int OUTPUT_Y = 480;
+
+    private TextView tv_template, tv_share;
+    private List<String> list_template;
+    private PopWin_industry popWin_industry;
+    private JSONArray jsonArray;
+    private HashMap<String, Object> hm_Submit;
+    private ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+    private SubmitFriendAdapter adapter;
+    private ListView lv_template;
+    private String KEY_TEXT;
+    private String KEY_IMAGE;
+    private String VALUE;
+    private int m_position;
+    private SharedPreferences share;
+    private String templateId;//模板编号
+    private EditText et_url, et_productRefsId, et_share_title, et_share_describe;
+    private LinearLayout line_productRefsId, line_share_title, line_share_describe;
+    private RelativeLayout rl_share;
+    private boolean is_share = true;
+    private Bitmap m_bitmap;
+    private MyDialog dialog;
+    private int width, height;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_submit_friend_activitty);
+        submitFriendActivitty = this;
+        initView();
+    }
+
+    private void initView() {
+        ImageView iv_system = (ImageView) findViewById(R.id.iv_system);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv_system.getLayoutParams();
+        params.height = (int) getStatusBarHeight(this);//设置当前控件布局的高度
+
+        dialog = MyDialog.showDialog(this);
+        share = getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        fileUri = new File(Environment.getExternalStorageDirectory().getPath() + "/" + BaseUrl.BaseAPPName + "/" + share.getString("userid", "") + "/p2.jpg");
+
+        tv_template = findViewById(R.id.tv_template);
+        lv_template = findViewById(R.id.lv_template);
+        et_url = findViewById(R.id.et_url);
+        et_productRefsId = findViewById(R.id.et_productRefsId);
+        line_productRefsId = findViewById(R.id.line_productRefsId);
+        tv_share = findViewById(R.id.tv_share);
+        line_share_title = findViewById(R.id.line_share_title);
+        line_share_describe = findViewById(R.id.line_share_describe);
+        et_share_title = findViewById(R.id.et_share_title);
+        et_share_describe = findViewById(R.id.et_share_describe);
+        rl_share = findViewById(R.id.rl_share);
+
+        findViewById(R.id.iv_back).setOnClickListener(this);
+        findViewById(R.id.btn_next).setOnClickListener(this);
+        findViewById(R.id.rl_template).setOnClickListener(this);
+        rl_share.setOnClickListener(this);
+
+        adapter = new SubmitFriendAdapter(SubmitFriendActivitty.this, list);
+        lv_template.setAdapter(adapter);
+        adapter.setText(new SubmitFriendAdapter.Content() {
+            @Override
+            public void setText(String text, int position) {
+                //text是输入的内容
+                VALUE = text;
+            }
+        });
+        //点击图片
+        adapter.setPicture(new SubmitFriendAdapter.Pictures() {
+            @Override
+            public void setPicture(View v, int position) {
+                try {
+                    if (getIntent().getIntExtra("flag", 0) != 0) {//编辑进来
+                        ToastUtils.showShort(SubmitFriendActivitty.this, "禁止编辑图片");
+                    } else {
+                        if (ClickUtils.isFastClick()) {
+                            m_position = position;
+                            //隐藏软键盘
+                            InputMethodManager imm4 = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm4.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                            //让背景变暗
+                            WindowManager.LayoutParams lp = getWindow().getAttributes();
+                            lp.alpha = 0.7f;
+                            getWindow().setAttributes(lp);
+                            //弹出pop窗体
+                            PopWin_album takePhotoPopWin = new PopWin_album(SubmitFriendActivitty.this, null, 0);
+                            takePhotoPopWin.setFlags(123);
+                            takePhotoPopWin.showAtLocation(findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
+                            //监听popwin是否关闭，关闭的话让背景恢复
+                            takePhotoPopWin.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                                @Override
+                                public void onDismiss() {
+                                    try {
+                                        WindowManager.LayoutParams lp = getWindow().getAttributes();
+                                        lp.alpha = 1f;
+                                        getWindow().setAttributes(lp);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        getCreativeTemplate();
+        //如果广告类型是微信本地门店推广，就是显示页面
+        if (getIntent().getStringExtra("productType").equals("LBS_WECHAT")) {
+            line_productRefsId.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void getList(String str) {
+        for (int i = 0; i < list_template.size(); i++) {
+            if (list_template.get(i).equals(str)) {
+                try {
+                    JSONObject json = jsonArray.getJSONObject(i);
+                    templateId = json.get("adcreativeTemplateId").toString();
+                    JSONArray jsonArrays = new JSONArray(json.get("templateAddItems").toString());
+                    for (int j = 0; j < jsonArrays.length(); j++) {
+                        if (jsonArrays.get(j).toString().indexOf("addItemType") != -1) {//如果包含
+                            hm_Submit = new HashMap<String, Object>();
+                            JSONObject jsons = new JSONObject(jsonArrays.get(j).toString());
+                            if (jsons.get("addItemType").toString().equals("TEXT")) {
+                                KEY_TEXT = jsons.get("addItemKey").toString();
+                                hm_Submit.put("content", "TEXT");
+                                hm_Submit.put("state", 0);
+                                hm_Submit.put("textMaxNum", jsons.get("textMaxNum").toString());
+                                hm_Submit.put("textMinNum", jsons.get("textMinNum").toString());
+                            } else if (jsons.get("addItemType").toString().equals("IMAGE")) {
+                                KEY_IMAGE = jsons.get("addItemKey").toString();
+                                hm_Submit.put("content", "IMAGE");
+                                hm_Submit.put("state", 1);
+                                hm_Submit.put("width", jsons.get("width").toString());
+                                hm_Submit.put("height", jsons.get("height").toString());
+                                width = Integer.parseInt(jsons.get("width").toString());
+                                height = Integer.parseInt(jsons.get("height").toString());
+                                hm_Submit.put("bitmap", null);
+                            }
+                            hm_Submit.put("name", jsons.get("addItemName").toString());//共有
+                            list.add(hm_Submit);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();//刷新适配器
+    }
+
+    public String getTemplateId(String str) {
+        if (AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem1().getProductType().equals("LINK_WECHAT")) {
+            switch (str) {
+                case "263":
+                    return "微信_微信品牌页_800x640";
+                case "311":
+                    return "微信_微信品牌页_800x800";
+                case "310":
+                    return "微信_微信品牌页_640x800";
+            }
+        } else {
+            switch (str) {
+                case "263":
+                    return "微信_微信本地门店推广_800x640";
+                case "311":
+                    return "微信_微信本地门店推广_800x800";
+                case "310":
+                    return "微信_微信本地门店推广_640x800";
+            }
+        }
+        return "";
+
+    }
+
+    public void creativeWechatActivity() {
+        dialog.show();
+        //微信朋友圈活动创建
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Luban.get(SubmitFriendActivitty.this)
+                            .load(compressImage(m_bitmap))                     //传人要压缩的图片
+                            .putGear(Luban.THIRD_GEAR)      //设定压缩档次，默认三挡
+                            .setCompressListener(new OnCompressListener() { //设置回调
+                                @Override
+                                public void onSuccess(File file) {
+                                    //回调返回压缩后图片
+                                    try {
+                                        Intent intent = getIntent();
+                                        final JSONObject json = new JSONObject();
+                                        json.put("tencentId", share.getString("tencentid", ""));
+                                        json.put("wechatActivityName", intent.getStringExtra("wechatActivityName"));
+                                        json.put("productType", intent.getStringExtra("productType"));
+                                        json.put("startDate", intent.getStringExtra("startDate"));
+                                        json.put("endDate", intent.getStringExtra("endDate"));
+                                        json.put("timeSeries", intent.getStringExtra("timeSeries"));
+                                        json.put("dailyBudget", new BigDecimal(intent.getStringExtra("dailyBudget")));
+                                        json.put("bidAmount", new BigDecimal(intent.getStringExtra("bidAmount")));
+                                        json.put("targeting", AddCircleFriendsActivity.addCircleFriendsActivity.getJson());
+                                        json.put("creative", getCreative());
+                                        JSONObject result = new JSONObject();
+                                        result.put("token", URLEncoder.encode(Token.gettoken(), "utf-8"));
+                                        result.put("agentid", "1");
+                                        result.put("json", json);
+                                        OkHttpClient client = new OkHttpClient();
+                                        //二种：文件请求体
+                                        MediaType type = MediaType.parse("application/octet-stream");//"text/xml;charset=utf-8"
+//                                        File file = compressImage(m_bitmap);
+
+                                        RequestBody fileBody = RequestBody.create(type, file);
+                                        MediaType typeP = MediaType.parse("application/json; charset=utf-8");//"text/xml;charset=utf-8"
+
+                                        RequestBody parms = RequestBody.create(typeP, result.toString());
+                                        //三种：混合参数和文件请求
+                                        RequestBody multipartBody = new MultipartBody.Builder()
+                                                .setType(MultipartBody.ALTERNATIVE)
+                                                //一样的效果
+                                                .addFormDataPart("json", json.toString())
+                                                .addFormDataPart("agentid", "1")
+                                                .addFormDataPart("token", URLEncoder.encode(Token.gettoken(), "utf-8"))
+                                                .addPart(Headers.of(
+                                                        "Content-Disposition",
+                                                        "form-data; name=" + KEY_IMAGE + "; filename=\"pp.png\"")
+                                                        , fileBody)
+                                                .build();
+//                                        Request request = new Request.Builder().url("http://matest.vipgz1.idcfengye.com/api-app/api/tencentWechatActivityApp/creativeWechatActivity")
+                                        Request request = new Request.Builder().url(BaseUrl.BaseZhang + "api/tencentWechatActivityApp/creativeWechatActivity")
+                                                .addHeader("User-Agent", "android")
+                                                .header("Content-Type", "multipart/form-data")
+                                                .post(multipartBody)//传参数、文件或者混合，改一下就行请求体就行
+                                                .build();
+
+                                        client.newCall(request).enqueue(new Callback() {
+                                            @Override
+                                            public void onFailure(Call call, IOException e) {
+
+                                            }
+
+                                            @Override
+                                            public void onResponse(Call call, Response response) throws IOException {
+                                                try {
+                                                    String str = response.body().string();
+                                                    JSONObject jsonObject = new JSONObject(str);
+                                                    if (jsonObject.get("status").toString().equals("true")) {
+                                                        handler.sendEmptyMessage(1);
+                                                    } else {
+                                                        Message msg = new Message();
+                                                        msg.what = 2;
+                                                        msg.obj = jsonObject.get("errormsg").toString();
+                                                        handler.sendMessage(msg);
+                                                    }
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        });
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }).launch();//启动压缩
+
+                } catch (Exception e) {
+                    handler.sendEmptyMessage(5);
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void updateWechatActivity() {
+        dialog.show();
+        //微信朋友圈活动修改
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Luban.get(SubmitFriendActivitty.this)
+                            .load(compressImage(m_bitmap))               //传人要压缩的图片
+                            .putGear(Luban.THIRD_GEAR)      //设定压缩档次，默认三挡
+                            .setCompressListener(new OnCompressListener() { //设置回调
+                                @Override
+                                public void onSuccess(File file) {
+                                    //回调返回压缩后图片
+                                    try {
+                                        Intent intent = getIntent();
+                                        final JSONObject json = new JSONObject();
+                                        json.put("tencentId", share.getString("tencentid", ""));
+                                        json.put("wechatActivityId", getIntent().getStringExtra("wechatActivityId"));
+                                        json.put("wechatActivityName", intent.getStringExtra("wechatActivityName"));
+//                    json.put("productType", intent.getStringExtra("productType"));
+                                        json.put("startDate", intent.getStringExtra("startDate"));
+                                        json.put("endDate", intent.getStringExtra("endDate"));
+                                        json.put("timeSeries", intent.getStringExtra("timeSeries"));
+                                        json.put("dailyBudget", new BigDecimal(intent.getStringExtra("dailyBudget")));
+                                        json.put("bidAmount", new BigDecimal(intent.getStringExtra("bidAmount")));
+                                        json.put("targeting", AddCircleFriendsActivity.addCircleFriendsActivity.getJson());
+                                        json.put("creative", getCreative());
+                                        JSONObject result = new JSONObject();
+                                        result.put("token", URLEncoder.encode(Token.gettoken(), "utf-8"));
+                                        result.put("agentid", "1");
+                                        result.put("json", json);
+                                        OkHttpClient client = new OkHttpClient();
+                                        //二种：文件请求体
+                                        MediaType type = MediaType.parse("application/octet-stream");//"text/xml;charset=utf-8"
+                                        RequestBody fileBody = RequestBody.create(type, "");//编辑时不传图片
+                                        MediaType typeP = MediaType.parse("application/json; charset=utf-8");//"text/xml;charset=utf-8"
+
+                                        RequestBody parms = RequestBody.create(typeP, result.toString());
+                                        //三种：混合参数和文件请求
+                                        RequestBody multipartBody = new MultipartBody.Builder()
+                                                .setType(MultipartBody.ALTERNATIVE)
+                                                //一样的效果
+                                                .addFormDataPart("json", json.toString())
+                                                .addFormDataPart("agentid", "1")
+                                                .addFormDataPart("token", URLEncoder.encode(Token.gettoken(), "utf-8"))
+                                                .addPart(Headers.of(
+                                                        "Content-Disposition",
+                                                        "form-data; name=" + KEY_IMAGE + "; filename=\"pp.png\"")
+                                                        , fileBody)
+                                                .build();
+
+                                        Request request = new Request.Builder().url(BaseUrl.BaseZhang + "api/tencentWechatActivityApp/updateWechatActivity")
+//                                        Request request = new Request.Builder().url("http://matest.vipgz1.idcfengye.com/api-app/api/tencentWechatActivityApp/updateWechatActivity")
+                                                .addHeader("User-Agent", "android")
+                                                .header("Content-Type", "multipart/form-data")
+                                                .post(multipartBody)//传参数、文件或者混合，改一下就行请求体就行
+                                                .build();
+
+                                        client.newCall(request).enqueue(new Callback() {
+                                            @Override
+                                            public void onFailure(Call call, IOException e) {
+
+                                            }
+
+                                            @Override
+                                            public void onResponse(Call call, Response response) throws IOException {
+                                                try {
+                                                    String str = response.body().string();
+                                                    JSONObject jsonObject = new JSONObject(str);
+                                                    if (jsonObject.get("status").toString().equals("true")) {
+                                                        handler.sendEmptyMessage(4);
+                                                    } else {
+                                                        Message msg = new Message();
+                                                        msg.what = 2;
+                                                        msg.obj = jsonObject.get("errormsg").toString();
+                                                        handler.sendMessage(msg);
+                                                    }
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        });
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }).launch();    //启动压缩
+                } catch (Exception e) {
+                    handler.sendEmptyMessage(5);
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    dialog.dismiss();
+                    ToastUtils.showShort(SubmitFriendActivitty.this, "创建成功");
+                    finish();
+                    //关闭页面
+                    AddCircleFriendsActivity.addCircleFriendsActivity.finish();
+                    AddFriendsClubActivity.activity.finish();
+                    //刷新页面
+                    FriendsFragment.friendsFragment.clearAllData();
+                    FriendsFragment.friendsFragment.getData(1, "");
+                    break;
+                case 2:
+                    dialog.dismiss();
+                    ToastUtils.showShort(SubmitFriendActivitty.this, msg.obj.toString());
+                    break;
+                case 3:
+                    try {
+                        //编辑进来
+                        tv_template.setText(getTemplateId(String.valueOf(AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getTemplateId())));
+                        templateId = String.valueOf(AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getTemplateId());
+                        et_url.setText(AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getDestinationUrl());
+                        et_productRefsId.setText(AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getProductRefsId());
+                        if (AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem1().getSystemStatus().equals("NORMAL")) {
+                            //如果审核通过则不能编辑
+                            et_url.setFocusable(false);
+                            et_url.setFocusableInTouchMode(false);
+                            et_url.setClickable(false);
+                        }
+                        rl_share.setClickable(false);//是否分享无法点击
+                        //分享标题无法编辑
+                        et_share_title.setFocusable(false);
+                        et_share_title.setFocusableInTouchMode(false);
+                        et_share_title.setClickable(false);
+                        //分享描述无法编辑
+                        et_share_describe.setFocusable(false);
+                        et_share_describe.setFocusableInTouchMode(false);
+                        et_share_describe.setClickable(false);
+                        //门店id无法编辑
+                        et_productRefsId.setFocusable(false);
+                        et_productRefsId.setFocusableInTouchMode(false);
+                        et_productRefsId.setClickable(false);
+                        try {
+                            String shareTitle = AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getShareInfo().getShareTitle();
+                            if (!TextUtils.isEmpty(shareTitle)) {
+                                line_share_title.setVisibility(View.VISIBLE);
+                                et_share_title.setText(shareTitle);
+                                tv_share.setText("是");
+                            } else {
+                                tv_share.setText("否");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            String shareDescription = AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getShareInfo().getShareDescription();
+                            if (!TextUtils.isEmpty(shareDescription)) {
+                                line_share_describe.setVisibility(View.VISIBLE);
+                                et_share_describe.setText(shareDescription);
+                                tv_share.setText("是");
+                            } else {
+                                tv_share.setText("否");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        getList(getTemplateId(String.valueOf(AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getTemplateId())));
+                        adapter.notifyDataSetChanged();
+                        list.get(1).put("bitmap", ratio((Bitmap) msg.obj, 240f, 120f));
+                        list.get(1).put("state", 1);
+                        String title = AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getTitle();
+                        VALUE = title;
+                        list.get(0).put("title", title);
+                        list.get(0).put("state", 0);
+                        list.get(0).put("edit", "edit");//传过去说明不能编辑标题
+                        adapter.notifyDataSetChanged();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 4:
+                    dialog.dismiss();
+                    ToastUtils.showShort(SubmitFriendActivitty.this, "修改成功");
+                    finish();
+                    //关闭页面
+                    AddCircleFriendsActivity.addCircleFriendsActivity.finish();
+                    AddFriendsClubActivity.activity.finish();
+                    //刷新页面
+                    FriendsFragment.friendsFragment.clearAllData();
+                    FriendsFragment.friendsFragment.getData(1, "");
+                    break;
+                case 5:
+                    dialog.dismiss();
+                    ToastUtils.showShort(SubmitFriendActivitty.this, "出错，请检查是否有未填写数据");
+                    break;
+            }
+        }
+    };
+
+    //bitmap转file
+    public static File compressImage(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+
+        File file = new File(Environment.getExternalStorageDirectory(), "pp.png");
+        String filepath = BitmapUtils.compressBitmap(bitmap, file.toString());
+        try {
+            FileOutputStream fos = new FileOutputStream(BitmapUtil.compressImage(filepath));
+            try {
+                fos.write(baos.toByteArray());
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        recycleBitmap(bitmap);
+        return file;
+    }
+
+    public static void recycleBitmap(Bitmap... bitmaps) {
+        if (bitmaps == null) {
+            return;
+        }
+        for (Bitmap bm : bitmaps) {
+            if (null != bm && !bm.isRecycled()) {
+                bm.recycle();
+            }
+        }
+    }
+
+    public JSONObject getCreative() {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("templateId", templateId);
+            json.put(KEY_TEXT, VALUE);
+            json.put("destinationUrl", et_url.getText().toString());
+            if (getIntent().getStringExtra("productType").equals("LBS_WECHAT")) {//如果选择的是微信本地门店推广
+                json.put("productRefsId", et_productRefsId.getText().toString());
+            } else {
+                json.put("productRefsId", "");
+            }
+            if (tv_share.getText().toString().equals("是")) {
+                json.put("shareInfo", getShareInfo());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+    public JSONObject getShareInfo() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("shareTitle", et_share_title.getText().toString());
+            jsonObject.put("shareDescription", et_share_describe.getText().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.rl_share:
+                if (is_share) {
+                    tv_share.setText("是");
+                    is_share = false;
+                    line_share_title.setVisibility(View.VISIBLE);
+                    line_share_describe.setVisibility(View.VISIBLE);
+                    et_share_title.setText("");
+                    et_share_describe.setText("");
+                } else {
+                    tv_share.setText("否");
+                    is_share = true;
+                    line_share_title.setVisibility(View.GONE);
+                    line_share_describe.setVisibility(View.GONE);
+                }
+                break;
+            case R.id.rl_template:
+                try {
+                    if (getIntent().getIntExtra("flag", 0) != 0) {
+                        ToastUtils.showShort(SubmitFriendActivitty.this, "模板无法编辑");
+                    } else {
+                        View outerView1 = LayoutInflater.from(this).inflate(R.layout.view_industry, null);
+                        //滚轮
+                        final WheelView wv1 = (WheelView) outerView1.findViewById(R.id.wv1);
+                        wv1.setItems(list_template, 0);
+                        TextView tv_ok = (TextView) outerView1.findViewById(R.id.tv_ok);
+                        TextView tv_cancel = (TextView) outerView1.findViewById(R.id.tv_cancel);
+                        //点击确定
+                        tv_ok.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View arg0) {
+                                list.clear();
+                                String mSelectDate = wv1.getSelectedItem();
+                                tv_template.setText(mSelectDate);
+                                popWin_industry.dismiss();
+                                for (int i = 0; i < list_template.size(); i++) {
+                                    if (list_template.get(i).equals(mSelectDate)) {
+                                        try {
+                                            JSONObject json = jsonArray.getJSONObject(i);
+                                            templateId = json.get("adcreativeTemplateId").toString();
+                                            JSONArray jsonArrays = new JSONArray(json.get("templateAddItems").toString());
+                                            for (int j = 0; j < jsonArrays.length(); j++) {
+                                                if (jsonArrays.get(j).toString().indexOf("addItemType") != -1) {//如果包含
+                                                    hm_Submit = new HashMap<String, Object>();
+                                                    JSONObject jsons = new JSONObject(jsonArrays.get(j).toString());
+                                                    if (jsons.get("addItemType").toString().equals("TEXT")) {
+                                                        KEY_TEXT = jsons.get("addItemKey").toString();
+                                                        hm_Submit.put("content", "TEXT");
+                                                        hm_Submit.put("state", 0);
+                                                        hm_Submit.put("textMaxNum", jsons.get("textMaxNum").toString());
+                                                        hm_Submit.put("textMinNum", jsons.get("textMinNum").toString());
+                                                    } else if (jsons.get("addItemType").toString().equals("IMAGE")) {
+                                                        KEY_IMAGE = jsons.get("addItemKey").toString();
+                                                        hm_Submit.put("content", "IMAGE");
+                                                        hm_Submit.put("state", 1);
+                                                        hm_Submit.put("width", jsons.get("width").toString());
+                                                        hm_Submit.put("height", jsons.get("height").toString());
+                                                        width = Integer.parseInt(jsons.get("width").toString());
+                                                        height = Integer.parseInt(jsons.get("height").toString());
+                                                        hm_Submit.put("bitmap", null);
+                                                    }
+//                                                hm_Submit.put("addItemKey", json.get("addItemKey").toString());
+                                                    hm_Submit.put("name", jsons.get("addItemName").toString());//共有
+                                                    list.add(hm_Submit);
+                                                }
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                                adapter.notifyDataSetChanged();//刷新适配器
+                            }
+                        });
+                        //点击取消
+                        tv_cancel.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View arg0) {
+                                popWin_industry.dismiss();
+                            }
+                        });
+                        //防止弹出两个窗口
+                        if (popWin_industry != null && popWin_industry.isShowing()) {
+                            return;
+                        }
+
+                        popWin_industry = new PopWin_industry(this, R.style.ActionSheetDialogStyle);
+                        //将布局设置给Dialog
+                        popWin_industry.setContentView(outerView1);
+                        popWin_industry.show();//显示对话框
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case R.id.btn_next:
+                if (getIntent().getIntExtra("flag", 0) != 0) {
+                    updateWechatActivity();
+                } else {
+                    creativeWechatActivity();
+                }
+                break;
+            case R.id.iv_back:
+                finish();
+                break;
+        }
+    }
+
+    public void getCreativeTemplate() {
+        //微信朋友圈活动广告创意模板
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject json = new JSONObject();
+                    json.put("productType", getIntent().getStringExtra("productType"));
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + json.toString();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url(BaseUrl.BaseZhang + "api/tencentWechatActivityApp/getCreativeTemplate")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+                    okHttpClient.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                list_template = new ArrayList<>();
+                                String str = response.body().string();
+                                JSONObject jsonObject = new JSONObject(str);
+                                if (jsonObject.get("status").toString().equals("true")) {
+                                    JSONObject jsonObject2 = new JSONObject(jsonObject.get("response").toString());
+                                    jsonArray = new JSONArray(jsonObject2.get("templates").toString());
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject json = jsonArray.getJSONObject(i);
+                                        list_template.add(json.get("adcreativeTemplateName").toString());//显示模板用的集合
+                                    }
+                                    if (getIntent().getIntExtra("flag", 0) != 0) {//编辑进来
+                                        m_bitmap = getBitmap(AddFriendsClubActivity.activity.friendInfo.getResponse().getTabItem3().getImage_list());
+                                        Message msg = new Message();
+                                        msg.what = 3;
+                                        msg.obj = m_bitmap;
+                                        handler.sendMessage(msg);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    //相册
+    public void photoAlbum() {
+        autoObtainStoragePermission();
+    }
+
+    //拍照
+    public void photograph() {
+        autoObtainCameraPermission();
+    }
+
+    /**
+     * 动态申请sdcard读写权限
+     */
+    private void autoObtainStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSIONS_REQUEST_CODE);
+            } else {
+                PhotoUtils2.openPic(this, CODE_GALLERY_REQUEST);
+            }
+        } else {
+            PhotoUtils2.openPic(this, CODE_GALLERY_REQUEST);
+        }
+    }
+
+    /**
+     * 申请访问相机权限
+     */
+    private void autoObtainCameraPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                    || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+                    ToastUtils.showShort(this, "您已经拒绝过一次");
+                }
+                requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, CAMERA_PERMISSIONS_REQUEST_CODE);
+            } else {//有权限直接调用系统相机拍照
+                if (hasSdcard()) {
+                    imageUri = Uri.fromFile(fileUri);
+                    //通过FileProvider创建一个content类型的Uri
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        imageUri = FileProvider.getUriForFile(this, this.getPackageName(), fileUri);
+                    }
+                    PhotoUtils2.takePicture(this, imageUri, CODE_CAMERA_REQUEST);
+                } else {
+                    ToastUtils.showShort(this, "设备没有SD卡！");
+                }
+            }
+        } else {//android5.0以下
+            if (hasSdcard()) {
+                imageUri = Uri.fromFile(fileUri);
+                //通过FileProvider创建一个content类型的Uri
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    imageUri = FileProvider.getUriForFile(this, this.getPackageName(), fileUri);
+                }
+                PhotoUtils2.takePicture(this, imageUri, CODE_CAMERA_REQUEST);
+            } else {
+                ToastUtils.showShort(this, "设备没有SD卡！");
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            //调用系统相机申请拍照权限回调
+            case CAMERA_PERMISSIONS_REQUEST_CODE: {
+                try {
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        if (hasSdcard()) {
+                            imageUri = Uri.fromFile(fileUri);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                //通过FileProvider创建一个content类型的Uri
+                                imageUri = FileProvider.getUriForFile(this, this.getPackageName(), fileUri);
+                            }
+                            PhotoUtils2.takePicture(this, imageUri, CODE_CAMERA_REQUEST);
+                        } else {
+                            ToastUtils.showShort(this, "设备没有SD卡！");
+                        }
+                    } else {
+                        ToastUtils.showShort(this, "请允许打开相机！！");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            //调用系统相册申请Sdcard权限回调
+            case STORAGE_PERMISSIONS_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    PhotoUtils2.openPic(this, CODE_GALLERY_REQUEST);
+                } else {
+                    ToastUtils.showShort(this, "请允许操作SDCard！！");
+                }
+                break;
+            default:
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        switch (requestCode) {
+            //相机返回
+            case CODE_CAMERA_REQUEST:
+                cropImageUri = Uri.fromFile(fileCropUri);
+//                PhotoUtils2.cropImageUri(this, imageUri, cropImageUri, 1, 1, OUTPUT_X, OUTPUT_Y, CODE_RESULT_REQUEST);
+                Uri newUri2 = Uri.parse(PhotoUtils2.getPath(this, data.getData()));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    newUri2 = FileProvider.getUriForFile(this, getPackageName(), new File(newUri2.getPath()));
+                }
+                m_bitmap = PhotoUtils2.getBitmapFromUri(newUri2, this);
+                if (m_bitmap != null) {
+                    //显示图片
+                    showImages(ratio(m_bitmap, 240f, 120f));
+                }
+                m_bitmap = zoomImg(m_bitmap, width, height);
+                break;
+            //相册返回
+            case CODE_GALLERY_REQUEST:
+                if (hasSdcard()) {
+                    cropImageUri = Uri.fromFile(fileCropUri);
+                    Uri newUri = Uri.parse(PhotoUtils2.getPath(this, data.getData()));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        newUri = FileProvider.getUriForFile(this, getPackageName(), new File(newUri.getPath()));
+                    }
+                    m_bitmap = PhotoUtils2.getBitmapFromUri(newUri, this);
+                    if (m_bitmap != null) {
+                        //显示图片
+                        showImages(ratio(m_bitmap, 240f, 120f));
+                    }
+                    m_bitmap = zoomImg(m_bitmap, width, height);
+                } else {
+                    ToastUtils.showShort(this, "设备没有SD卡！");
+                }
+                break;
+            //裁剪返回
+            case CODE_RESULT_REQUEST:
+                Bitmap bitmap = PhotoUtils2.getBitmapFromUri(cropImageUri, this);
+                if (bitmap != null) {
+                    showImages(ratio(m_bitmap, 240f, 120f));
+                }
+                m_bitmap = zoomImg(m_bitmap, width, height);
+                break;
+            default:
+        }
+    }
+
+    public Bitmap zoomImg(Bitmap bm, int newWidth, int newHeight) {
+        Bitmap newbm = null;
+        try {
+            // 获得图片的宽高
+            int width = bm.getWidth();
+            int height = bm.getHeight();
+            // 计算缩放比例
+            float scaleWidth = ((float) newWidth) / width;
+            float scaleHeight = ((float) newHeight) / height;
+            // 取得想要缩放的matrix参数
+            Matrix matrix = new Matrix();
+            matrix.postScale(scaleWidth, scaleHeight);
+            // 得到新的图片
+            newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return newbm;
+    }
+
+    public Bitmap ratio(Bitmap image, float pixelW, float pixelH) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, os);
+        if (os.toByteArray().length / 1024 > 3072) {//判断如果图片大于3M,进行压缩避免在生成图片（BitmapFactory.decodeStream）时溢出
+            os.reset();//重置baos即清空baos
+            image.compress(Bitmap.CompressFormat.JPEG, 50, os);//这里压缩50%，把压缩后的数据存放到baos中
+        }
+        ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+        BitmapFactory.Options newOpts = new BitmapFactory.Options();
+        //开始读入图片，此时把options.inJustDecodeBounds 设回true了
+        newOpts.inJustDecodeBounds = true;
+        newOpts.inPreferredConfig = Bitmap.Config.RGB_565;
+        Bitmap bitmap = BitmapFactory.decodeStream(is, null, newOpts);
+        newOpts.inJustDecodeBounds = false;
+        int w = newOpts.outWidth;
+        int h = newOpts.outHeight;
+        float hh = pixelH;// 设置高度为240f时，可以明显看到图片缩小了
+        float ww = pixelW;// 设置宽度为120f，可以明显看到图片缩小了
+        //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
+        int be = 1;//be=1表示不缩放
+        if (w > h && w > ww) {//如果宽度大的话根据宽度固定大小缩放
+            be = (int) (newOpts.outWidth / ww);
+        } else if (w < h && h > hh) {//如果高度高的话根据宽度固定大小缩放
+            be = (int) (newOpts.outHeight / hh);
+        }
+        if (be <= 0) be = 1;
+        newOpts.inSampleSize = be;//设置缩放比例
+        //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
+        is = new ByteArrayInputStream(os.toByteArray());
+        bitmap = BitmapFactory.decodeStream(is, null, newOpts);
+        //压缩好比例大小后再进行质量压缩
+//      return compress(bitmap, maxSize); // 这里再进行质量压缩的意义不大，反而耗资源，删除
+        return bitmap;
+    }
+
+    private void showImages(Bitmap bitmap) {
+        list.get(m_position).put("bitmap", bitmap);
+        list.get(m_position).put("state", 1);
+        adapter.notifyDataSetChanged();
+    }
+
+    public Bitmap getBitmap(String url) {
+        try {
+            return Glide.with(this).load(url)
+                    .asBitmap() //必须
+                    .centerCrop()
+                    .into(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)//图片大小
+                    .get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 检查设备是否存在SDCard的工具方法
+     */
+    public static boolean hasSdcard() {
+        String state = Environment.getExternalStorageState();
+        return state.equals(Environment.MEDIA_MOUNTED);
+    }
+}

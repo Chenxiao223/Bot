@@ -49,7 +49,7 @@ import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.ExpenditureStatistics;
 import com.zhiziyun.dmptest.bot.entity.GetHead;
 import com.zhiziyun.dmptest.bot.entity.HomePage;
-import com.zhiziyun.dmptest.bot.mode.originality.friend.FriendAccount;
+import com.zhiziyun.dmptest.bot.mode.originality.friend.FriendMoneyDetailActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.CrowdActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.HomePageActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.PassengerFlowAnalysisActivity;
@@ -260,7 +260,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             startActivity(new Intent(getActivity(), TransactionDetailsActivity.class));
         } else {
             //朋友圈账户
-            startActivity(new Intent(getActivity(), FriendAccount.class));
+            startActivity(new Intent(getActivity(), FriendMoneyDetailActivity.class));
         }
     }
 
