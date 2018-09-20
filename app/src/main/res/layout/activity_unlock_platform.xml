@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.zhiziyun.dmptest.bot.ui.activity.UnlockPlatformActivity">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:layout_below="@+id/iv_system"
+        android:scaleType="fitXY"
+        android:src="@drawable/homepagebg2"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_ll"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_title"
+        android:layout_marginTop="24dp">
+
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/back"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:text="已解锁平台"
+            android:textColor="@color/white"
+            android:textSize="@dimen/title_text_size"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_explain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rl_ll"
+        android:layout_centerInParent="true"
+        android:text="广告平台要求审核资源，已解锁的平台才能进行广告投放。"
+        android:textColor="@color/white"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/tv_explain1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_explain"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="3dp"
+        android:text="要解锁某个平台，点击该平台查看并补充所需资源"
+        android:textColor="@color/white"
+        android:textSize="12sp"/>
+
+    <LinearLayout
+        android:id="@+id/ll_lock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_explain1"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/shape_shadow"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_lock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_lock"
+        android:background="@drawable/shape_shadow"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_unlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    </LinearLayout>
+</RelativeLayout>

@@ -70,13 +70,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <com.zhiziyun.dmptest.bot.util.SlideListView
+            <ListView
                 android:id="@+id/lv_store"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:cacheColorHint="@android:color/transparent"
-                android:dividerHeight="1dp"
-                android:listSelector="@android:color/transparent" />
+                android:divider="@null"/>
         </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 
         <include

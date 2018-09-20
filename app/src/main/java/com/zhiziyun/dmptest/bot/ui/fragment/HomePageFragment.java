@@ -45,6 +45,8 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.gson.Gson;
+import com.xiaosu.view.text.DataSetAdapter;
+import com.xiaosu.view.text.VerticalRollingTextView;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.entity.ExpenditureStatistics;
 import com.zhiziyun.dmptest.bot.entity.GetHead;
@@ -90,7 +92,7 @@ import static com.github.mikephil.charting.data.LineDataSet.Mode.HORIZONTAL_BEZI
 /**
  * 首页
  */
-public class HomePageFragment extends Fragment implements View.OnClickListener {
+public class HomePageFragment extends Fragment implements View.OnClickListener, VerticalRollingTextView.OnItemClickListener {
     public static HomePageFragment homePageFragment;
     private SwipeRefreshLayout srl;
     private TextView tv_companyname, tv_story, tv_tanzhen, tv_person, tv_newguest,
@@ -99,8 +101,8 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private RelativeLayout rl_today_people;
     private PieChartView pie_chart;//饼形图控件
     private PieChartData pieChardata;//数据
-    List<SliceValue> values = new ArrayList<SliceValue>();
-    private LinearLayout line_friend;
+    private List<SliceValue> values = new ArrayList<SliceValue>();
+    private LinearLayout line_friend, line_ad;
     //折线图
     private LineChart chartView;
     private HomePage page;
@@ -108,6 +110,8 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private ExpenditureStatistics expenditureStatistics;
     private boolean bool = true;
     private boolean bool_chart = true;
+    private VerticalRollingTextView verticalRollingView;
+    private List<CharSequence> mDataSet;
 
     @Nullable
     @Override
@@ -149,7 +153,12 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         getView().findViewById(R.id.line_crowd).setOnClickListener(this);
         getView().findViewById(R.id.line_phone).setOnClickListener(this);
         getView().findViewById(R.id.line_sms).setOnClickListener(this);
-        getView().findViewById(R.id.line_ad).setOnClickListener(this);
+        line_ad = getView().findViewById(R.id.line_ad);
+        line_ad.setOnClickListener(this);
+        if (!share.getBoolean("isShowPlanAds", false)) {//如果不显示投广告
+            line_ad.setVisibility(View.GONE);
+        }
+
         getPictrue();//获取头像
         getTableInfo();
         getData();
@@ -180,6 +189,19 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         if (!share.getBoolean("isShowTencent", false)) {
             line_friend.setVisibility(View.GONE);
         }
+
+        mDataSet = new ArrayList<>();
+        mDataSet.add("你的账户余额已不足，请尽快充值");
+        verticalRollingView = getView().findViewById(R.id.verticalRollingView);
+        verticalRollingView.setDataSetAdapterQuiet(new DataSetAdapter<CharSequence>(mDataSet) {
+
+            @Override
+            protected CharSequence text(CharSequence charSequence) {
+                return charSequence;
+            }
+        });
+        verticalRollingView.run();
+        verticalRollingView.setOnItemClickListener(this);
     }
 
     @Override
@@ -227,26 +249,30 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.rl_trading:
                 try {
-                    //隐藏软键盘
-                    InputMethodManager imm4 = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm4.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                    //让背景变暗
-                    WindowManager.LayoutParams lp3 = getActivity().getWindow().getAttributes();
-                    lp3.alpha = 0.7f;
-                    getActivity().getWindow().setAttributes(lp3);
-                    getActivity().getWindow().setAttributes(lp3);
-                    //弹出pop窗体
-                    PopWin_account popWin_account = new PopWin_account(getActivity(), null, 0);
-                    popWin_account.showAtLocation(getActivity().findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
-                    //监听popwin是否关闭，关闭的话让背景恢复
-                    popWin_account.setOnDismissListener(new PopupWindow.OnDismissListener() {
-                        @Override
-                        public void onDismiss() {
-                            WindowManager.LayoutParams lp3 = getActivity().getWindow().getAttributes();
-                            lp3.alpha = 1f;
-                            getActivity().getWindow().setAttributes(lp3);
-                        }
-                    });
+                    if (share.getBoolean("isShowTencent", false)) {//如果有显示朋友圈的权限
+                        //隐藏软键盘
+                        InputMethodManager imm4 = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm4.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        //让背景变暗
+                        WindowManager.LayoutParams lp3 = getActivity().getWindow().getAttributes();
+                        lp3.alpha = 0.7f;
+                        getActivity().getWindow().setAttributes(lp3);
+                        getActivity().getWindow().setAttributes(lp3);
+                        //弹出pop窗体
+                        PopWin_account popWin_account = new PopWin_account(getActivity(), null, 0);
+                        popWin_account.showAtLocation(getActivity().findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
+                        //监听popwin是否关闭，关闭的话让背景恢复
+                        popWin_account.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                            @Override
+                            public void onDismiss() {
+                                WindowManager.LayoutParams lp3 = getActivity().getWindow().getAttributes();
+                                lp3.alpha = 1f;
+                                getActivity().getWindow().setAttributes(lp3);
+                            }
+                        });
+                    } else {//如果当前账户不显示朋友圈，那么不弹出选择框，直接跳转到账户明细
+                        startActivity(new Intent(getActivity(), TransactionDetailsActivity.class));
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -376,14 +402,15 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             try {
-                                JSONObject jsonObject = new JSONObject(response.body().string());
+                                String str = response.body().string();
+                                JSONObject jsonObject = new JSONObject(str);
                                 JSONObject json = new JSONObject(jsonObject.get("obj").toString());
                                 Message message = new Message();
                                 message.what = 2;
                                 Bundle bundle = new Bundle();
                                 bundle.putString("all", json.get("all").toString());
-                                bundle.putString("new", json.get("new").toString());
-                                bundle.putString("old", json.get("old").toString());
+                                bundle.putString("new_guest", json.get("new").toString());
+                                bundle.putString("old_guest", json.get("old").toString());
                                 message.setData(bundle);
                                 myHandler.sendMessage(message);
                             } catch (JSONException e) {
@@ -529,19 +556,19 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                     try {
                         Bundle bundle1 = msg.getData();
                         tv_person.setText(bundle1.get("all").toString());
-                        tv_newguest.setText(" " + bundle1.get("new").toString());
-                        tv_oldguest.setText(" " + bundle1.get("old").toString());
-                        if (bundle1.get("new").toString().equals("0")) {
+                        tv_newguest.setText(" " + bundle1.get("new_guest").toString());
+                        tv_oldguest.setText(" " + bundle1.get("old_guest").toString());
+                        if (bundle1.get("new_guest").toString().equals("0")) {
                             tv_new.setText("0.00%");
                         } else {
-                            tv_new.setText("" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("new").toString())));
+                            tv_new.setText("" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("new_guest").toString())));
                         }
-                        if (bundle1.get("old").equals("0")) {
+                        if (bundle1.get("old_guest").equals("0")) {
                             tv_old.setText("0.00%");
                         } else {
-                            tv_old.setText("" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("old").toString())));
+                            tv_old.setText("" + computations(Float.parseFloat(bundle1.get("all").toString()), Float.parseFloat(bundle1.get("old_guest").toString())));
                         }
-                        setPieChartData(Float.parseFloat(bundle1.get("new").toString()), Float.parseFloat(bundle1.get("old").toString()));
+                        setPieChartData(Float.parseFloat(bundle1.get("new_guest").toString()), Float.parseFloat(bundle1.get("old_guest").toString()));
                         initPieChart(bundle1.get("all").toString());
                         srl.setRefreshing(false);//关闭加载动画
                     } catch (NumberFormatException e) {
@@ -892,4 +919,9 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
         }
     };
 
+    //点击verticalRollingView返回
+    @Override
+    public void onItemClick(VerticalRollingTextView view, int index) {
+        ToastUtils.showShort(getActivity(), mDataSet.get(index));
+    }
 }

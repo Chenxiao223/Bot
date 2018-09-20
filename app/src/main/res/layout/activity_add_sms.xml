@@ -37,9 +37,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@drawable/shape_shadow"
         android:orientation="vertical"
-        android:padding="@dimen/padding_left_right">
+        android:padding="@dimen/padding_left_right4">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -62,7 +62,7 @@
                 android:layout_toEndOf="@+id/imageView3"
                 android:layout_toRightOf="@+id/imageView3"
                 android:text=" 名称："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <EditText
                 android:id="@+id/edit_name"
@@ -81,7 +81,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/line_height2"
-            android:background="@color/gray" />
+            android:background="@color/list_line" />
 
         <RelativeLayout
             android:id="@+id/rl_crowd_type"
@@ -107,7 +107,7 @@
                 android:layout_toRightOf="@+id/text7"
                 android:gravity="center_vertical"
                 android:text=" 客户类型："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <TextView
                 android:id="@+id/tv_crowd_type"
@@ -137,7 +137,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/line_height2"
-            android:background="@color/gray" />
+            android:background="@color/list_line" />
 
         <RelativeLayout
             android:id="@+id/rl_send_object"
@@ -163,7 +163,7 @@
                 android:layout_toRightOf="@+id/text1"
                 android:gravity="center_vertical"
                 android:text=" 客户来源："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <TextView
                 android:id="@+id/tv_send_object"
@@ -193,7 +193,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/line_height2"
-            android:background="@color/gray" />
+            android:background="@color/list_line" />
 
         <RelativeLayout
             android:id="@+id/rl_smstype"
@@ -219,7 +219,7 @@
                 android:layout_toRightOf="@+id/text5"
                 android:gravity="center_vertical"
                 android:text=" 短信类型："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <TextView
                 android:id="@+id/tv_smstype"
@@ -249,7 +249,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/line_height2"
-            android:background="@color/gray" />
+            android:background="@color/list_line" />
 
         <RelativeLayout
             android:id="@+id/rl_sms"
@@ -275,7 +275,7 @@
                 android:layout_toRightOf="@+id/text2"
                 android:gravity="center_vertical"
                 android:text=" 短信/闪信："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <TextView
                 android:id="@+id/tv_sms"
@@ -305,7 +305,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/line_height2"
-            android:background="@color/gray" />
+            android:background="@color/list_line" />
 
         <RelativeLayout
             android:id="@+id/rl_type"
@@ -332,7 +332,7 @@
                 android:layout_toRightOf="@+id/text3"
                 android:gravity="center_vertical"
                 android:text=" 客户类型："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <TextView
                 android:id="@+id/tv_type"
@@ -362,7 +362,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/line_height2"
-            android:background="@color/gray" />
+            android:background="@color/list_line" />
 
         <RelativeLayout
             android:id="@+id/rl_mark"
@@ -389,7 +389,7 @@
                 android:layout_toRightOf="@+id/text4"
                 android:gravity="center_vertical"
                 android:text=" 跟进状态："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <TextView
                 android:id="@+id/tv_mark"
@@ -419,7 +419,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/line_height2"
-            android:background="@color/gray" />
+            android:background="@color/list_line" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -447,7 +447,7 @@
                 android:layout_toRightOf="@+id/imageView3"
                 android:gravity="center_vertical"
                 android:text=" 测试号码："
-                android:textSize="@dimen/textsizi3" />
+                android:textSize="@dimen/textsizi" />
 
             <EditText
                 android:id="@+id/edit_phone"

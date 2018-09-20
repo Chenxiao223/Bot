@@ -1,0 +1,57 @@
+package com.zhiziyun.dmptest.bot.ui.activity;
+
+import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.adapter.LockAdapter;
+import com.zhiziyun.dmptest.bot.adapter.UnLockAdapter;
+import com.zhiziyun.dmptest.bot.mode.BTestdata;
+
+import java.util.ArrayList;
+
+
+public class UnlockPlatformActivity extends BaseActivity {
+    private RecyclerView mRvLock, mRvUnlock;
+    private LockAdapter mLockAdapter;
+    private UnLockAdapter mUnLockAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_unlock_platform);
+        mRvLock = findViewById(R.id.rv_lock);
+        mRvUnlock = findViewById(R.id.rv_unlock);
+        initRecyclevView();
+    }
+
+    public void initRecycleView() {
+//        mLockAdapter = new LockAdapter(this, );
+        mRvLock.setLayoutManager(new LinearLayoutManager(this));
+        mRvLock.setAdapter(mLockAdapter);
+    }
+
+    public void initRecyclevView() {
+        mUnLockAdapter = new UnLockAdapter(this, getData());
+        mRvUnlock.setLayoutManager(new LinearLayoutManager(this));
+        mRvUnlock.setAdapter(mUnLockAdapter);
+    }
+
+    public ArrayList<BTestdata> getData() {
+        ArrayList<BTestdata> mData = new ArrayList<>();
+        BTestdata mBean = new BTestdata();
+        BTestdata.detailbean mDatadetail = new BTestdata.detailbean();
+        ArrayList<BTestdata.detailbean> mD = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 5; j++) {
+                mDatadetail.setName("科比" + j);
+                mD.add(mDatadetail);
+            }
+            mBean.setDetailbeen(mD);
+            mBean.setString("哈哈" + i);
+            mData.add(mBean);
+        }
+        return mData;
+    }
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="40dp"
+              android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/license_tv"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:text="营业执照"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/load_tv"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end|right"
+        android:layout_marginRight="10dp"
+        android:layout_weight="1"
+        android:gravity="right|center_vertical"
+        android:text="已上传"
+        android:textColor="@color/black"/>
+</LinearLayout>

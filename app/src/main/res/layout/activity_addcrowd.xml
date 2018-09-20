@@ -5,6 +5,7 @@
     android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical">
 
     <ImageView
@@ -63,7 +64,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/control_padding"
-                    android:background="@color/white"
+                    android:background="@drawable/shape_shadow"
                     android:orientation="vertical"
                     android:paddingLeft="@dimen/padding_left_right4"
                     android:paddingRight="@dimen/padding_left_right4">
@@ -87,7 +88,7 @@
                             android:layout_toEndOf="@+id/imageView3"
                             android:layout_toRightOf="@+id/imageView3"
                             android:text=" 名称："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <EditText
                             android:id="@+id/edit_name"
@@ -134,7 +135,7 @@
                             android:layout_toRightOf="@+id/text1"
                             android:gravity="center_vertical"
                             android:text=" 开始时间"
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_beginTime"
@@ -191,7 +192,7 @@
                             android:layout_toRightOf="@+id/text2"
                             android:gravity="center_vertical"
                             android:text=" 结束时间"
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_endTime"
@@ -247,7 +248,7 @@
                             android:layout_toRightOf="@+id/text3"
                             android:gravity="center_vertical"
                             android:text=" 探针："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_tanzhen"
@@ -304,7 +305,7 @@
                             android:layout_toRightOf="@+id/text4"
                             android:gravity="center_vertical"
                             android:text=" 用户活跃度："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_liveness"
@@ -357,7 +358,7 @@
                             android:layout_toEndOf="@+id/imageView3"
                             android:layout_toRightOf="@+id/imageView3"
                             android:text=" 最大距离："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <EditText
                             android:id="@+id/edit_distance"
@@ -379,8 +380,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/control_padding"
-                    android:background="@color/white"
+                    android:background="@drawable/shape_shadow"
                     android:orientation="vertical"
                     android:paddingLeft="@dimen/padding_left_right4"
                     android:paddingRight="@dimen/padding_left_right4">
@@ -409,7 +409,7 @@
                             android:layout_toRightOf="@+id/text6"
                             android:gravity="center_vertical"
                             android:text=" 停留时长："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_length"
@@ -466,7 +466,7 @@
                             android:layout_toRightOf="@+id/text7"
                             android:gravity="center_vertical"
                             android:text=" 操作系统："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_system"
@@ -523,7 +523,7 @@
                             android:layout_toRightOf="@+id/text9"
                             android:gravity="center_vertical"
                             android:text=" 手机品牌："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_brand"
@@ -581,7 +581,7 @@
                             android:layout_toRightOf="@+id/text11"
                             android:gravity="center_vertical"
                             android:text=" 游戏兴趣："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_game"
@@ -633,7 +633,7 @@
                             android:layout_toRightOf="@+id/text12"
                             android:gravity="center_vertical"
                             android:text=" 应用兴趣："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_app"
@@ -691,7 +691,7 @@
                             android:layout_toRightOf="@+id/text8"
                             android:gravity="center_vertical"
                             android:text=" 人口属性："
-                            android:textSize="@dimen/textsizi3" />
+                            android:textSize="@dimen/textsizi" />
 
                         <TextView
                             android:id="@+id/tv_property"

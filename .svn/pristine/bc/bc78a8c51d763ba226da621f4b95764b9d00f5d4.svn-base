@@ -1,0 +1,454 @@
+package com.zhiziyun.dmptest.bot.ui.fragment;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.DatePicker;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+
+import com.google.gson.Gson;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.adapter.AdvertisingAdapter;
+import com.zhiziyun.dmptest.bot.entity.Advertising;
+import com.zhiziyun.dmptest.bot.ui.activity.AdvertisingActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.OriginalityListActivity;
+import com.zhiziyun.dmptest.bot.util.BaseUrl;
+import com.zhiziyun.dmptest.bot.util.ClickUtils;
+import com.zhiziyun.dmptest.bot.util.DoubleDatePickerDialog;
+import com.zhiziyun.dmptest.bot.util.MyDialog;
+import com.zhiziyun.dmptest.bot.util.ToastUtils;
+import com.zhiziyun.dmptest.bot.util.Token;
+import com.zhiziyun.dmptest.bot.view.PopWin_advertising;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+
+/**
+ * 投广告
+ */
+public class AdvertisingFragment extends Fragment implements View.OnClickListener {
+    public static AdvertisingFragment fragment;
+    private ListView lv_advertising;
+    private ArrayList<HashMap<String, Object>> list_advertising = new ArrayList<>();
+    private HashMap<String, Object> hm_advertising;
+    private SmartRefreshLayout smartRefreshLayout;
+    private String beginTime, endTime;
+    private SharedPreferences share;
+    private Advertising advertising;
+    private int pageNum = 1;
+    private AdvertisingAdapter adapter;
+    private MyDialog dialog;
+    private LinearLayout line_page;
+    private boolean m_flag = false;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_advertising, container, false);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initView();
+    }
+
+    //当滑到当前碎片时调用该方法
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            if (ClickUtils.isFastClick()) {//防止快速切换而闪退
+                try {
+                    //这里与下拉刷新代码一样
+                    clearAllData();
+                    getData(pageNum, "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void initView() {
+        fragment = this;
+        dialog = MyDialog.showDialog(getActivity());
+        share = getActivity().getSharedPreferences("logininfo", Context.MODE_PRIVATE);
+        line_page = getView().findViewById(R.id.line_page).findViewById(R.id.line_page);
+        line_page.setOnClickListener(this);
+        smartRefreshLayout = getView().findViewById(R.id.refreshLayout);
+        getView().findViewById(R.id.line_date).setOnClickListener(this);
+        beginTime = gettodayDate();
+        endTime = beginTime;
+
+        lv_advertising = getView().findViewById(R.id.listView);
+        adapter = new AdvertisingAdapter(getActivity(), list_advertising);
+        lv_advertising.setAdapter(adapter);
+        //点击开关
+        adapter.setOnCheck(new AdvertisingAdapter.OnCheck() {
+            @Override
+            public void setInfo(String id, int activityStatus, int position) {
+                advertising(id, activityStatus);
+            }
+        });
+
+        //点击列表
+        lv_advertising.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //隐藏软键盘
+                InputMethodManager imm4 = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm4.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                //让背景变暗
+                WindowManager.LayoutParams lp3 = getActivity().getWindow().getAttributes();
+                lp3.alpha = 0.7f;
+                getActivity().getWindow().setAttributes(lp3);
+                getActivity().getWindow().setAttributes(lp3);
+                //弹出pop窗体
+                PopWin_advertising popWin_advertising = new PopWin_advertising(getActivity(), null, position);
+                popWin_advertising.showAtLocation(getActivity().findViewById(R.id.main_view), Gravity.BOTTOM, 0, 0);//125
+                //监听popwin是否关闭，关闭的话让背景恢复
+                popWin_advertising.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp3 = getActivity().getWindow().getAttributes();
+                        lp3.alpha = 1f;
+                        getActivity().getWindow().setAttributes(lp3);
+                    }
+                });
+            }
+        });
+
+        //下拉刷新
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                try {
+                    clearAllData();
+                    getData(pageNum, "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        //上拉加载
+        smartRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
+            @Override
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                try {
+                    if ((advertising.getResponse().getTotal() - (pageNum - 1) * 10) > 0) {
+                        getData(pageNum, "");
+                        ToastUtils.showShort(getActivity(), pageNum + "/" + ((advertising.getResponse().getTotal() / 10) + 1));
+                    } else {
+                        ToastUtils.showShort(getActivity(), "最后一页了");
+                        smartRefreshLayout.finishLoadmore(0);//停止刷新
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        getData(1, "");
+    }
+
+    //获取当天的日期
+    public String gettodayDate() {
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(d);
+    }
+
+    //编辑
+    public void alter(int position){
+        Intent intent = new Intent(getActivity(), AdvertisingActivity.class);
+        intent.putExtra("creativeId", list_advertising.get(position).get("creativeId") + "");
+        startActivity(intent);
+    }
+
+    //查看
+    public void examine(int position){
+        Intent it = new Intent(getActivity(), OriginalityListActivity.class);
+        it.putExtra("activityId", String.valueOf(list_advertising.get(position).get("creativeId")));
+        startActivity(it);
+    }
+
+    public void getData(final int page, final String name) {
+        //广告活动查询接口
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("siteId", share.getString("siteid", ""));
+                    jsonObject.put("activityName", name);
+                    jsonObject.put("startDate", beginTime);
+                    jsonObject.put("endDate", endTime);
+                    jsonObject.put("page", page);
+                    jsonObject.put("rows", 10);
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + jsonObject.toString();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url(BaseUrl.BaseZhang + "api/activityApp/getCreativeActivity")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+                    okHttpClient.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                String str = response.body().string();
+                                Gson gson = new Gson();
+                                advertising = gson.fromJson(str, Advertising.class);
+                                if (advertising != null) {
+                                    handler.sendEmptyMessage(1);//通知刷新适配器
+                                } else {
+                                    handler.sendEmptyMessage(2);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void advertising(final String activityId, final int activityStatus) {
+        //广告投放接口
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("siteId", share.getString("siteid", ""));
+                    jsonObject.put("activityId", activityId);
+                    jsonObject.put("activityStatus", activityStatus);
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    String url = null;
+                    try {
+                        url = "agentid=1&token=" + URLEncoder.encode(Token.gettoken(), "utf-8") + "&json=" + jsonObject.toString();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+                    RequestBody body = RequestBody.create(mediaType, url);
+                    final Request request = new Request.Builder()
+                            .url(BaseUrl.BaseZhang + "api/activityApp/deliveryCreativeActivity")
+                            .post(body)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .build();
+                    okHttpClient.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                JSONObject json = new JSONObject(response.body().string());
+                                if (json.get("status").toString().equals("true")) {
+                                    handler.sendEmptyMessage(3);
+                                } else {
+                                    String str = json.get("errormsg").toString();
+                                    Message msg = new Message();
+                                    msg.what = 4;
+                                    msg.obj = str;
+                                    handler.sendMessage(msg);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    try {
+                        if (advertising.isStatus()) {
+                            if (advertising.getResponse().getTotal() == 0) {
+                                smartRefreshLayout.finishLoadmore(0);//停止刷新
+                                smartRefreshLayout.finishRefresh(0);
+                                line_page.setVisibility(View.VISIBLE);
+                                dialog.dismiss();
+                            } else {
+                                for (int i = 0; i < advertising.getResponse().getData().size(); i++) {
+                                    hm_advertising = new HashMap<String, Object>();
+                                    hm_advertising.put("content1", advertising.getResponse().getData().get(i).getActivityName());//名称
+                                    hm_advertising.put("content2", advertising.getResponse().getData().get(i).getExposure());//曝光
+                                    hm_advertising.put("content3", advertising.getResponse().getData().get(i).getClick());//点击
+                                    hm_advertising.put("content4", advertising.getResponse().getData().get(i).getClickRate() + "%");//点击率
+                                    hm_advertising.put("content5", advertising.getResponse().getData().get(i).getSpend());//花费
+                                    hm_advertising.put("content6", advertising.getResponse().getData().get(i).getActivityOffer());//出价
+                                    hm_advertising.put("content7", advertising.getResponse().getData().get(i).getDailyBudget());//日预算
+                                    hm_advertising.put("content8", advertising.getResponse().getData().get(i).getDailyBudget());//周期
+                                    hm_advertising.put("content9", advertising.getResponse().getData().get(i).getActivityStatus());//状态
+                                    hm_advertising.put("creativeId", advertising.getResponse().getData().get(i).getActivityId());
+                                    list_advertising.add(hm_advertising);
+                                }
+                                adapter.notifyDataSetChanged();
+                                pageNum++;
+                                smartRefreshLayout.finishLoadmore(0);//停止刷新
+                                line_page.setVisibility(View.GONE);
+                                dialog.dismiss();
+                            }
+                        } else {
+                            ToastUtils.showShort(getActivity(), advertising.getErrormsg());
+                            smartRefreshLayout.finishLoadmore(0);//停止刷新
+                            smartRefreshLayout.finishRefresh(0);
+                            dialog.dismiss();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 2:
+//                    ToastUtils.showShort(getActivity(), "无数据");
+                    smartRefreshLayout.finishLoadmore(0);//停止刷新
+                    smartRefreshLayout.finishRefresh(0);
+                    line_page.setVisibility(View.VISIBLE);
+                    dialog.dismiss();
+                    break;
+                case 3:
+                    try {
+                        //成功之后刷新下数据
+                        ToastUtils.showShort(getActivity(), "操作成功");
+                        clearAllData();
+                        getData(pageNum, "");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 4:
+                    String str = msg.obj.toString();
+                    ToastUtils.showShort(getActivity(), str);
+                    break;
+            }
+        }
+    };
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.line_date:
+                try {
+                    Calendar c = Calendar.getInstance();
+                    // 最后一个false表示不显示日期，如果要显示日期，最后参数可以是true或者不用输入
+                    new DoubleDatePickerDialog(getActivity(), 0, new DoubleDatePickerDialog.OnDateSetListener() {
+
+                        @Override
+                        public void onDateSet(DatePicker startDatePicker, int startYear, int startMonthOfYear,
+                                              int startDayOfMonth, DatePicker endDatePicker, int endYear, int endMonthOfYear,
+                                              int endDayOfMonth) {
+                            String textString = String.format("%d-%d-%d %d-%d-%d", startYear,
+                                    startMonthOfYear + 1, startDayOfMonth, endYear, endMonthOfYear + 1, endDayOfMonth);
+                            int index = textString.indexOf(" ");
+                            beginTime = date(textString.substring(0, index));
+                            endTime = date(textString.substring(index + 1, textString.length()));
+                            clearAllData();
+                            //加载动画
+                            dialog.show();
+                            getData(pageNum, "");
+                        }
+                    }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE), true).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case R.id.line_page:
+                try {
+                    if (ClickUtils.isFastClick()) {
+                        clearAllData();
+                        getData(pageNum, "");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+    }
+
+    public String date(String date) {
+        int index1 = date.indexOf("-");
+        int index2 = index1 + date.substring(date.indexOf("-") + 1).indexOf("-") + 1;
+        String year = date.substring(0, index1);
+        String month = date.substring(index1 + 1, index2).length() == 1 ? "0" + date.substring(index1 + 1, index2) : date.substring(index1 + 1, index2);
+        String day = date.substring(index2 + 1).length() == 1 ? "0" + date.substring(index2 + 1) : date.substring(index2 + 1);
+        return year + "-" + month + "-" + day;
+    }
+
+    //清空所有数据
+    public void clearAllData() {
+        try {
+            list_advertising.clear();
+            hm_advertising.clear();
+            pageNum = 1;
+            advertising = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}

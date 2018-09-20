@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/iv_system"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/homepagebg" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/homepagebg2" />
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_title"
+        android:layout_below="@+id/linearLayout">
+
+        <ImageView
+            android:id="@+id/tv_back"
+            android:layout_width="@dimen/activity_title"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:padding="@dimen/activity_title_padding"
+            android:src="@drawable/back_white" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="资质"
+            android:textColor="@color/white"
+            android:textSize="@dimen/activity_title_tvtitle" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/relativeLayout"
+        android:background="@drawable/shape_shadow"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/image_small"
+            android:layout_marginLeft="@dimen/padding_left_right4"
+            android:layout_marginTop="@dimen/padding_left_right4"
+            android:text="必填项"
+            android:textSize="@dimen/textsizi3" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.1dp"
+            android:background="@color/list_line" />
+
+        <RelativeLayout
+            android:id="@+id/rl_business_license"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            android:background="@color/white"
+            android:paddingLeft="@dimen/padding_left_right4">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="营业执照"
+                android:textSize="@dimen/textsizi3" />
+
+            <TextView
+                android:id="@+id/tv_business_license"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/imageView6"
+                android:layout_toStartOf="@+id/imageView6"
+                android:text="未上传"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/textsizi" />
+
+            <ImageView
+                android:id="@+id/imageView6"
+                android:layout_width="@dimen/imagview_top"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:padding="@dimen/padding"
+                android:src="@drawable/click"
+                android:tint="@color/gray" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_icp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/imagview_top"
+            android:layout_marginBottom="@dimen/padding_left_right"
+            android:background="@color/white"
+            android:paddingLeft="@dimen/padding_left_right4">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="ICP备案"
+                android:textSize="@dimen/textsizi3" />
+
+            <TextView
+                android:id="@+id/tv_icp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/imageView7"
+                android:layout_toStartOf="@+id/imageView7"
+                android:text="未上传"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/textsizi" />
+
+            <ImageView
+                android:id="@+id/imageView7"
+                android:layout_width="@dimen/imagview_top"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:padding="@dimen/padding"
+                android:src="@drawable/click"
+                android:tint="@color/gray" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout2"
+        android:background="@drawable/shape_shadow"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/image_small"
+            android:layout_marginLeft="@dimen/padding_left_right4"
+            android:layout_marginTop="@dimen/padding_left_right4"
+            android:text="选填项"
+            android:textSize="@dimen/textsizi3" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.1dp"
+            android:background="@color/list_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:id="@+id/rl_isrs"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/imagview_top"
+                android:background="@color/white"
+                android:paddingLeft="@dimen/padding_left_right4">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="信息安全责任书"
+                    android:textSize="@dimen/textsizi3" />
+
+                <TextView
+                    android:id="@+id/tv_isrs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/imageView2"
+                    android:layout_toStartOf="@+id/imageView2"
+                    android:text="未上传"
+                    android:textColor="@color/gray"
+                    android:textSize="@dimen/textsizi" />
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="@dimen/imagview_top"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:padding="@dimen/padding"
+                    android:src="@drawable/click"
+                    android:tint="@color/gray" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_call"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/imagview_top"
+                android:background="@color/white"
+                android:paddingLeft="@dimen/padding_left_right4">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="语音服务承诺函"
+                    android:textSize="@dimen/textsizi3" />
+
+                <TextView
+                    android:id="@+id/tv_call"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/imageView8"
+                    android:layout_toStartOf="@+id/imageView8"
+                    android:text="未上传"
+                    android:textColor="@color/gray"
+                    android:textSize="@dimen/textsizi" />
+
+                <ImageView
+                    android:id="@+id/imageView8"
+                    android:layout_width="@dimen/imagview_top"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:padding="@dimen/padding"
+                    android:src="@drawable/click"
+                    android:tint="@color/gray" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/line_friend"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/padding_left_right"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:id="@+id/rl_bind_wechat"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/imagview_top"
+                    android:background="@color/white"
+                    android:paddingLeft="@dimen/padding_left_right4">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="绑定微信公众号"
+                        android:textSize="@dimen/textsizi3" />
+
+                    <TextView
+                        android:id="@+id/tv_bind_wechat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toLeftOf="@+id/imageView3"
+                        android:layout_toStartOf="@+id/imageView3"
+                        android:text="未完成"
+                        android:textColor="@color/gray"
+                        android:textSize="@dimen/textsizi" />
+
+                    <ImageView
+                        android:id="@+id/imageView3"
+                        android:layout_width="@dimen/imagview_top"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentTop="true"
+                        android:padding="@dimen/padding"
+                        android:src="@drawable/click"
+                        android:tint="@color/gray" />
+
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

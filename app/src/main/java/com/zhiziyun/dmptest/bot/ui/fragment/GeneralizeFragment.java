@@ -15,6 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.mode.wifi.WifiAdverActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.AddFriendsClubActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.AddSmsActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.AdvertisingActivity;
+import com.zhiziyun.dmptest.bot.ui.activity.SearchPageActivity;
 import com.zhiziyun.dmptest.bot.ui.activity.WeChatBindActivity;
 import com.zhiziyun.dmptest.bot.util.CustomDialog;
 
@@ -26,12 +31,13 @@ import java.util.List;
 /**
  * 推广
  */
-public class GeneralizeFragment extends Fragment {
+public class GeneralizeFragment extends Fragment implements View.OnClickListener {
     private List<Fragment> list;
     private String[] titles;
     private SharedPreferences share;
     private ViewPager viewPager;
     private int positions = 0;
+    private int flags = 1;
 
     @Nullable
     @Override
@@ -53,6 +59,8 @@ public class GeneralizeFragment extends Fragment {
         viewPager = getView().findViewById(R.id.vp_view);
         viewPager.setOffscreenPageLimit(4);
         tabLayout = getView().findViewById(R.id.tabs);
+        getView().findViewById(R.id.iv_add).setOnClickListener(this);
+        getView().findViewById(R.id.iv_search).setOnClickListener(this);
         if (share.getBoolean("isShowPlanAds", false)) {//显示投广告
             if (share.getBoolean("isShowTencent", false)) {//显示朋友圈和wifi广告，条件相同
                 titles = new String[]{"投广告", "发短信", "朋友圈", "WiFi广告"};
@@ -110,7 +118,7 @@ public class GeneralizeFragment extends Fragment {
                         //这里就可以根据业务需求处理点击事件了。
                         if (share.getBoolean("isShowTencent", false)) {//显示朋友圈和wifi广告，条件相同
                             //如果有显示朋友圈和wifi广告的权限才做点击判断
-                            if (position == tabLayout.getTabCount() - 2) {//如果点击的是朋友圈
+                            if (titles[position].equals("朋友圈")) {//如果点击的是朋友圈
                                 if (!(share.getBoolean("isBindingWeChatSubscription", false) && share.getBoolean("isAuthorizationAd", false)
                                         && share.getBoolean("isOpenWeChatSubscriptionAdvertiser", false))) {//三个条件必须同时满足
                                     //点击弹出对话框
@@ -129,12 +137,13 @@ public class GeneralizeFragment extends Fragment {
                                         public void onNoClick() {
                                             viewPager.setCurrentItem(positions);//跳转
                                             customDialog.dismiss();
+                                            select(positions);
                                         }
                                     });
                                     customDialog.show();
                                 }
-                            } else if (position == tabLayout.getTabCount() - 1) {//如果点击的是wifi广告
-                                if (!(share.getBoolean("isBindingWeChatSubscription", false) && share.getBoolean("isAuthorizationAd", false))) {//三个条件必须同时满足
+                            } else if (titles[position].equals("WiFi广告")) {//如果点击的是wifi广告
+                                if (!(share.getBoolean("isBindingWeChatSubscription", false) && share.getBoolean("isAuthorizationAd", false))) {//2个条件必须同时满足
                                     //点击弹出对话框
                                     final CustomDialog customDialog = new CustomDialog(getActivity());
                                     customDialog.setTitle("绑定公众号");
@@ -151,6 +160,7 @@ public class GeneralizeFragment extends Fragment {
                                         public void onNoClick() {
                                             viewPager.setCurrentItem(positions);//跳转
                                             customDialog.dismiss();
+                                            select(positions);
                                         }
                                     });
                                     customDialog.show();
@@ -159,11 +169,69 @@ public class GeneralizeFragment extends Fragment {
                                 positions = position;//跳转
                             }
                         }
+                        select(position);
                     }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void select(int position) {
+        switch (titles[position]) {
+            case "投广告":
+                flags = 1;
+                break;
+            case "发短信":
+                flags = 2;
+                break;
+            case "朋友圈":
+                flags = 3;
+                break;
+            case "WiFi广告":
+                flags = 4;
+                break;
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_add:
+                switch (flags) {
+                    case 1:
+                        startActivity(new Intent(getActivity(), AdvertisingActivity.class));
+                        break;
+                    case 2:
+                        startActivity(new Intent(getActivity(), AddSmsActivity.class));
+                        break;
+                    case 3:
+                        startActivity(new Intent(getActivity(), AddFriendsClubActivity.class));
+                        break;
+                    case 4:
+                        startActivity(new Intent(getContext(), WifiAdverActivity.class));
+                        break;
+                }
+                break;
+            case R.id.iv_search:
+                Intent it = new Intent(getActivity(), SearchPageActivity.class);
+                switch (flags) {
+                    case 1:
+                        it.putExtra("activity", "AdvertisingFragment");
+                        break;
+                    case 2:
+                        it.putExtra("activity", "SMSFragment");
+                        break;
+                    case 3:
+                        it.putExtra("activity", "FriendsFragment");
+                        break;
+                    case 4:
+                        it.putExtra("activity", "WIFIADFragment");
+                        break;
+                }
+                startActivity(it);
+                break;
         }
     }
 

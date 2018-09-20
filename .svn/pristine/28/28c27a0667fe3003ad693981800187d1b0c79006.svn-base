@@ -1,0 +1,117 @@
+package com.zhiziyun.dmptest.bot.view;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+
+import com.zhiziyun.dmptest.bot.R;
+import com.zhiziyun.dmptest.bot.ui.activity.StoreListActivity;
+import com.zhiziyun.dmptest.bot.ui.fragment.AdvertisingFragment;
+import com.zhiziyun.dmptest.bot.util.CustomDialog;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+/**
+ * Created by Administrator on 2018/5/17 0019.
+ */
+public class PopWin_store extends PopupWindow implements View.OnClickListener {
+    private Context mContext;
+    private View view;
+    private int position;
+    public ArrayList<HashMap<String, String>> list_store;
+
+    public PopWin_store(final Context mContext, ArrayList<HashMap<String, String>> list_store, int position) {
+        this.mContext = mContext;
+        this.view = LayoutInflater.from(mContext).inflate(R.layout.view_store, null);
+        this.position = position;
+        this.list_store = list_store;
+        initView();
+        // 设置外部可点击
+        this.setOutsideTouchable(true);
+        /* 设置弹出窗口特征 */
+        // 设置视图
+        this.setContentView(this.view);
+        // 设置弹出窗体的宽和高
+        this.setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT);//高
+        this.setWidth(RelativeLayout.LayoutParams.MATCH_PARENT);//宽
+
+        // 设置弹出窗体可点击
+        this.setFocusable(true);
+
+        // 设置弹出窗体显示时的动画，从底部向上弹出
+        this.setAnimationStyle(R.style.take_photo_anim);
+//        mMenuView添加OnTouchListener监听判断获取触屏位置如果在选择框外面则销毁弹出框
+        this.view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int height = view.findViewById(R.id.pop_layout).getTop();
+                int y = (int) event.getY();
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (y < height) {
+                        dismiss();
+                    }
+                }
+                return true;
+            }
+
+        });
+
+    }
+
+    public void initView() {
+        view.findViewById(R.id.iv_close).setOnClickListener(this);
+        view.findViewById(R.id.line_alter).setOnClickListener(this);
+        view.findViewById(R.id.line_examine).setOnClickListener(this);
+        view.findViewById(R.id.line_delete).setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_close:
+                dismiss();
+                break;
+            case R.id.line_alter://编辑
+                StoreListActivity.storeListActivity.editeStore(list_store.get(position).get("content1"),
+                        list_store.get(position).get("content2"),
+                        list_store.get(position).get("lat"),
+                        list_store.get(position).get("lon"),
+                        list_store.get(position).get("id"));
+                dismiss();
+                break;
+            case R.id.line_examine://查看
+                StoreListActivity.storeListActivity.checkTanzhen(list_store.get(position).get("id"),
+                        Float.parseFloat(list_store.get(position).get("lat")),
+                        Float.parseFloat(list_store.get(position).get("lon")),
+                        list_store.get(position).get("area"));
+                dismiss();
+                break;
+            case R.id.line_delete://删除
+                //点击弹出对话框
+                final CustomDialog customDialog = new CustomDialog(mContext);
+                customDialog.setTitle("消息提示");
+                customDialog.setMessage("是否要删除门店");
+                customDialog.setYesOnclickListener("确定", new CustomDialog.onYesOnclickListener() {
+                    @Override
+                    public void onYesClick() {
+                        StoreListActivity.storeListActivity.deleteStore(list_store.get(position).get("id"));
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.setNoOnclickListener("取消", new CustomDialog.onNoOnclickListener() {
+                    @Override
+                    public void onNoClick() {
+                        customDialog.dismiss();
+                    }
+                });
+                customDialog.show();
+                dismiss();
+                break;
+        }
+    }
+
+}
