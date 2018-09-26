@@ -643,7 +643,6 @@
                         </LinearLayout>
 
                         <LinearLayout
-                            android:id="@+id/line_advertising"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_marginLeft="@dimen/line_height"

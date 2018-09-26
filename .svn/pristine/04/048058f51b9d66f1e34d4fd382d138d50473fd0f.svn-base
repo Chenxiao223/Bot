@@ -102,7 +102,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener, 
     private PieChartView pie_chart;//饼形图控件
     private PieChartData pieChardata;//数据
     private List<SliceValue> values = new ArrayList<SliceValue>();
-    private LinearLayout line_friend, line_ad, line_advertising;
+    private LinearLayout line_friend, line_ad;
     //折线图
     private LineChart chartView;
     private HomePage page;
@@ -149,7 +149,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener, 
         tv_ad = getView().findViewById(R.id.tv_ad);
         tv_wechat = getView().findViewById(R.id.tv_wechat);
         line_friend = getView().findViewById(R.id.line_friend);
-        line_advertising = getView().findViewById(R.id.line_advertising);
         getView().findViewById(R.id.rl_trading).setOnClickListener(this);
         getView().findViewById(R.id.line_crowd).setOnClickListener(this);
         getView().findViewById(R.id.line_phone).setOnClickListener(this);
@@ -158,7 +157,6 @@ public class HomePageFragment extends Fragment implements View.OnClickListener, 
         line_ad.setOnClickListener(this);
         if (!share.getBoolean("isShowPlanAds", false)) {//如果不显示投广告
             line_ad.setVisibility(View.GONE);
-            line_advertising.setVisibility(View.GONE);
         }
 
         getPictrue();//获取头像

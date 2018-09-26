@@ -12,14 +12,12 @@ import android.widget.RelativeLayout;
 import com.zhiziyun.dmptest.bot.R;
 import com.zhiziyun.dmptest.bot.adapter.GeneralAdapter;
 import com.zhiziyun.dmptest.bot.ui.activity.TransactionDetailsActivity;
-import com.zhiziyun.dmptest.bot.ui.activity.VisitorsViewActivity;
 import com.zhiziyun.dmptest.bot.ui.fragment.AdvertisingFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.CustomerFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.FriendsFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.SMSFragment;
-import com.zhiziyun.dmptest.bot.ui.fragment.TimeSlotFragment;
-import com.zhiziyun.dmptest.bot.ui.fragment.TrendFragment;
 import com.zhiziyun.dmptest.bot.ui.fragment.VisitorsselfFragment;
+import com.zhiziyun.dmptest.bot.ui.fragment.WIFIADFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +69,7 @@ public class PopWin_general extends PopupWindow {
             }
 
         });
+
     }
 
     private void initView() {
@@ -186,93 +185,6 @@ public class PopWin_general extends PopupWindow {
                 FriendsFragment.friendsFragment.getData(1, "", FriendsFragment.friendsFragment.configuredStatus);
                 dismiss();
                 break;
-            case "VisitorsViewActivity_one"://画像1
-                for (int i = 0; i < list.size(); i++) {//先把之前的选中状态清空
-                    VisitorsViewActivity.visitorsViewActivity.list_shop.get(i).put("boolean", false);
-                }
-                VisitorsViewActivity.visitorsViewActivity.list_shop.get(position).put("boolean", true);
-                String str1 = list.get(position).get("mac").toString();
-                VisitorsViewActivity.visitorsViewActivity.storeId = Integer.parseInt(str1);
-                VisitorsViewActivity.visitorsViewActivity.getTable();
-                VisitorsViewActivity.visitorsViewActivity.tv_shop.setText(list.get(position).get("name").toString());
-                dismiss();
-                break;
-            case "VisitorsViewActivity_two"://画像2
-                for (int i = 0; i < list.size(); i++) {//先把之前的选中状态清空
-                    VisitorsViewActivity.visitorsViewActivity.list_tanzhen.get(i).put("boolean", false);
-                }
-                VisitorsViewActivity.visitorsViewActivity.list_tanzhen.get(position).put("boolean", true);
-                String str3 = list.get(position).get("mac").toString();
-                if (str3.equals("0")) {
-                    VisitorsViewActivity.visitorsViewActivity.microprobeId = 0;
-                } else {
-                    VisitorsViewActivity.visitorsViewActivity.microprobeId = Integer.parseInt(str3.substring(str3.indexOf("_") + 1));
-                }
-                VisitorsViewActivity.visitorsViewActivity.getTable();
-                VisitorsViewActivity.visitorsViewActivity.tv_tanzhen.setText(list.get(position).get("name").toString());
-                dismiss();
-                break;
-            case "TimeSlotFragment_one"://时段1
-                for (int i = 0; i < list.size(); i++) {//先把之前的选中状态清空
-                    TimeSlotFragment.fragment.list_shop.get(i).put("boolean", false);
-                }
-                TimeSlotFragment.fragment.list_shop.get(position).put("boolean", true);
-                String str_shop = list.get(position).get("mac").toString();
-                TimeSlotFragment.fragment.storeId = Integer.parseInt(str_shop);
-                TimeSlotFragment.fragment.hm_timeslot.clear();
-                TimeSlotFragment.fragment.list_timeslot.clear();
-                TimeSlotFragment.fragment.getvisitHour();
-                TimeSlotFragment.fragment.tv_shop.setText(list.get(position).get("name").toString());
-                dismiss();
-                break;
-            case "TimeSlotFragment_two"://时段2
-                for (int i = 0; i < list.size(); i++) {//先把之前的选中状态清空
-                    TimeSlotFragment.fragment.list_tanzhen.get(i).put("boolean", false);
-                }
-                TimeSlotFragment.fragment.list_tanzhen.get(position).put("boolean", true);
-                String str_tanzhen = list.get(position).get("mac").toString();
-                if (str_tanzhen.equals("0")) {
-                    TimeSlotFragment.fragment.microprobeId = 0;
-                } else {
-                    TimeSlotFragment.fragment.microprobeId = Integer.parseInt(str_tanzhen.substring(str_tanzhen.indexOf("_") + 1));
-                }
-                TimeSlotFragment.fragment.hm_timeslot.clear();
-                TimeSlotFragment.fragment.list_timeslot.clear();
-                TimeSlotFragment.fragment.getvisitHour();
-                TimeSlotFragment.fragment.tv_tanzhen.setText(list.get(position).get("name").toString());
-                dismiss();
-                break;
-            case "TrendFragment_shop"://趋势—门店
-                for (int i = 0; i < list.size(); i++) {//先把之前的选中状态清空
-                    TrendFragment.fragment.list_shop.get(i).put("boolean", false);
-                }
-                TrendFragment.fragment.list_shop.get(position).put("boolean", true);
-                String str_trendFragment_shop = list.get(position).get("mac").toString();
-                TrendFragment.fragment.storeId = Integer.parseInt(str_trendFragment_shop);
-                TrendFragment.fragment.hm_trend.clear();
-                TrendFragment.fragment.clearAllData();
-                TrendFragment.fragment.getTrend();
-                TrendFragment.fragment.tv_shop.setText(list.get(position).get("name").toString());
-                dismiss();
-                break;
-            case "TrendFragment_tanzhen"://趋势—探针
-                for (int i = 0; i < list.size(); i++) {//先把之前的选中状态清空
-                    TrendFragment.fragment.list_tanzhen.get(i).put("boolean", false);
-                }
-                TrendFragment.fragment.list_tanzhen.get(position).put("boolean", true);
-                String str_trendFragment_tanzhen = list.get(position).get("mac").toString();
-                if (str_trendFragment_tanzhen.equals("0")) {
-                    TrendFragment.fragment.microprobeId = 0;
-                } else {
-                    TrendFragment.fragment.microprobeId = Integer.parseInt(str_trendFragment_tanzhen.substring(str_trendFragment_tanzhen.indexOf("_") + 1));
-                }
-                TrendFragment.fragment.hm_trend.clear();
-                TrendFragment.fragment.clearAllData();
-                TrendFragment.fragment.getTrend();
-                TrendFragment.fragment.tv_tanzhen.setText(list.get(position).get("name").toString());
-                dismiss();
-                break;
-
         }
     }
 

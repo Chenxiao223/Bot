@@ -71,6 +71,7 @@ public class PopWin_general extends PopupWindow {
             }
 
         });
+
     }
 
     private void initView() {
